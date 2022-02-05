@@ -12,7 +12,10 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "treasure-staking/contracts/AtlasMine.sol";
 import "./interfaces/IAtlasMineStaker.sol";
 
-// TODO: Tests
+import "hardhat/console.sol";
+
+// TODO: Re-do stake accounting to match atlas mine exactly
+// TODO: Re-do treasure and legion approvals
 
 /**
  * @title AtlasMineStaker
@@ -164,6 +167,8 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker {
     function withdraw() public virtual override {
         // Update accounting
         uint256 amount = userStake[msg.sender];
+        require(amount > 0, "No deposit");
+
         userStake[msg.sender] -= amount;
         totalStaked -= amount;
         int256 rewardDebt = rewardDebts[msg.sender];
@@ -179,11 +184,11 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker {
         rewardDebts[msg.sender] = ((amount * accRewardsPerShare) / ONE).toInt256();
 
         // If we need to unstake, unstake until we have enough
-        if (payout <= _totalUsableMagic()) {
+        if (payout > _totalUsableMagic()) {
             _unstakeToTarget(payout);
         }
 
-        require(payout <= _totalUsableMagic(), "Cannot unstake enough");
+        IERC20(magic).safeTransfer(msg.sender, payout);
 
         emit UserWithdraw(msg.sender, amount, reward);
     }
@@ -208,6 +213,8 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker {
         uint256 reward = (accumulatedRewards - rewardDebt).toUint256();
 
         require(reward <= _totalUsableMagic(), "Not enough rewards to claim");
+
+        IERC20(magic).safeTransfer(msg.sender, reward);
 
         emit UserClaim(msg.sender, reward);
     }
@@ -277,8 +284,8 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker {
         address treasureAddr = mine.treasure();
         IERC1155 treasure = IERC1155(treasureAddr);
 
-        treasure.safeTransferFrom(msg.sender, address(this), _tokenId, _amount, bytes(""));
         treasure.setApprovalForAll(address(mine), true);
+        treasure.safeTransferFrom(msg.sender, address(this), _tokenId, _amount, bytes(""));
 
         mine.stakeTreasure(_tokenId, _amount);
         uint256 boost = mine.boosts(address(this));
@@ -547,7 +554,9 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker {
 
             // Withdraw position - auto-harvest
             uint256 preclaimBalance = _totalUsableMagic();
-            _withdrawAndHarvestMine(s.depositId, s.amount);
+            uint256 targetLeft = target - unstaked;
+            uint256 amount = targetLeft > s.amount ? s.amount : targetLeft;
+            _withdrawAndHarvestMine(s.depositId, amount);
             uint256 postclaimBalance = _totalUsableMagic();
 
             // Increment amount unstaked
@@ -561,7 +570,7 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker {
             _updateStakeDepositAmount(i);
         }
 
-        require(unstaked >= target, "Could not unstake enough");
+        require(unstaked >= target, "Cannot unstake enough");
         require(_totalUsableMagic() >= target, "Not enough in contract after unstaking");
 
         // Only check for removal after, so we don't mutate while looping
@@ -607,6 +616,8 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker {
         uint256 postclaimBalance = IERC20(magic).balanceOf(address(this));
 
         uint256 earned = postclaimBalance - preclaimBalance;
+
+        console.log("EARNED", earned);
 
         // Reserve the 'fee' amount of what is earned
         uint256 feeEarned = (earned * fee) / FEE_DENOMINATOR;

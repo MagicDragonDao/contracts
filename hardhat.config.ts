@@ -64,6 +64,7 @@ function createHardhatConfig(): HardhatNetworkUserConfig {
       mnemonic,
     },
     chainId: chainIds.hardhat,
+    allowUnlimitedContractSize: true,
   };
 
   if (forkMainnet) {
