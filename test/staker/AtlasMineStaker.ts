@@ -60,7 +60,7 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
 
     // Distribute coins and set up staking program
     await magic.mint(admin.address, ether("10000"));
-    await magic.mint(masterOfCoin.address, ether("20000"));
+    await magic.mint(masterOfCoin.address, ether("200000"));
 
     const DAY_SEC = 86400;
     // Put start time in the future - we will fast-forward
@@ -196,7 +196,7 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
         expect(stakeInfo.depositAmount).to.eq(amount);
       });
 
-      it("withdrawal distributes the correct amount of pro rata rewards", async () => {
+      it.only("withdrawal distributes the correct amount of pro rata rewards", async () => {
         const {
           users: [user1, user2],
           staker,
@@ -208,20 +208,24 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
         // Stake more than rewards to force a withdraw
         // With 2 stakers, each will earn 7000 MAGIC over lock period
         const amount = ether("20000");
-        await stakeMultiple(staker, [
+        const txs = await stakeMultiple(staker, [
           [user1, amount],
           [user2, amount],
         ]);
+
+        // Wait for all deposits to finish
+        await Promise.all(txs.map(t => t.wait()));
 
         // Go to start of rewards program
         await rollTo(start);
 
         // Make a tx to deposit
-        await rollSchedule(staker);
+        const tx = await staker.stakeScheduled();
+        await tx.wait();
 
         // Fast-forward - 15 days should pass, to 15k rewards total to pool
         // User 1 would deposit half
-        await rollLock();
+        await rollLock(start);
 
         await expect(withdrawSingle(staker, user1))
           .to.emit(staker, "UserWithdraw")

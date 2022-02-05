@@ -16,6 +16,7 @@ import "hardhat/console.sol";
 
 // TODO: Re-do stake accounting to match atlas mine exactly
 // TODO: Re-do treasure and legion approvals
+// TODO: Look into utilization ratio
 
 /**
  * @title AtlasMineStaker
@@ -392,6 +393,7 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker {
      * @param target                The amount of tokens to reclaim from the mine.
      */
     function unstakeToTarget(uint256 target) external override onlyOwner {
+        _harvestMine();
         _unstakeToTarget(target);
     }
 
@@ -556,7 +558,9 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker {
             uint256 preclaimBalance = _totalUsableMagic();
             uint256 targetLeft = target - unstaked;
             uint256 amount = targetLeft > s.amount ? s.amount : targetLeft;
-            _withdrawAndHarvestMine(s.depositId, amount);
+            // Do not harvest rewards - if this is running, we've already
+            // harvested in the same fn call
+            mine.withdrawPosition(s.depositId, amount);
             uint256 postclaimBalance = _totalUsableMagic();
 
             // Increment amount unstaked
@@ -578,32 +582,6 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker {
     }
 
     /**
-     * @dev Unstake a defined singular stake from the mine, up to a particular amount.
-     *      Large _amounts get decreased down to the maximum amount of the stake.
-     *      Not all stake amount may be withdrawn, depending on Atlas Mine vesting schedule.
-     *
-     * @param stakeIndex            The index of the stake to unstake from in the local Stakes array.
-     * @param _amount               The amount to unstake.
-     */
-    function _unstakeSingleStakeFromMine(uint256 stakeIndex, uint256 _amount) internal {
-        // Get deposit ID from stake
-        require(stakeIndex < stakes.length, "Index out of bounds");
-
-        Stake storage s = stakes[stakeIndex];
-        require(s.unlockAt <= block.timestamp, "Stake still locked");
-
-        if (_amount > s.amount) {
-            _amount = s.amount;
-        }
-
-        // Withdraw position - auto-harvest
-        _withdrawAndHarvestMine(s.depositId, _amount);
-
-        uint256 amount = _updateStakeDepositAmount(stakeIndex);
-        if (amount == 0) _removeStake(stakeIndex);
-    }
-
-    /**
      * @dev Harvest rewards from the AtlasMine and send them back to
      *      this contract.
      *
@@ -616,8 +594,6 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker {
         uint256 postclaimBalance = IERC20(magic).balanceOf(address(this));
 
         uint256 earned = postclaimBalance - preclaimBalance;
-
-        console.log("EARNED", earned);
 
         // Reserve the 'fee' amount of what is earned
         uint256 feeEarned = (earned * fee) / FEE_DENOMINATOR;

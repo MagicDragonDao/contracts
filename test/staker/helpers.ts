@@ -38,18 +38,21 @@ export const withdrawSingle = async (
   return staker.connect(user).withdraw();
 };
 
-export const rollSchedule = async (staker: AtlasMineStaker): Promise<ContractTransaction> => {
+export const rollSchedule = async (
+  staker: AtlasMineStaker,
+  start = Math.floor(Date.now() / 1000),
+): Promise<ContractTransaction> => {
   const ONE_DAY_SEC = 86400;
-  const nextTimestamp = Math.floor(Date.now() / 1000) + ONE_DAY_SEC;
+  const nextTimestamp = start + ONE_DAY_SEC;
   await setNextBlockTimestamp(nextTimestamp);
 
   return staker.stakeScheduled();
 };
 
 // TODO: Assumes 2-week lock. Make flexible if we test differnet locks
-export const rollLock = async (): Promise<void> => {
+export const rollLock = async (start = Math.floor(Date.now() / 1000)): Promise<void> => {
   const ONE_DAY_SEC = 86400;
-  const nextTimestamp = Math.floor(Date.now() / 1000) + ONE_DAY_SEC * 15;
+  const nextTimestamp = start + ONE_DAY_SEC * 15;
   await setNextBlockTimestamp(nextTimestamp);
 };
 
