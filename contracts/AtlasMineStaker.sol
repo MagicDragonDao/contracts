@@ -446,7 +446,7 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker {
     }
 
     /**
-     * @notice EMEREGENCY ONLY - toggle pausing new scheduled stakes.
+     * @notice EMERGENCY ONLY - toggle pausing new scheduled stakes.
      *         If on, users can deposit, but stakes won't go to Atlas Mine.
      *         Can be used in case of Atlas Mine issues or forced migration
      *         to new contract.

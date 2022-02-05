@@ -2,6 +2,7 @@ import "@typechain/hardhat";
 import "@nomiclabs/hardhat-waffle";
 import "@nomiclabs/hardhat-etherscan";
 import "hardhat-gas-reporter";
+import "hardhat-dependency-compiler";
 import "solidity-coverage";
 
 import "./tasks/accounts";
@@ -156,6 +157,9 @@ const config: HardhatUserConfig = {
   typechain: {
     outDir: "src/types",
     target: "ethers-v5",
+  },
+  dependencyCompiler: {
+    paths: ["treasure-staking/contracts/AtlasMine.sol", "treasure-staking/contracts/MasterOfCoin.sol"],
   },
   etherscan: {
     apiKey: process.env.ETHERSCAN_API_KEY,
