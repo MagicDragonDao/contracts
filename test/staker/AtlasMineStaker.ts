@@ -384,7 +384,27 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
             );
         });
 
-        it("distributes the correct pro rata rewards with a boost multiplier");
+        it("distributes the correct pro rata rewards with a boost multiplier", async () => {
+            // Max boost
+            const { staker, mine } = ctx;
+            const treasureTokenId = 97;
+
+            // 15.8 * 20 = 316% boost
+            await staker.connect(hoard).stakeTreasure(treasureTokenId, 20);
+
+            // 600 + 200 + 200 = 1000% boost
+            await staker.connect(hoard).stakeLegion(0);
+            await staker.connect(hoard).stakeLegion(10);
+            await staker.connect(hoard).stakeLegion(11);
+
+            // total 1316% boost
+            expect(await mine.boosts(staker.address)).to.eq(ether("13.16"));
+
+            // TODO:
+            // Run another staker
+            // Have each staker deposit 50% equal
+            // Make sure staker 1's rewards are 13.16x higher than staker2
+        });
 
         it("does not allow a non-hoard caller to unstake a treasure", async () => {
             const {
