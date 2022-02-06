@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { ethers, waffle } from "hardhat";
+import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
 
 const { loadFixture } = waffle;
 
 import { deploy } from "../utils";
-
 import type { AtlasMineStaker } from "../../src/types/AtlasMineStaker";
 import type { MasterOfCoin } from "../../src/types/MasterOfCoin";
 import type { MockLegionMetadataStore } from "../../src/types/MockLegionMetadataStore";
@@ -304,15 +304,19 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
     });
 
     describe("NFT-boosted staking", () => {
+        let hoard: SignerWithAddress;
+
         beforeEach(async () => {
             // Set up hoard
             const {
                 admin,
-                users: [, hoard],
+                users: [, _hoard],
                 staker,
                 treasures,
                 legions,
             } = ctx;
+
+            hoard = _hoard;
 
             await staker.connect(admin).setHoard(hoard.address);
 
@@ -326,7 +330,7 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
             await treasures.mint(hoard.address, 97, 20);
             await treasures.mint(hoard.address, 103, 20);
             await treasures.mint(hoard.address, 95, 20);
-            await treasures.setApprovalForAll(staker.address, true);
+            await treasures.connect(hoard).setApprovalForAll(staker.address, true);
 
             // Mint 4 legions
             // 2 1/1s (ID < 5) and 2 all-class
@@ -335,7 +339,7 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
             await legions.mint(hoard.address, 1);
             await legions.mint(hoard.address, 10);
             await legions.mint(hoard.address, 11);
-            await legions.setApprovalForAll(staker.address, true);
+            await legions.connect(hoard).setApprovalForAll(staker.address, true);
         });
 
         it("does not allow a non-hoard caller to stake a treasure", async () => {
@@ -356,8 +360,30 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
             await expect(staker.connect(user).stakeLegion(2)).to.be.revertedWith("Not hoard");
         });
 
-        it("allows the hoard to stake a treasure");
-        it("allows the hoard to stake a legion");
+        it("allows the hoard to stake a treasure", async () => {
+            const { staker, treasures } = ctx;
+            const tokenId = 103;
+
+            await expect(staker.connect(hoard).stakeTreasure(tokenId, 20)).to.emit(staker, "StakeNFT").withArgs(
+                treasures.address,
+                tokenId,
+                20,
+                ether("0.6"), // 60% boost
+            );
+        });
+
+        it("allows the hoard to stake a legion", async () => {
+            const { staker, legions } = ctx;
+            const tokenId = 0;
+
+            await expect(staker.connect(hoard).stakeLegion(tokenId)).to.emit(staker, "StakeNFT").withArgs(
+                legions.address,
+                tokenId,
+                1,
+                ether("6"), // 600% boost
+            );
+        });
+
         it("distributes the correct pro rata rewards with a boost multiplier");
 
         it("does not allow a non-hoard caller to unstake a treasure", async () => {

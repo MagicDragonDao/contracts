@@ -4,7 +4,9 @@ pragma solidity ^0.8.10;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
+import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+import "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/utils/math/SafeCast.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
@@ -32,10 +34,8 @@ import "hardhat/console.sol";
  * enjoy the power of the guild's hoard and maximize their
  * Atlas Mine yield.
  *
- * This contract assumes the canonical address of the MAGIC token
- * and is suitable for deployment on Arbitrum only.
  */
-contract AtlasMineStaker is Ownable, IAtlasMineStaker {
+contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Holder {
     using SafeERC20 for IERC20;
     using Address for address;
     using SafeCast for uint256;
