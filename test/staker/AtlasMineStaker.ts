@@ -638,13 +638,98 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
 
     describe("Owner Operations", () => {
         describe("Administration", () => {
-            it("does not allow a non-owner to set the reward fee");
-            it("allows the owner to set the reward fee");
-            it("collects the correct fee when rewards are claimed");
-            it("does not allow a non-owner to withdraw collected fees");
-            it("allows the owner to withdraw collected fees");
-            it("does not allow a non-owner to change the hoard address");
-            it("allows the owner to change the hoard address");
+            it("does not allow a non-owner to set the reward fee", async () => {
+                const {
+                    users: [user],
+                    staker,
+                } = ctx;
+
+                await expect(staker.connect(user).setFee(10)).to.be.revertedWith("Ownable: caller is not the owner");
+            });
+
+            it("allows the owner to set the reward fee", async () => {
+                const { admin, staker } = ctx;
+
+                await expect(staker.connect(admin).setFee(200)).to.emit(staker, "SetFee").withArgs(200);
+            });
+
+            it("collects the correct fee when rewards are claimed", async () => {
+                const {
+                    users: [user],
+                    admin,
+                    staker,
+                    magic,
+                } = ctx;
+
+                await staker.connect(admin).setFee(200);
+                await setup5050Scenario(ctx);
+
+                // Expected rewards
+                const rewardAfterFee = ether("6500")
+                    .div(10_000)
+                    .mul(10_000 - 200);
+
+                await claimWithRoundedRewardCheck(staker, user, rewardAfterFee);
+
+                // User returned all funds + reward
+                // Here, they should only get 98% of rewards
+                expectRoundedEqual(await magic.balanceOf(user.address), ether("80000").add(rewardAfterFee));
+            });
+
+            it("does not allow a non-owner to withdraw collected fees", async () => {
+                const {
+                    users: [user],
+                    staker,
+                } = ctx;
+
+                await expect(staker.connect(user).withdrawFees()).to.be.revertedWith(
+                    "Ownable: caller is not the owner",
+                );
+            });
+
+            it("allows the owner to withdraw collected fees", async () => {
+                const {
+                    users: [user],
+                    admin,
+                    staker,
+                    magic,
+                } = ctx;
+
+                await staker.connect(admin).setFee(200);
+                await setup5050Scenario(ctx);
+
+                // Expected rewards
+                const rewardAfterFee = ether("6500")
+                    .div(10_000)
+                    .mul(10_000 - 200);
+                const fee = ether("6500").div(10_000).mul(200);
+
+                await claimWithRoundedRewardCheck(staker, user, rewardAfterFee);
+
+                // Make sure admin gets fee upon calling func
+                // Also gets fees from other staker
+                const preclaimBalance = await magic.balanceOf(admin.address);
+                await staker.connect(admin).withdrawFees();
+                const postclaimBalance = await magic.balanceOf(admin.address);
+                expectRoundedEqual(postclaimBalance.sub(preclaimBalance), fee.mul(2));
+            });
+
+            it("does not allow a non-owner to change the hoard address", async () => {
+                const {
+                    users: [user],
+                    staker,
+                } = ctx;
+
+                await expect(staker.connect(user).setHoard(user.address)).to.be.revertedWith(
+                    "Ownable: caller is not the owner",
+                );
+            });
+
+            it("allows the owner to change the hoard address", async () => {
+                const { admin, staker, users } = ctx;
+
+                await expect(staker.connect(admin).setHoard(users[3].address)).to.not.be.reverted;
+            });
         });
 
         describe("Stake Management", () => {
