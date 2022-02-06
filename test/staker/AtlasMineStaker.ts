@@ -733,10 +733,95 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
         });
 
         describe("Stake Management", () => {
-            it("does not allow a non-owner to unstake to a specified target");
-            it("allows an owner to unstake to a specified target");
-            it("does not allow a non-owner to unstake all possible stake");
-            it("allows an owner to unstake all possible stake");
+            it("does not allow a non-owner to unstake to a specified target", async () => {
+                const {
+                    users: [user],
+                    staker,
+                } = ctx;
+
+                await expect(staker.connect(user).unstakeToTarget(ether("10"))).to.be.revertedWith(
+                    "Ownable: caller is not the owner",
+                );
+            });
+
+            it("allows an owner to unstake to a specified target", async () => {
+                const {
+                    admin,
+                    users: [user1, user2],
+                    staker,
+                    magic,
+                    start,
+                    end,
+                } = ctx;
+
+                await stakeMultiple(staker, [
+                    [user1, ether("1")],
+                    [user2, ether("9")],
+                ]);
+
+                // Should be able to withdraw anything since it hasn't been staked
+                expect(await staker.totalWithdrawableMagic()).to.eq(ether("10"));
+
+                await rollTo(start);
+                await staker.stakeScheduled();
+
+                // Roll to end of rewards period, stake unlocked
+                await rollTo(end);
+                await ethers.provider.send("evm_mine", []);
+
+                // Contract should not hold any MAGIC - all staked or pending claim
+                expectRoundedEqual(await magic.balanceOf(staker.address), 0);
+
+                await staker.connect(admin).unstakeToTarget(ether("5"));
+
+                // Staker should now hold all total rewards plus unstaked 5 units
+                expectRoundedEqual(await magic.balanceOf(staker.address), TOTAL_REWARDS.add(ether("5")));
+            });
+
+            it("does not allow a non-owner to unstake all possible stake", async () => {
+                const {
+                    users: [user],
+                    staker,
+                } = ctx;
+
+                await expect(staker.connect(user).unstakeAllFromMine()).to.be.revertedWith(
+                    "Ownable: caller is not the owner",
+                );
+            });
+
+            it("allows an owner to unstake all possible stake", async () => {
+                const {
+                    admin,
+                    users: [user1, user2],
+                    staker,
+                    magic,
+                    start,
+                    end,
+                } = ctx;
+
+                await stakeMultiple(staker, [
+                    [user1, ether("1")],
+                    [user2, ether("9")],
+                ]);
+
+                // Should be able to withdraw anything since it hasn't been staked
+                expect(await staker.totalWithdrawableMagic()).to.eq(ether("10"));
+
+                await rollTo(start);
+                await staker.stakeScheduled();
+
+                // Roll to end of rewards period, stake unlocked
+                await rollTo(end);
+                await ethers.provider.send("evm_mine", []);
+
+                // Contract should not hold any MAGIC - all staked or pending claim
+                expectRoundedEqual(await magic.balanceOf(staker.address), 0);
+
+                await staker.connect(admin).unstakeAllFromMine();
+
+                // Staker should now hold all total rewards plus all unstaked deposits (10 unites)
+                expectRoundedEqual(await magic.balanceOf(staker.address), TOTAL_REWARDS.add(ether("10")));
+            });
         });
     });
 
