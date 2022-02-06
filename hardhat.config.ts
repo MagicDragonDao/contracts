@@ -17,158 +17,158 @@ import { NetworkUserConfig, HardhatNetworkUserConfig } from "hardhat/types";
 dotenvConfig({ path: resolve(__dirname, "./.env") });
 
 const chainIds = {
-  ganache: 1337,
-  goerli: 5,
-  hardhat: 1337,
-  localhost: 31337,
-  kovan: 42,
-  mainnet: 1,
-  rinkeby: 4,
-  ropsten: 3,
+    ganache: 1337,
+    goerli: 5,
+    hardhat: 1337,
+    localhost: 31337,
+    kovan: 42,
+    mainnet: 1,
+    rinkeby: 4,
+    ropsten: 3,
 };
 
 // Ensure that we have all the environment variables we need.
 let mnemonic: string;
 if (!process.env.MNEMONIC) {
-  mnemonic = "test test test test test test test test test test test junk";
+    mnemonic = "test test test test test test test test test test test junk";
 } else {
-  mnemonic = process.env.MNEMONIC;
+    mnemonic = process.env.MNEMONIC;
 }
 
 const forkMainnet = process.env.FORK_MAINNET === "true";
 
 let alchemyApiKey: string | undefined;
 if (forkMainnet && !process.env.ALCHEMY_API_KEY) {
-  throw new Error("Please set process.env.ALCHEMY_API_KEY");
+    throw new Error("Please set process.env.ALCHEMY_API_KEY");
 } else {
-  alchemyApiKey = process.env.ALCHEMY_API_KEY;
+    alchemyApiKey = process.env.ALCHEMY_API_KEY;
 }
 
 function createTestnetConfig(network: keyof typeof chainIds): NetworkUserConfig {
-  const url = `https://eth-${network}.alchemyapi.io/v2/${alchemyApiKey}`;
-  return {
-    accounts: {
-      count: 10,
-      initialIndex: 0,
-      mnemonic,
-      path: "m/44'/60'/0'/0",
-    },
-    chainId: chainIds[network],
-    url,
-  };
+    const url = `https://eth-${network}.alchemyapi.io/v2/${alchemyApiKey}`;
+    return {
+        accounts: {
+            count: 10,
+            initialIndex: 0,
+            mnemonic,
+            path: "m/44'/60'/0'/0",
+        },
+        chainId: chainIds[network],
+        url,
+    };
 }
 
 function createHardhatConfig(): HardhatNetworkUserConfig {
-  const config = {
-    accounts: {
-      mnemonic,
-    },
-    chainId: chainIds.hardhat,
-    allowUnlimitedContractSize: true,
-  };
+    const config = {
+        accounts: {
+            mnemonic,
+        },
+        chainId: chainIds.hardhat,
+        allowUnlimitedContractSize: true,
+    };
 
-  if (forkMainnet) {
-    return Object.assign(config, {
-      forking: {
-        url: `https://eth-mainnet.alchemyapi.io/v2/${alchemyApiKey}`,
-        blockNumber: 13837533,
-      },
-    });
-  }
+    if (forkMainnet) {
+        return Object.assign(config, {
+            forking: {
+                url: `https://eth-mainnet.alchemyapi.io/v2/${alchemyApiKey}`,
+                blockNumber: 13837533,
+            },
+        });
+    }
 
-  return config;
+    return config;
 }
 
 function createMainnetConfig(): NetworkUserConfig {
-  return {
-    accounts: {
-      mnemonic,
-    },
-    chainId: chainIds.mainnet,
-    url: `https://eth-mainnet.alchemyapi.io/v2/${alchemyApiKey}`,
-  };
+    return {
+        accounts: {
+            mnemonic,
+        },
+        chainId: chainIds.mainnet,
+        url: `https://eth-mainnet.alchemyapi.io/v2/${alchemyApiKey}`,
+    };
 }
 
 const optimizerEnabled = process.env.DISABLE_OPTIMIZER ? false : true;
 
 const compilerSettings = {
-  metadata: {
-    // Not including the metadata hash
-    // https://github.com/paulrberg/solidity-template/issues/31
-    bytecodeHash: "none",
-  },
-  // You should disable the optimizer when debugging
-  // https://hardhat.org/hardhat-network/#solidity-optimizer-support
-  optimizer: {
-    enabled: optimizerEnabled,
-    runs: 999999,
-  },
+    metadata: {
+        // Not including the metadata hash
+        // https://github.com/paulrberg/solidity-template/issues/31
+        bytecodeHash: "none",
+    },
+    // You should disable the optimizer when debugging
+    // https://hardhat.org/hardhat-network/#solidity-optimizer-support
+    optimizer: {
+        enabled: optimizerEnabled,
+        runs: 999999,
+    },
 };
 
 const config: HardhatUserConfig = {
-  defaultNetwork: "hardhat",
-  gasReporter: {
-    currency: "USD",
-    enabled: process.env.REPORT_GAS ? true : false,
-    excludeContracts: [],
-    src: "./contracts",
-    coinmarketcap: process.env.COINMARKETCAP_API_KEY,
-    outputFile: process.env.REPORT_GAS_OUTPUT,
-  },
-  networks: {
-    mainnet: createMainnetConfig(),
-    hardhat: createHardhatConfig(),
-    goerli: createTestnetConfig("goerli"),
-    kovan: createTestnetConfig("kovan"),
-    rinkeby: createTestnetConfig("rinkeby"),
-    ropsten: createTestnetConfig("ropsten"),
-    localhost: {
-      accounts: {
-        mnemonic,
-      },
-      chainId: chainIds.hardhat,
-      gasMultiplier: 10,
+    defaultNetwork: "hardhat",
+    gasReporter: {
+        currency: "USD",
+        enabled: process.env.REPORT_GAS ? true : false,
+        excludeContracts: [],
+        src: "./contracts",
+        coinmarketcap: process.env.COINMARKETCAP_API_KEY,
+        outputFile: process.env.REPORT_GAS_OUTPUT,
     },
-  },
-  paths: {
-    artifacts: "./artifacts",
-    cache: "./cache",
-    sources: "./contracts",
-    tests: "./test",
-  },
-  solidity: {
-    compilers: [
-      {
-        version: "0.8.11",
-        settings: compilerSettings,
-      },
-      {
-        version: "0.8.10",
-        settings: compilerSettings,
-      },
-      {
-        version: "0.8.0",
-        settings: compilerSettings,
-      },
-      {
-        version: "0.4.12",
-      },
-    ],
-  },
-  typechain: {
-    outDir: "src/types",
-    target: "ethers-v5",
-  },
-  dependencyCompiler: {
-    paths: [
-      "treasure-staking/contracts/AtlasMine.sol",
-      "treasure-staking/contracts/MasterOfCoin.sol",
-      "treasure-staking/contracts/interfaces/ILegionMetadataStore.sol",
-    ],
-  },
-  etherscan: {
-    apiKey: process.env.ETHERSCAN_API_KEY,
-  },
+    networks: {
+        mainnet: createMainnetConfig(),
+        hardhat: createHardhatConfig(),
+        goerli: createTestnetConfig("goerli"),
+        kovan: createTestnetConfig("kovan"),
+        rinkeby: createTestnetConfig("rinkeby"),
+        ropsten: createTestnetConfig("ropsten"),
+        localhost: {
+            accounts: {
+                mnemonic,
+            },
+            chainId: chainIds.hardhat,
+            gasMultiplier: 10,
+        },
+    },
+    paths: {
+        artifacts: "./artifacts",
+        cache: "./cache",
+        sources: "./contracts",
+        tests: "./test",
+    },
+    solidity: {
+        compilers: [
+            {
+                version: "0.8.11",
+                settings: compilerSettings,
+            },
+            {
+                version: "0.8.10",
+                settings: compilerSettings,
+            },
+            {
+                version: "0.8.0",
+                settings: compilerSettings,
+            },
+            {
+                version: "0.4.12",
+            },
+        ],
+    },
+    typechain: {
+        outDir: "src/types",
+        target: "ethers-v5",
+    },
+    dependencyCompiler: {
+        paths: [
+            "treasure-staking/contracts/AtlasMine.sol",
+            "treasure-staking/contracts/MasterOfCoin.sol",
+            "treasure-staking/contracts/interfaces/ILegionMetadataStore.sol",
+        ],
+    },
+    etherscan: {
+        apiKey: process.env.ETHERSCAN_API_KEY,
+    },
 };
 
 export default config;

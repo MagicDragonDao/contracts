@@ -204,7 +204,6 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker {
         // Update accounting
         uint256 amount = userStake[msg.sender];
         int256 rewardDebt = rewardDebts[msg.sender];
-        rewardDebts[msg.sender] -= ((amount * accRewardsPerShare) / ONE).toInt256();
 
         // Distribute tokens
         _updateRewards();
@@ -212,6 +211,8 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker {
         // Unstake if we need to to ensure we can withdraw
         int256 accumulatedRewards = ((amount * accRewardsPerShare) / ONE).toInt256();
         uint256 reward = (accumulatedRewards - rewardDebt).toUint256();
+
+        rewardDebts[msg.sender] = ((amount * accRewardsPerShare) / ONE).toInt256();
 
         require(reward <= _totalUsableMagic(), "Not enough rewards to claim");
 

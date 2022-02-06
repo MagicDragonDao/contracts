@@ -11,14 +11,14 @@ const { deployContract } = hre.waffle;
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function deploy<T extends Contract>(contractName: string, deployer: Signer, params: any[]): Promise<T> {
-  const artifact: Artifact = await hre.artifacts.readArtifact(contractName);
-  return <T>await deployContract(deployer, artifact, params);
+    const artifact: Artifact = await hre.artifacts.readArtifact(contractName);
+    return <T>await deployContract(deployer, artifact, params);
 }
 
 export async function increaseTime(seconds: number): Promise<void> {
-  await ethers.provider.send("evm_increaseTime", [seconds]);
+    await ethers.provider.send("evm_increaseTime", [seconds]);
 }
 
 export async function setNextBlockTimestamp(epoch: number): Promise<void> {
-  await ethers.provider.send("evm_setNextBlockTimestamp", [epoch]);
+    await ethers.provider.send("evm_setNextBlockTimestamp", [epoch]);
 }
