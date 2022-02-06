@@ -170,12 +170,12 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker {
         uint256 amount = userStake[msg.sender];
         require(amount > 0, "No deposit");
 
+        // Distribute tokens
+        _updateRewards();
+
         userStake[msg.sender] -= amount;
         totalStaked -= amount;
         int256 rewardDebt = rewardDebts[msg.sender];
-
-        // Distribute tokens
-        _updateRewards();
 
         // Unstake if we need to to ensure we can withdraw
         int256 accumulatedRewards = ((amount * accRewardsPerShare) / ONE).toInt256();
@@ -186,7 +186,7 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker {
 
         // If we need to unstake, unstake until we have enough
         if (payout > _totalUsableMagic()) {
-            _unstakeToTarget(payout);
+            _unstakeToTarget(payout - _totalUsableMagic());
         }
 
         IERC20(magic).safeTransfer(msg.sender, payout);
@@ -558,6 +558,7 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker {
             uint256 preclaimBalance = _totalUsableMagic();
             uint256 targetLeft = target - unstaked;
             uint256 amount = targetLeft > s.amount ? s.amount : targetLeft;
+
             // Do not harvest rewards - if this is running, we've already
             // harvested in the same fn call
             mine.withdrawPosition(s.depositId, amount);

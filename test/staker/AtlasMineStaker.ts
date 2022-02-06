@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { ethers, waffle } from "hardhat";
 import type { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
 import { expect } from "chai";
@@ -13,7 +14,22 @@ import type { TestERC20 } from "../../src/types/TestERC20";
 import type { TestERC1155 } from "../../src/types/TestERC1155";
 import type { TestERC721 } from "../../src/types/TestERC721";
 
-import { stakeSingle, stakeMultiple, stakeSequence, withdrawSingle, rollSchedule, rollLock, rollTo } from "./helpers";
+import {
+  stakeSingle,
+  stakeMultiple,
+  stakeSequence,
+  withdrawSingle,
+  rollSchedule,
+  rollLock,
+  rollTo,
+  expectRoundedEqual,
+  rollToPartialWindow,
+  claimSingle,
+  setup5050Scenario,
+  setup7525Scenario,
+  withdrawWithRoundedRewardCheck,
+  claimWithRoundedRewardCheck,
+} from "./helpers";
 
 const ether = ethers.utils.parseEther;
 
@@ -64,11 +80,12 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
 
     const DAY_SEC = 86400;
     // Put start time in the future - we will fast-forward
-    const start = Math.floor(Date.now() / 1000) + 1_000_000_000;
-    const end = start + 140 * DAY_SEC;
+    const start = Math.floor(Date.now() / 1000) + 10_000_000;
+    const end = start + 200 * DAY_SEC;
 
-    // 140 day program, 1000 MAGIC distributed per day
-    await masterOfCoin.addStream(mine.address, ether("140000"), start, end, false);
+    // 0.01 MAGIC per second, 864 per day
+    // 200 day staking period == 172800 total MAGIC rewards
+    await masterOfCoin.addStream(mine.address, ether("172800"), start, end, false);
 
     // Give 100000 MAGIC to each user and approve the staker contract
     const stakerFunding = users.map(u => magic.mint(u.address, ether("100000")));
@@ -169,7 +186,6 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
           mine,
         } = ctx;
 
-        // Deposit 10, get it staked with another user's 10
         // Stake more than rewards to force a withdraw
         // With 2 stakers, each will earn 7000 MAGIC over lock period
         const amount = ether("20000");
@@ -196,52 +212,125 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
         expect(stakeInfo.depositAmount).to.eq(amount);
       });
 
-      it.only("withdrawal distributes the correct amount of pro rata rewards", async () => {
+      it("withdrawal distributes the correct amount of pro rata rewards", async () => {
+        const {
+          users: [user1],
+          staker,
+          magic,
+        } = ctx;
+
+        const { stakes } = await setup5050Scenario(ctx);
+
+        // Fast-forward in scenarios - 1.3mm seconds should pass,
+        // so 13k MAGIC to pool. User 1 deposited half
+
+        await withdrawWithRoundedRewardCheck(staker, user1, stakes[user1.address], ether("6500"));
+
+        // User returned all funds + reward
+        expectRoundedEqual(await magic.balanceOf(user1.address), ether("106500"));
+      });
+
+      it("withdrawal distributes the correct amount of pro rata rewards (multiple deposit times)", async () => {
+        const {
+          users: [user1, user2],
+          staker,
+          magic,
+        } = ctx;
+
+        const { stakes } = await setup7525Scenario(ctx);
+
+        await withdrawWithRoundedRewardCheck(staker, user1, stakes[user1.address], ether("172800").div(4).mul(3));
+
+        await withdrawWithRoundedRewardCheck(staker, user2, stakes[user2.address], ether("172800").div(4));
+
+        // User returned all funds + reward
+        expectRoundedEqual(await magic.balanceOf(user1.address), ether("229600"));
+        expectRoundedEqual(await magic.balanceOf(user2.address), ether("143200"));
+      });
+    });
+
+    describe("claim", () => {
+      it("does not allow a user to claim if there are not enough unlocked coins", () => {
+        // TODO: Should be able to delete after redoing staking to act more like a router
+      });
+
+      it("distributes the correct amount of pro rata rewards", async () => {
+        const {
+          users: [user],
+          staker,
+          magic,
+        } = ctx;
+
+        await setup5050Scenario(ctx);
+
+        await claimWithRoundedRewardCheck(staker, user, ether("6500"));
+
+        // User returned all funds + reward
+        expectRoundedEqual(await magic.balanceOf(user.address), ether("86500"));
+      });
+
+      it("distributes the correct amount of pro rata rewards (multiple deposit times)", async () => {
         const {
           users: [user1, user2],
           staker,
           magic,
           start,
+          end,
         } = ctx;
 
-        // Deposit 10, get it staked with another user's 10
         // Stake more than rewards to force a withdraw
         // With 2 stakers, each will earn 7000 MAGIC over lock period
         const amount = ether("20000");
-        const txs = await stakeMultiple(staker, [
-          [user1, amount],
-          [user2, amount],
-        ]);
-
-        // Wait for all deposits to finish
-        await Promise.all(txs.map(t => t.wait()));
+        let tx = await stakeSingle(staker, user1, amount);
+        await tx.wait();
 
         // Go to start of rewards program
         await rollTo(start);
 
         // Make a tx to deposit
-        const tx = await staker.stakeScheduled();
+        tx = await staker.stakeScheduled();
         await tx.wait();
 
-        // Fast-forward - 15 days should pass, to 15k rewards total to pool
-        // User 1 would deposit half
-        await rollLock(start);
+        // Fast-forward to halfway through the lock time and have other
+        // user also make a deposit
+        const ts = await rollToPartialWindow(start, end, 0.5);
 
-        await expect(withdrawSingle(staker, user1))
-          .to.emit(staker, "UserWithdraw")
-          .withArgs(user1.address, amount, ether("7500"));
+        tx = await stakeSingle(staker, user2, amount);
+        await tx.wait();
+
+        await rollSchedule(staker, ts);
+
+        // Fast-forward to end of program
+        // User1 should have 75% of rewards
+        // User2 should have 25%
+        await rollTo(end);
+
+        let claimTx = await claimSingle(staker, user1);
+        let receipt = await claimTx.wait();
+
+        // Cannot use expect matchers because of rounded equal comparison
+        const claimEventUser1 = receipt.events?.find(e => e.event === "UserClaim");
+
+        expect(claimEventUser1).to.not.be.undefined;
+        expect(claimEventUser1?.args?.[0]).to.eq(user1.address);
+        expectRoundedEqual(claimEventUser1?.args?.[1], ether("172800").div(4).mul(3));
 
         // User returned all funds + reward
-        expect(await magic.balanceOf(user1.address)).to.eq(ether("107500"));
+        expectRoundedEqual(await magic.balanceOf(user1.address), ether("209600"));
+
+        claimTx = await claimSingle(staker, user2);
+        receipt = await claimTx.wait();
+
+        // Cannot use expect matchers because of rounded equal comparison
+        const claimEventUser2 = receipt.events?.find(e => e.event === "UserClaim");
+
+        expect(claimEventUser2).to.not.be.undefined;
+        expect(claimEventUser2?.args?.[0]).to.eq(user2.address);
+        expectRoundedEqual(claimEventUser2?.args?.[1], ether("172800").div(4));
+
+        // User returned all funds + reward
+        expectRoundedEqual(await magic.balanceOf(user2.address), ether("123200"));
       });
-
-      it("withdrawal distributes the correct amount of pro rata rewards (multiple deposit times)");
-    });
-
-    describe("claim", () => {
-      it("does not allow a user to claim if there are not enough unlocked coins");
-      it("distributes the correct amount of pro rata rewards");
-      it("distributes the correct amount of pro rata rewards (multiple users)");
     });
   });
 
@@ -292,5 +381,21 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
     it("does not allow a user to emergency withdraw if new stakes are not paused");
     it("allows a user to withdraw after an emergency unstake");
     it("allows a user to emergency withdraw after unstake (no rewards)");
+  });
+
+  describe("Advanced Rewards Calculation", () => {
+    /**
+     * Different advanced scenarios:
+     * different deposits at different times
+     * user unstakes but then redeposits later
+     * some prestaking, some in-flow staking
+     * Claiming at different times
+     *
+     * For each scenario, precalculate and test all outputs
+     */
+    it("scenario 1");
+    it("scenario 2");
+    it("scenario 3");
+    it("scenario 4");
   });
 });
