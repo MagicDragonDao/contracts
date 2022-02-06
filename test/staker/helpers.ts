@@ -159,10 +159,13 @@ export const rollTo = async (time: number): Promise<void> => {
 export const expectRoundedEqual = (num: BigNumberish, target: BigNumberish): void => {
     num = ethers.BigNumber.from(num);
     target = ethers.BigNumber.from(target);
+
+    // Tolerable precision is 1%. Precision is lost in the magic mine in both
+    // calculating NFT reward boosts and timing per second
     const precision = 10000;
 
     if (target.eq(0)) {
-        expect(num).to.be.lt(10000);
+        expect(num).to.be.lt(precision);
     } else {
         // Expect it to be within 4 0s of precision, less than 1 bp diff
         const lowerBound = target.div(precision).mul(precision - 1);

@@ -182,7 +182,7 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
         uint256 reward = (accumulatedRewards - rewardDebt).toUint256();
         uint256 payout = amount + reward;
 
-        rewardDebts[msg.sender] = ((amount * accRewardsPerShare) / ONE).toInt256();
+        rewardDebts[msg.sender] = accumulatedRewards;
 
         // If we need to unstake, unstake until we have enough
         if (payout > _totalUsableMagic()) {
@@ -212,7 +212,7 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
         int256 accumulatedRewards = ((amount * accRewardsPerShare) / ONE).toInt256();
         uint256 reward = (accumulatedRewards - rewardDebt).toUint256();
 
-        rewardDebts[msg.sender] = ((amount * accRewardsPerShare) / ONE).toInt256();
+        rewardDebts[msg.sender] = accumulatedRewards;
 
         require(reward <= _totalUsableMagic(), "Not enough rewards to claim");
 
@@ -369,6 +369,7 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
      */
     function unstakeAllFromMine() external override onlyOwner {
         // Unstake everything eligible
+        _updateRewards();
 
         for (uint256 i = 0; i < stakes.length; i++) {
             Stake memory s = stakes[i];
@@ -379,7 +380,7 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
             }
 
             // Withdraw position - auto-harvest
-            _withdrawAndHarvestMine(s.depositId, s.amount);
+            mine.withdrawPosition(s.depositId, s.amount);
             _updateStakeDepositAmount(i);
         }
 
@@ -507,7 +508,14 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
      * @return total               The total amount of MAGIC that can be withdrawn
      */
     function totalWithdrawableMagic() external view override returns (uint256) {
-        uint256 pendingRewards = mine.pendingRewardsAll(address(this));
+        uint256 pendingRewards;
+
+        // AtlasMine attempts to divide by 0 if there are no deposits
+        try mine.pendingRewardsAll(address(this)) returns (uint256 _pending) {
+            pendingRewards = _pending;
+        } catch Panic(uint256) {
+            pendingRewards = 0;
+        }
 
         uint256 vestedPrincipal;
         for (uint256 i = 0; i < stakes.length; i++) {
@@ -607,33 +615,6 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
     }
 
     /**
-     * @dev Withdraw an amount from a designated deposit, also
-     *      harvesting rewards.
-     *
-     * @param depositId             The depositId of the stake to withdraw.
-     * @param amount                The amount of tokens to withdraw from the stake.
-     *
-     * @return earned               The amount of rewards earned for depositors, minus the fee.
-     * @return feeEearned           The amount of fees earned for the contract operator.
-     *
-     */
-    function _withdrawAndHarvestMine(uint256 depositId, uint256 amount) internal returns (uint256, uint256) {
-        uint256 preclaimBalance = IERC20(magic).balanceOf(address(this));
-        mine.withdrawAndHarvestPosition(depositId, amount);
-        uint256 postclaimBalance = IERC20(magic).balanceOf(address(this));
-
-        uint256 earned = postclaimBalance - preclaimBalance;
-
-        // Reserve the 'fee' amount of what is earned
-        uint256 feeEarned = (earned * fee) / FEE_DENOMINATOR;
-        feeReserve += feeEarned;
-
-        emit MineHarvest(earned - feeEarned, feeEarned);
-
-        return (earned - feeEarned, feeEarned);
-    }
-
-    /**
      * @dev Harvest rewards from the mine so that stakers can claim.
      *      Recalculate how many rewards are distributed to each share.
      */
@@ -671,7 +652,7 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
      *
      */
     function _removeZeroStakes() internal {
-        bool shouldRecurse = true;
+        bool shouldRecurse = stakes.length > 0;
 
         for (uint256 i = 0; i < stakes.length; i++) {
             Stake storage s = stakes[i];

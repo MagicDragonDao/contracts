@@ -6,7 +6,6 @@ import "hardhat-dependency-compiler";
 import "solidity-coverage";
 
 import "./tasks/accounts";
-import "./tasks/deploy";
 
 import { resolve } from "path";
 

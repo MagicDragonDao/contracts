@@ -22,16 +22,20 @@ import {
     withdrawSingle,
     rollSchedule,
     rollLock,
+    rollTo,
     expectRoundedEqual,
     setup5050Scenario,
     setup7525Scenario,
     withdrawWithRoundedRewardCheck,
     claimWithRoundedRewardCheck,
+    rollToPartialWindow,
+    claimSingle,
 } from "./helpers";
 
 const ether = ethers.utils.parseEther;
 
 describe("Atlas Mine Staking (Pepe Pool)", () => {
+    const TOTAL_REWARDS = ether("172800");
     let ctx: TestContext;
 
     const fixture = async (): Promise<TestContext> => {
@@ -72,7 +76,7 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
 
         // 0.01 MAGIC per second, 864 per day
         // 200 day staking period == 172800 total MAGIC rewards
-        await masterOfCoin.addStream(mine.address, ether("172800"), start, end, false);
+        await masterOfCoin.addStream(mine.address, TOTAL_REWARDS, start, end, false);
 
         // Give 100000 MAGIC to each user and approve the staker contract
         const stakerFunding = users.map(u => magic.mint(u.address, ether("100000")));
@@ -232,14 +236,9 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
 
                 const { stakes } = await setup7525Scenario(ctx);
 
-                await withdrawWithRoundedRewardCheck(
-                    staker,
-                    user1,
-                    stakes[user1.address],
-                    ether("172800").div(4).mul(3),
-                );
+                await withdrawWithRoundedRewardCheck(staker, user1, stakes[user1.address], TOTAL_REWARDS.div(4).mul(3));
 
-                await withdrawWithRoundedRewardCheck(staker, user2, stakes[user2.address], ether("172800").div(4));
+                await withdrawWithRoundedRewardCheck(staker, user2, stakes[user2.address], TOTAL_REWARDS.div(4));
 
                 // User returned all funds + reward
                 expectRoundedEqual(await magic.balanceOf(user1.address), ether("229600"));
@@ -276,7 +275,7 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
 
                 await setup7525Scenario(ctx);
 
-                const totalRewards = ether("172800");
+                const totalRewards = TOTAL_REWARDS;
 
                 await claimWithRoundedRewardCheck(staker, user1, totalRewards.div(4).mul(3));
 
@@ -386,7 +385,14 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
 
         it("distributes the correct pro rata rewards with a boost multiplier", async () => {
             // Max boost
-            const { staker, mine } = ctx;
+            const {
+                staker,
+                users: [user],
+                admin,
+                magic,
+                mine,
+                end,
+            } = ctx;
             const treasureTokenId = 97;
 
             // 15.8 * 20 = 316% boost
@@ -400,10 +406,38 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
             // total 1316% boost
             expect(await mine.boosts(staker.address)).to.eq(ether("13.16"));
 
-            // TODO:
-            // Run another staker
-            // Have each staker deposit 50% equal
-            // Make sure staker 1's rewards are 13.16x higher than staker2
+            // Set up another staker and stake without boosts
+            const staker2 = <AtlasMineStaker>await deploy("AtlasMineStaker", admin, [
+                magic.address,
+                mine.address,
+                0, // 0 == AtlasMine.Lock.twoWeeks
+            ]);
+
+            expect(await mine.boosts(staker2.address)).to.eq(0);
+
+            const amount = ether("10");
+            await magic.connect(user).approve(staker2.address, amount);
+
+            await Promise.all([stakeSingle(staker, user, amount), stakeSingle(staker2, user, amount)]);
+
+            // Stake in mine from both stakers
+            const tx = await rollSchedule(staker);
+            await tx.wait();
+            await staker2.stakeScheduled();
+
+            // Go to the end
+            await rollTo(end);
+
+            // Claim rewards
+            // In addition to NFT boost, both have lock boosts, so total is:
+            // 1326% for boosted pool + 100% base
+            // 10% for unboosted pool + 100% base
+            const denom = ether("15.36");
+            const boostedStakerRewards = TOTAL_REWARDS.div(denom).mul(ether("14.26"));
+            const regularStakerRewards = TOTAL_REWARDS.div(denom).mul(ether("1.1"));
+
+            await claimWithRoundedRewardCheck(staker, user, boostedStakerRewards);
+            await claimWithRoundedRewardCheck(staker2, user, regularStakerRewards);
         });
 
         it("does not allow a non-hoard caller to unstake a treasure", async () => {
@@ -424,15 +458,182 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
             await expect(staker.connect(user).unstakeLegion(2)).to.be.revertedWith("Not hoard");
         });
 
-        it("allows the hoard to unstake a treasure");
-        it("allows the hoard to unstake a legion");
+        it("allows the hoard to unstake a treasure", async () => {
+            // Max boost
+            const { staker, mine } = ctx;
+            const treasureTokenId = 97;
+
+            // 15.8 * 20 = 316% boost
+            await staker.connect(hoard).stakeTreasure(treasureTokenId, 20);
+
+            // 600 + 200 + 200 = 1000% boost
+            await staker.connect(hoard).stakeLegion(0);
+            await staker.connect(hoard).stakeLegion(10);
+            await staker.connect(hoard).stakeLegion(11);
+
+            // total 1316% boost
+            expect(await mine.boosts(staker.address)).to.eq(ether("13.16"));
+
+            // Unstake 10 treasures - should remove 158% boost
+            await staker.connect(hoard).unstakeTreasure(treasureTokenId, 10);
+
+            // total 1316 - 158 =  1158% boost
+            expect(await mine.boosts(staker.address)).to.eq(ether("11.58"));
+        });
+
+        it("allows the hoard to unstake a legion", async () => {
+            // Max boost
+            const { staker, mine } = ctx;
+            const treasureTokenId = 97;
+
+            // 15.8 * 20 = 316% boost
+            await staker.connect(hoard).stakeTreasure(treasureTokenId, 20);
+
+            // 600 + 200 + 200 = 1000% boost
+            await staker.connect(hoard).stakeLegion(0);
+            await staker.connect(hoard).stakeLegion(10);
+            await staker.connect(hoard).stakeLegion(11);
+
+            // total 1316% boost
+            expect(await mine.boosts(staker.address)).to.eq(ether("13.16"));
+
+            // Unstake 1/1 legion - should remove 600% boost
+            await staker.connect(hoard).unstakeLegion(0);
+
+            // total 1316 - 600 =  716% boost
+            expect(await mine.boosts(staker.address)).to.eq(ether("7.16"));
+        });
     });
 
     describe("View Functions", () => {
-        it("returns the correct amount of user stake");
-        it("returns the correct amount of magic controlled by the contract");
-        it("returns the correct amount of pending, undeposited stake");
-        it("returns the correct amount of withdrawable MAGIC");
+        it("returns the correct amount of user stake", async () => {
+            const {
+                users: [user1, user2],
+                staker,
+            } = ctx;
+
+            await stakeMultiple(staker, [
+                [user1, ether("1")],
+                [user2, ether("55")],
+            ]);
+
+            // Check stakes
+            expect(await staker.userStake(user1.address)).to.eq(ether("1"));
+            expect(await staker.userStake(user2.address)).to.eq(ether("55"));
+        });
+
+        it("returns the correct amount of magic controlled by the contract", async () => {
+            const {
+                users: [user1, user2],
+                staker,
+                start,
+                end,
+            } = ctx;
+
+            await stakeMultiple(staker, [
+                [user1, ether("1")],
+                [user2, ether("55")],
+            ]);
+
+            // Roll to rewards period - should now control all rewarded magic
+            expect(await staker.totalMagic()).to.eq(ether("56"));
+
+            // Stake and roll, check rewards halfway and at the end
+            await rollSchedule(staker);
+
+            await rollToPartialWindow(start, end, 0.5);
+            await ethers.provider.send("evm_mine", []);
+
+            expectRoundedEqual(await staker.totalMagic(), ether("56").add(TOTAL_REWARDS.div(2)));
+
+            // Roll halfway and check total magic
+            await rollTo(end);
+            await ethers.provider.send("evm_mine", []);
+
+            expectRoundedEqual(await staker.totalMagic(), ether("56").add(TOTAL_REWARDS));
+        });
+
+        it("returns the correct amount of pending, undeposited stake", async () => {
+            const {
+                users: [user1, user2],
+                staker,
+                start,
+            } = ctx;
+
+            await stakeMultiple(staker, [
+                [user1, ether("1")],
+                [user2, ether("55")],
+            ]);
+
+            // Pending 0 since day hasn't rolled, so can't be deposited
+            expect(await staker.totalPendingStake()).to.eq(0);
+
+            const ONE_DAY_SEC = 86400;
+            const nextTimestamp = start + ONE_DAY_SEC;
+            await rollTo(nextTimestamp);
+            await ethers.provider.send("evm_mine", []);
+
+            // Roll to rewards period - should now count as pending
+            expect(await staker.totalPendingStake()).to.eq(ether("56"));
+
+            const tx = await staker.stakeScheduled();
+            await tx.wait();
+
+            // Now nothing more pending
+            expect(await staker.totalPendingStake()).to.eq(0);
+        });
+
+        it("returns the correct amount of withdrawable MAGIC", async () => {
+            const {
+                admin,
+                users: [user1, user2],
+                staker,
+                start,
+                end,
+            } = ctx;
+
+            await stakeMultiple(staker, [
+                [user1, ether("1")],
+                [user2, ether("9")],
+            ]);
+
+            // Should be able to withdraw anything since it hasn't been staked
+            expect(await staker.totalWithdrawableMagic()).to.eq(ether("10"));
+
+            await rollTo(start);
+            let tx = await staker.stakeScheduled();
+            await tx.wait();
+
+            // Should not be able to withdraw anything, staked and locked
+            expect(await staker.totalWithdrawableMagic()).to.eq(0);
+
+            // Roll through part of rewards period, but before lock
+            // 1_000_000 seconds is equal to 10000 MAGIC distributed
+            await rollTo(start + 1_000_000);
+            await ethers.provider.send("evm_mine", []);
+
+            // Should not be able to withdraw anything, staked and locked - but nonzero rewards
+            expectRoundedEqual(await staker.totalWithdrawableMagic(), ether("10000"));
+
+            // Roll to end of rewards period, stake unlocked
+            await rollTo(end);
+            await ethers.provider.send("evm_mine", []);
+
+            // Should get all principal plus rewards, even if unclaimed
+            expectRoundedEqual(await staker.totalWithdrawableMagic(), TOTAL_REWARDS.add(ether("10")));
+
+            await staker.connect(admin).unstakeAllFromMine();
+
+            // Should be the same after claim/unstake
+            expectRoundedEqual(await staker.totalWithdrawableMagic(), TOTAL_REWARDS.add(ether("10")));
+
+            // Have one user withdraw
+            tx = await staker.connect(user2).withdraw();
+            await tx.wait();
+
+            // Should have 10 percent of rewards plus deposit withdrawable
+            expectRoundedEqual(await staker.totalWithdrawableMagic(), TOTAL_REWARDS.div(10).add(ether("1")));
+        });
     });
 
     describe("Owner Operations", () => {
@@ -461,6 +662,7 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
         it("does not allow an emergency unstake if new stakes are not paused");
         it("unstakes everything possible from mine");
         it("does not allow a user to emergency withdraw if new stakes are not paused");
+        it("does not allow a user to emergency withdraw if not all stakes can be withdrawn");
         it("allows a user to withdraw after an emergency unstake");
         it("allows a user to emergency withdraw after unstake (no rewards)");
     });
