@@ -58,5 +58,7 @@ interface IAtlasMineStaker {
 
     function setHoard(address _hoard) external;
 
+    function toggleSchedulePause(bool paused) external;
+
     function withdrawFees() external;
 }

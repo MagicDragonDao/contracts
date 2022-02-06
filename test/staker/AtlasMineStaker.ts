@@ -826,15 +826,261 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
     });
 
     describe("Emergency Flows", () => {
-        it("does not allow a non-owner to pause the stake schedule");
-        it("allows the owner to pause the stake schedule");
-        it("does not allow a non-owner to unstake everything from the mine");
-        it("does not allow an emergency unstake if new stakes are not paused");
-        it("unstakes everything possible from mine");
-        it("does not allow a user to emergency withdraw if new stakes are not paused");
-        it("does not allow a user to emergency withdraw if not all stakes can be withdrawn");
-        it("allows a user to withdraw after an emergency unstake");
-        it("allows a user to emergency withdraw after unstake (no rewards)");
+        it("does not allow a non-owner to pause the stake schedule", async () => {
+            const {
+                users: [user],
+                staker,
+            } = ctx;
+
+            await expect(staker.connect(user).toggleSchedulePause(true)).to.be.revertedWith(
+                "Ownable: caller is not the owner",
+            );
+        });
+
+        it("allows the owner to pause the stake schedule", async () => {
+            const {
+                users: [user1, user2],
+                admin,
+                staker,
+                start,
+            } = ctx;
+
+            await expect(staker.connect(admin).toggleSchedulePause(true))
+                .to.emit(staker, "StakingPauseToggle")
+                .withArgs(true);
+
+            // New stakes should not be allowed
+            await stakeMultiple(staker, [
+                [user1, ether("1")],
+                [user2, ether("9")],
+            ]);
+
+            // Should be able to withdraw anything since it hasn't been staked
+            expect(await staker.totalWithdrawableMagic()).to.eq(ether("10"));
+
+            await rollTo(start);
+            await expect(staker.stakeScheduled()).to.be.revertedWith("new staking paused");
+        });
+
+        it("does not allow a non-owner to unstake everything from the mine", async () => {
+            const {
+                users: [user],
+                staker,
+            } = ctx;
+
+            await expect(staker.connect(user).emergencyUnstakeAllFromMine()).to.be.revertedWith(
+                "Ownable: caller is not the owner",
+            );
+        });
+
+        it("does not allow an emergency unstake if new stakes are not paused", async () => {
+            const { admin, staker } = ctx;
+
+            await expect(staker.connect(admin).emergencyUnstakeAllFromMine()).to.be.revertedWith(
+                "Not in emergency state",
+            );
+        });
+
+        it("unstakes everything possible from mine", async () => {
+            const {
+                users: [user1, user2],
+                admin,
+                staker,
+                mine,
+                magic,
+                start,
+            } = ctx;
+
+            // Do regular staking
+            const { stakes } = await setup5050Scenario(ctx, start);
+
+            // Cannot unstake
+            expect(await staker.totalWithdrawableMagic()).to.eq(0);
+
+            // Pause stakes and put atlas mine in emergency mode
+            await staker.connect(admin).toggleSchedulePause(true);
+            await mine.connect(admin).toggleUnlockAll();
+
+            // Emergency unstake all
+            await staker.connect(admin).emergencyUnstakeAllFromMine();
+
+            // Should have made all stake withdrawable with no rewards collected
+            const totalStaked = stakes[user1.address].add(stakes[user2.address]);
+            expectRoundedEqual(await magic.balanceOf(staker.address), totalStaked);
+        });
+
+        it("does not allow an admin to emergency unstake if not all stakes can be withdrawn", async () => {
+            const {
+                users: [user1, user2],
+                admin,
+                staker,
+            } = ctx;
+
+            // Do regular staking
+            // Don't roll up far enough for stakes to unlock
+            const nextDaySec = Math.floor(Date.now() / 1000) + 86500;
+
+            // Stake more than rewards to force a withdraw
+            // With 2 stakers, each will earn 7000 MAGIC over lock period
+            const amount = ether("20000");
+            await stakeMultiple(staker, [
+                [user1, amount],
+                [user2, amount],
+            ]);
+
+            // Go to next day and stake in mine
+            await rollTo(nextDaySec);
+            const tx = await staker.stakeScheduled();
+            await tx.wait();
+
+            // Pause stakes
+            // UNLIKE last test, do not put atlas mine in emergency mode,
+            // so coins will stay locked
+            await staker.connect(admin).toggleSchedulePause(true);
+
+            // Emergency unstake all
+            await expect(staker.connect(admin).emergencyUnstakeAllFromMine()).to.be.revertedWith(
+                "Position is still locked",
+            );
+        });
+
+        it("does not allow a user to emergency withdraw if new stakes are not paused", async () => {
+            const {
+                users: [user1, user2],
+                admin,
+                staker,
+            } = ctx;
+
+            // Do regular staking
+            // Don't roll up far enough for stakes to unlock
+            const nextDaySec = Math.floor(Date.now() / 1000) + 86500;
+
+            // Stake more than rewards to force a withdraw
+            // With 2 stakers, each will earn 7000 MAGIC over lock period
+            const amount = ether("20000");
+            await stakeMultiple(staker, [
+                [user1, amount],
+                [user2, amount],
+            ]);
+
+            // Go to next day and stake in mine
+            await rollTo(nextDaySec);
+            const tx = await staker.stakeScheduled();
+            await tx.wait();
+
+            await expect(staker.connect(user1).withdrawEmergency()).to.be.revertedWith("Not in emergency state");
+        });
+
+        it("does now allow a user to emergency withdraw is there is not enough unstaked", async () => {
+            const {
+                users: [user1, user2],
+                admin,
+                staker,
+                mine,
+            } = ctx;
+
+            // Do regular staking
+            // Don't roll up far enough for stakes to unlock
+            const nextDaySec = Math.floor(Date.now() / 1000) + 86500;
+
+            // Stake more than rewards to force a withdraw
+            // With 2 stakers, each will earn 7000 MAGIC over lock period
+            const amount = ether("20000");
+            await stakeMultiple(staker, [
+                [user1, amount],
+                [user2, amount],
+            ]);
+
+            // Go to next day and stake in mine
+            await rollTo(nextDaySec);
+            const tx = await staker.stakeScheduled();
+            await tx.wait();
+
+            // Pause stakes and put atlas mine in emergency mode
+            // But do NOT call unstake all function
+            await staker.connect(admin).toggleSchedulePause(true);
+            await mine.connect(admin).toggleUnlockAll();
+
+            await expect(staker.connect(user1).withdrawEmergency()).to.be.revertedWith("Not enough unstaked");
+        });
+
+        it("allows a user to emergency withdraw after an emergency unstake", async () => {
+            const {
+                users: [user1, user2],
+                admin,
+                staker,
+                magic,
+                mine,
+            } = ctx;
+
+            // Do regular staking
+            // Don't roll up far enough for stakes to unlock
+            const nextDaySec = Math.floor(Date.now() / 1000) + 86500;
+
+            // Stake more than rewards to force a withdraw
+            // With 2 stakers, each will earn 7000 MAGIC over lock period
+            const amount = ether("20000");
+            await stakeMultiple(staker, [
+                [user1, amount],
+                [user2, amount],
+            ]);
+
+            // Go to next day and stake in mine
+            await rollTo(nextDaySec);
+            const tx = await staker.stakeScheduled();
+            await tx.wait();
+
+            // Pause stakes and put atlas mine in emergency mode, and unstake all
+            await staker.connect(admin).toggleSchedulePause(true);
+            await mine.connect(admin).toggleUnlockAll();
+            await staker.connect(admin).emergencyUnstakeAllFromMine();
+
+            await expect(staker.connect(user1).withdrawEmergency())
+                .to.emit(staker, "UserWithdraw")
+                .withArgs(user1.address, ether("20000"), 0);
+
+            // Make sure all funds returned, with no rewards
+            expect(await magic.balanceOf(user1.address)).to.eq(ether("100000"));
+        });
+
+        it("allows a user to emergency withdraw after unstake (no rewards)", async () => {
+            const {
+                users: [user1, user2],
+                admin,
+                staker,
+                magic,
+                mine,
+            } = ctx;
+
+            // Do regular staking
+            // Don't roll up far enough for stakes to unlock
+            const nextDaySec = Math.floor(Date.now() / 1000) + 86500;
+
+            // Stake more than rewards to force a withdraw
+            // With 2 stakers, each will earn 7000 MAGIC over lock period
+            const amount = ether("20000");
+            await stakeMultiple(staker, [
+                [user1, amount],
+                [user2, amount],
+            ]);
+
+            // Go to next day and stake in mine
+            await rollTo(nextDaySec);
+            const tx = await staker.stakeScheduled();
+            await tx.wait();
+
+            // Pause stakes and put atlas mine in emergency mode, and unstake all
+            await staker.connect(admin).toggleSchedulePause(true);
+            await mine.connect(admin).toggleUnlockAll();
+            await staker.connect(admin).unstakeToTarget(ether("20000"));
+
+            await expect(staker.connect(user1).withdrawEmergency())
+                .to.emit(staker, "UserWithdraw")
+                .withArgs(user1.address, ether("20000"), 0);
+
+            // Make sure all funds returned, with no rewards
+            expect(await magic.balanceOf(user1.address)).to.eq(ether("100000"));
+        });
     });
 
     describe("Advanced Rewards Calculation", () => {

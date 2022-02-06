@@ -381,7 +381,6 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
 
             // Withdraw position - auto-harvest
             mine.withdrawPosition(s.depositId, s.amount);
-            _updateStakeDepositAmount(i);
         }
 
         // Only check for removal after, so we don't mutate while looping
@@ -462,7 +461,7 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
      *         Can be used in case of Atlas Mine issues or forced migration
      *         to new contract.
      */
-    function toggleSchedulePause(bool paused) external virtual onlyOwner {
+    function toggleSchedulePause(bool paused) external virtual override onlyOwner {
         schedulePaused = paused;
 
         emit StakingPauseToggle(paused);
@@ -558,7 +557,7 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
         for (uint256 i = 0; i < stakes.length; i++) {
             Stake memory s = stakes[i];
 
-            if (s.unlockAt > block.timestamp) {
+            if (s.unlockAt > block.timestamp && !mine.unlockAll()) {
                 // This stake is not unlocked - stop looking
                 break;
             }
@@ -580,8 +579,6 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
                 // We unstaked enough
                 break;
             }
-
-            _updateStakeDepositAmount(i);
         }
 
         require(unstaked >= target, "Cannot unstake enough");
@@ -655,6 +652,8 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
         bool shouldRecurse = stakes.length > 0;
 
         for (uint256 i = 0; i < stakes.length; i++) {
+            _updateStakeDepositAmount(i);
+
             Stake storage s = stakes[i];
 
             if (s.amount == 0) {
