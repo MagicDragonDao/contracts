@@ -160,7 +160,11 @@ const config: HardhatUserConfig = {
     target: "ethers-v5",
   },
   dependencyCompiler: {
-    paths: ["treasure-staking/contracts/AtlasMine.sol", "treasure-staking/contracts/MasterOfCoin.sol"],
+    paths: [
+      "treasure-staking/contracts/AtlasMine.sol",
+      "treasure-staking/contracts/MasterOfCoin.sol",
+      "treasure-staking/contracts/interfaces/ILegionMetadataStore.sol",
+    ],
   },
   etherscan: {
     apiKey: process.env.ETHERSCAN_API_KEY,

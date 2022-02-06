@@ -8,6 +8,7 @@ import { setNextBlockTimestamp } from "../utils";
 import type { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
 import type { AtlasMineStaker } from "../../src/types/AtlasMineStaker";
 import type { MasterOfCoin } from "../../src/types/MasterOfCoin";
+import type { MockLegionMetadataStore } from "../../src/types/MockLegionMetadataStore";
 import type { AtlasMine } from "../../src/types/AtlasMine";
 import type { TestERC20 } from "../../src/types/TestERC20";
 import type { TestERC1155 } from "../../src/types/TestERC1155";
@@ -27,6 +28,7 @@ export interface TestContext {
   users: SignerWithAddress[];
   staker: AtlasMineStaker;
   masterOfCoin: MasterOfCoin;
+  metadataStore: MockLegionMetadataStore;
   mine: AtlasMine;
   magic: TestERC20;
   treasures: TestERC1155;

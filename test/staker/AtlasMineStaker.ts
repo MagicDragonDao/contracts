@@ -15,37 +15,22 @@ import type { TestERC1155 } from "../../src/types/TestERC1155";
 import type { TestERC721 } from "../../src/types/TestERC721";
 
 import {
+  TestContext,
   stakeSingle,
   stakeMultiple,
   stakeSequence,
   withdrawSingle,
   rollSchedule,
   rollLock,
-  rollTo,
   expectRoundedEqual,
-  rollToPartialWindow,
-  claimSingle,
   setup5050Scenario,
   setup7525Scenario,
   withdrawWithRoundedRewardCheck,
   claimWithRoundedRewardCheck,
 } from "./helpers";
+import { MockLegionMetadataStore } from "../../src/types/MockLegionMetadataStore";
 
 const ether = ethers.utils.parseEther;
-
-interface TestContext {
-  signers: SignerWithAddress[];
-  admin: SignerWithAddress;
-  users: SignerWithAddress[];
-  staker: AtlasMineStaker;
-  masterOfCoin: MasterOfCoin;
-  mine: AtlasMine;
-  magic: TestERC20;
-  treasures: TestERC1155;
-  legions: TestERC721;
-  start: number;
-  end: number;
-}
 
 describe("Atlas Mine Staking (Pepe Pool)", () => {
   let ctx: TestContext;
@@ -62,10 +47,13 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
     const masterOfCoin = <MasterOfCoin>await deploy("MasterOfCoin", admin, []);
     await masterOfCoin.init(magic.address);
 
+    const metadataStore = <MockLegionMetadataStore>await deploy("MockLegionMetadataStore", admin, []);
+
     const mine = <AtlasMine>await deploy("AtlasMine", admin, []);
     await mine.init(magic.address, masterOfCoin.address);
     await mine.setTreasure(treasures.address);
     await mine.setLegion(legions.address);
+    await mine.setLegionMetadataStore(metadataStore.address);
     await mine.setUtilizationOverride(ether("1"));
 
     const staker = <AtlasMineStaker>await deploy("AtlasMineStaker", admin, [
@@ -101,6 +89,7 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
       legions,
       masterOfCoin,
       mine,
+      metadataStore,
       staker,
       start,
       end,
@@ -144,6 +133,7 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
           staker,
           magic,
         } = ctx;
+
         const amount = ether("10");
 
         await expect(stakeSingle(staker, user, amount)).to.emit(staker, "UserDeposit").withArgs(user.address, amount);
@@ -274,69 +264,76 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
           users: [user1, user2],
           staker,
           magic,
-          start,
-          end,
         } = ctx;
 
-        // Stake more than rewards to force a withdraw
-        // With 2 stakers, each will earn 7000 MAGIC over lock period
-        const amount = ether("20000");
-        let tx = await stakeSingle(staker, user1, amount);
-        await tx.wait();
+        await setup7525Scenario(ctx);
 
-        // Go to start of rewards program
-        await rollTo(start);
+        const totalRewards = ether("172800");
 
-        // Make a tx to deposit
-        tx = await staker.stakeScheduled();
-        await tx.wait();
+        await claimWithRoundedRewardCheck(staker, user1, totalRewards.div(4).mul(3));
 
-        // Fast-forward to halfway through the lock time and have other
-        // user also make a deposit
-        const ts = await rollToPartialWindow(start, end, 0.5);
+        await claimWithRoundedRewardCheck(staker, user1, totalRewards.div(4));
 
-        tx = await stakeSingle(staker, user2, amount);
-        await tx.wait();
-
-        await rollSchedule(staker, ts);
-
-        // Fast-forward to end of program
-        // User1 should have 75% of rewards
-        // User2 should have 25%
-        await rollTo(end);
-
-        let claimTx = await claimSingle(staker, user1);
-        let receipt = await claimTx.wait();
-
-        // Cannot use expect matchers because of rounded equal comparison
-        const claimEventUser1 = receipt.events?.find(e => e.event === "UserClaim");
-
-        expect(claimEventUser1).to.not.be.undefined;
-        expect(claimEventUser1?.args?.[0]).to.eq(user1.address);
-        expectRoundedEqual(claimEventUser1?.args?.[1], ether("172800").div(4).mul(3));
-
-        // User returned all funds + reward
+        // Reward distribued to user
         expectRoundedEqual(await magic.balanceOf(user1.address), ether("209600"));
-
-        claimTx = await claimSingle(staker, user2);
-        receipt = await claimTx.wait();
-
-        // Cannot use expect matchers because of rounded equal comparison
-        const claimEventUser2 = receipt.events?.find(e => e.event === "UserClaim");
-
-        expect(claimEventUser2).to.not.be.undefined;
-        expect(claimEventUser2?.args?.[0]).to.eq(user2.address);
-        expectRoundedEqual(claimEventUser2?.args?.[1], ether("172800").div(4));
-
-        // User returned all funds + reward
         expectRoundedEqual(await magic.balanceOf(user2.address), ether("123200"));
       });
     });
   });
 
   describe("NFT-boosted staking", () => {
-    it("does not allow a non-hoard caller to stake a treasure");
-    it("does not allow a non-hoard caller to stake a legion");
+    beforeEach(async () => {
+      // Set up hoard
+      const {
+        admin,
+        users: [, hoard],
+        staker,
+        treasures,
+        legions,
+      } = ctx;
+
+      await staker.connect(admin).setHoard(hoard.address);
+
+      // Mint 4 treasures
+      // Token id 161 - 7.3% boost
+      // Token id 97 - 15.8% boost
+      // Token id 103 - 3% boost
+      // Token id 95 - 15.7% boost
+
+      await treasures.mint(hoard.address, 161, 20);
+      await treasures.mint(hoard.address, 97, 20);
+      await treasures.mint(hoard.address, 103, 20);
+      await treasures.mint(hoard.address, 95, 20);
+      await treasures.setApprovalForAll(staker.address, true);
+
+      // Mint 4 legions
+      // 2 1/1s (ID < 5) and 2 all-class
+
+      await legions.mint(hoard.address, 0);
+      await legions.mint(hoard.address, 1);
+      await legions.mint(hoard.address, 10);
+      await legions.mint(hoard.address, 11);
+      await legions.setApprovalForAll(staker.address, true);
+    });
+
+    it("does not allow a non-hoard caller to stake a treasure", async () => {
+      const {
+        users: [user],
+        staker,
+      } = ctx;
+
+      await expect(staker.connect(user).stakeTreasure(161, 10)).to.be.revertedWith("Not hoard");
+    });
+
+    it("does not allow a non-hoard caller to stake a legion", async () => {
+      const {
+        users: [user],
+        staker,
+      } = ctx;
+
+      await expect(staker.connect(user).stakeLegion(2)).to.be.revertedWith("Not hoard");
+    });
+
     it("allows the hoard to stake a treasure");
     it("allows the hoard to stake a legion");
     it("distributes the correct pro rate rewards with a boost multiplier");
