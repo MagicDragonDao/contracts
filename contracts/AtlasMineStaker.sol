@@ -16,7 +16,7 @@ import "./interfaces/IAtlasMineStaker.sol";
 
 import "hardhat/console.sol";
 
-// TODO: Re-do stake accounting to match atlas mine exactly
+// TODO: Re-do stake accounnting to give ticket
 // TODO: Re-do treasure and legion approvals
 // TODO: Look into utilization ratio
 
@@ -135,11 +135,14 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
     function deposit(uint256 _amount) public virtual override {
         require(_amount > 0, "Deposit amount 0");
 
-        if (_totalControlledMagic() > 0) {
-            uint256 proRataMagicWithPrecision = (_amount * ONE) / _totalControlledMagic();
-            uint256 proRataMagic = proRataMagicWithPrecision / ONE;
-            require(proRataMagic > 0, "Deposit too small");
-        }
+        // if (_totalControlledMagic() > 0) {
+        //     // Make sure that after new deposit, user will own more than one shre
+        //     uint256 newBaseAmount = _totalControlledMagic() + _amount;
+        //     uint256 proRataMagicWithPrecision = (_amount * ONE) / newBaseAmount;
+        //     console.log("PRO RATA WITH PRECISION", proRataMagicWithPrecision);
+        //     uint256 proRataMagic = proRataMagicWithPrecision / ONE;
+        //     require(proRataMagic > 0, "Deposit too small");
+        // }
 
         _updateRewards();
 
@@ -267,6 +270,7 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
             delete pendingStakes[i];
         }
 
+        console.log("STAKING IN CONTRACT", amountToStake, "at", block.timestamp);
         _stakeInMine(amountToStake);
         emit MineStake(amountToStake, unlockAt);
     }

@@ -26,16 +26,18 @@ import {
     expectRoundedEqual,
     setup5050Scenario,
     setup7525Scenario,
+    setupAdvancedScenario1,
+    runScenario,
     withdrawWithRoundedRewardCheck,
     claimWithRoundedRewardCheck,
     rollToPartialWindow,
     claimSingle,
+    TOTAL_REWARDS,
 } from "./helpers";
 
 const ether = ethers.utils.parseEther;
 
 describe("Atlas Mine Staking (Pepe Pool)", () => {
-    const TOTAL_REWARDS = ether("172800");
     let ctx: TestContext;
 
     const fixture = async (): Promise<TestContext> => {
@@ -1083,7 +1085,7 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
         });
     });
 
-    describe("Advanced Rewards Calculation", () => {
+    describe.only("Advanced Rewards Calculation", () => {
         /**
          * Different advanced scenarios:
          * different deposits at different times
@@ -1093,7 +1095,34 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
          *
          * For each scenario, precalculate and test all outputs
          */
-        it("scenario 1");
+        it("scenario 1", async () => {
+            const { magic, staker, start, end } = ctx;
+            const scenario = setupAdvancedScenario1(ctx);
+
+            console.log("START END", start, end);
+
+            await runScenario(ctx, scenario);
+
+            // Now check all expected rewards and user balance
+            const rewards = [];
+            for (const deposit of scenario) {
+                const { signer, expectedReward } = deposit;
+                const preclaimBalance = await magic.balanceOf(signer.address);
+
+                console.log("EXPECTE REWARDS", expectedReward);
+                const claimTx = await claimSingle(staker, signer);
+                await claimTx.wait();
+
+                // await claimWithRoundedRewardCheck(staker, signer, expectedReward);
+                const postclaimBalance = await magic.balanceOf(signer.address);
+
+                // expectRoundedEqual(postclaimBalance.sub(preclaimBalance), expectedReward);
+                rewards.push(postclaimBalance.sub(preclaimBalance));
+            }
+
+            console.log("Rewards", rewards);
+        });
+
         it("scenario 2");
         it("scenario 3");
         it("scenario 4");

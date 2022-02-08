@@ -13,10 +13,13 @@ import type { AtlasMine } from "../../src/types/AtlasMine";
 import type { TestERC20 } from "../../src/types/TestERC20";
 import type { TestERC1155 } from "../../src/types/TestERC1155";
 import type { TestERC721 } from "../../src/types/TestERC721";
+import { Test } from "mocha";
 
 chai.use(solidity);
 
-const ether = ethers.utils.parseEther;
+export const ether = ethers.utils.parseEther;
+export const TOTAL_REWARDS = ether("172800");
+export const ONE_DAY_SEC = 86400;
 
 /////////////////////////////////////////////////////////////////////////////////
 ///                                  TYPES                                    ///
@@ -35,6 +38,13 @@ export interface TestContext {
     legions: TestERC721;
     start: number;
     end: number;
+}
+
+export interface ScenarioInfo {
+    signer: SignerWithAddress;
+    timestamp: number;
+    amount: BigNumberish;
+    expectedReward: BigNumberish;
 }
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -124,7 +134,6 @@ export const rollSchedule = async (
     staker: AtlasMineStaker,
     start = Math.floor(Date.now() / 1000),
 ): Promise<ContractTransaction> => {
-    const ONE_DAY_SEC = 86400;
     const nextTimestamp = start + ONE_DAY_SEC;
     await setNextBlockTimestamp(nextTimestamp);
 
@@ -268,4 +277,82 @@ export const setup7525Scenario = async (ctx: TestContext) => {
             [user2.address]: ts,
         },
     };
+};
+
+export const setupAdvancedScenario1 = (ctx: TestContext): ScenarioInfo[] => {
+    // Advanced Scenario 1:
+    // (Different stake times, no nft boosts)
+    // 1728000 total seconds in scenario = T
+    // Base stake amount = N
+    // 1 Share = (N/2) deposited for 25% of pool
+    // Staker 1 Deposits N at 0 = 8 shares
+    // Staker 2 Deposits N/2 at 25% of T = 3 shares
+    // Staker 3 Deposits 2N at 50% of T = 8 shares
+    // Staker 4 Deposits 4N at 75% of T = 8 shares
+    // Total is 27, so divide rewards into 27 parts
+    // 1,2,3 each get 8 of 27 parts, 4 gets 3 of 27 parts
+    const {
+        users: [user1, user2, user3, user4],
+        start,
+        end,
+    } = ctx;
+
+    const baseAmount = ether("100");
+    const totalTime = end - start;
+    const totalRewardsBase = TOTAL_REWARDS.div(27);
+
+    const scenario: ScenarioInfo[] = [
+        {
+            signer: user1,
+            timestamp: start,
+            amount: baseAmount,
+            expectedReward: totalRewardsBase.mul(8),
+        },
+        {
+            signer: user2,
+            timestamp: start + totalTime * 0.25,
+            amount: baseAmount.div(2),
+            expectedReward: totalRewardsBase.mul(3),
+        },
+        {
+            signer: user3,
+            timestamp: start + totalTime * 0.5,
+            amount: baseAmount.mul(2),
+            expectedReward: totalRewardsBase.mul(8),
+        },
+        {
+            signer: user4,
+            timestamp: start + totalTime * 0.75,
+            amount: baseAmount.mul(4),
+            expectedReward: totalRewardsBase.mul(8),
+        },
+    ];
+
+    return scenario;
+};
+
+export const runScenario = async (ctx: TestContext, scenario: ScenarioInfo[]) => {
+    const { staker, end } = ctx;
+    // Run through scenario from beginning of program until end
+    for (const deposit of scenario) {
+        const { signer, timestamp, amount } = deposit;
+        console.log("Staking", signer.address, amount.toString());
+
+        const depositTime = timestamp - ONE_DAY_SEC;
+        await rollTo(depositTime);
+
+        // Make deposit one day in advance, then roll
+        let tx = await staker.connect(signer).deposit(amount);
+        await tx.wait();
+
+        // Now roll again and stake
+        await rollTo(timestamp);
+        tx = await staker.stakeScheduled();
+        await tx.wait();
+
+        // Stake done
+    }
+
+    // Now roll to end - all staking should be processed
+    await rollTo(end);
 };
