@@ -13,7 +13,6 @@ import type { AtlasMine } from "../../src/types/AtlasMine";
 import type { TestERC20 } from "../../src/types/TestERC20";
 import type { TestERC1155 } from "../../src/types/TestERC1155";
 import type { TestERC721 } from "../../src/types/TestERC721";
-import { Test } from "mocha";
 
 chai.use(solidity);
 
@@ -40,11 +39,24 @@ export interface TestContext {
     end: number;
 }
 
-export interface ScenarioInfo {
-    signer: SignerWithAddress;
+export interface Action {
     timestamp: number;
+    actions: ActionInfo[];
+}
+
+export interface ActionInfo {
+    signer: SignerWithAddress;
     amount: BigNumberish;
+    action: "deposit" | "withdraw" | "claim";
+}
+
+export interface RewardInfo {
+    signer: SignerWithAddress;
     expectedReward: BigNumberish;
+}
+export interface ScenarioInfo {
+    actions: Action[];
+    rewards: RewardInfo[];
 }
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -279,18 +291,22 @@ export const setup7525Scenario = async (ctx: TestContext) => {
     };
 };
 
-export const setupAdvancedScenario1 = (ctx: TestContext): ScenarioInfo[] => {
+export const setupAdvancedScenario1 = (ctx: TestContext): ScenarioInfo => {
     // Advanced Scenario 1:
     // (Different stake times, no nft boosts)
-    // 1728000 total seconds in scenario = T
-    // Base stake amount = N
-    // 1 Share = (N/2) deposited for 25% of pool
-    // Staker 1 Deposits N at 0 = 8 shares
-    // Staker 2 Deposits N/2 at 25% of T = 3 shares
-    // Staker 3 Deposits 2N at 50% of T = 8 shares
-    // Staker 4 Deposits 4N at 75% of T = 8 shares
-    // Total is 27, so divide rewards into 27 parts
-    // 1,2,3 each get 8 of 27 parts, 4 gets 3 of 27 parts
+    //
+    // Staker 1 Deposits N at 0
+    // Staker 2 Deposits N/3 at 0.25
+    // Staker 3 Deposits 2N/3 at 0.5
+    // Staker 4 Deposits 2N at 0.75
+    //
+    //            Staker 1 %        Staker 2 %      Staker 3 %     Staker 4 %
+    // At T = 0:    100                 0               0               0
+    // At T = 0.25:  75                25               0               0
+    // At T = 0.5:   50             16.67           33.33               0
+    // At T = 0.75:  25              8.33           16.67              50
+    // Totals:      62.5             12.5            12.5             12.5
+
     const {
         users: [user1, user2, user3, user4],
         start,
@@ -299,60 +315,384 @@ export const setupAdvancedScenario1 = (ctx: TestContext): ScenarioInfo[] => {
 
     const baseAmount = ether("100");
     const totalTime = end - start;
-    const totalRewardsBase = TOTAL_REWARDS.div(27);
+    const totalRewardsBase = TOTAL_REWARDS.div(10000);
 
-    const scenario: ScenarioInfo[] = [
+    const actions: Action[] = [
         {
-            signer: user1,
-            timestamp: start,
-            amount: baseAmount,
-            expectedReward: totalRewardsBase.mul(8),
+            timestamp: start - ONE_DAY_SEC - 100,
+            actions: [
+                {
+                    signer: user1,
+                    amount: baseAmount,
+                    action: "deposit",
+                },
+            ],
         },
         {
-            signer: user2,
             timestamp: start + totalTime * 0.25,
-            amount: baseAmount.div(2),
-            expectedReward: totalRewardsBase.mul(3),
+            actions: [
+                {
+                    signer: user2,
+                    amount: baseAmount.div(3),
+                    action: "deposit",
+                },
+            ],
         },
         {
-            signer: user3,
             timestamp: start + totalTime * 0.5,
-            amount: baseAmount.mul(2),
-            expectedReward: totalRewardsBase.mul(8),
+            actions: [
+                {
+                    signer: user3,
+                    amount: baseAmount.div(3).mul(2),
+                    action: "deposit",
+                },
+            ],
         },
         {
-            signer: user4,
             timestamp: start + totalTime * 0.75,
-            amount: baseAmount.mul(4),
-            expectedReward: totalRewardsBase.mul(8),
+            actions: [
+                {
+                    signer: user4,
+                    amount: baseAmount.mul(2),
+                    action: "deposit",
+                },
+            ],
         },
     ];
 
-    return scenario;
+    const rewards: RewardInfo[] = [
+        {
+            signer: user1,
+            expectedReward: totalRewardsBase.mul(6250),
+        },
+        {
+            signer: user2,
+            expectedReward: totalRewardsBase.mul(1250),
+        },
+        {
+            signer: user3,
+            expectedReward: totalRewardsBase.mul(1250),
+        },
+        {
+            signer: user4,
+            expectedReward: totalRewardsBase.mul(1250),
+        },
+    ];
+
+    return { actions, rewards };
 };
 
-export const runScenario = async (ctx: TestContext, scenario: ScenarioInfo[]) => {
+export const setupAdvancedScenario2 = (ctx: TestContext): ScenarioInfo => {
+    // Advanced Scenario 2:
+    // (Different stake times, prestaking and unstaking, no nft boosts)
+    //
+    // Staker 1 Deposits N at -1000
+    // Staker 1 Withdraws N at -500
+    // Staker 2 Deposits 3N at 0
+    // Staker 3 Deposits N at 0
+    // Staker 4 Deposits 9N at 0.25
+    // Staker 2 Withdraws 3N at 0.25
+    // Staker 1 Deposits 2N At 0.5
+    // Staker 2 Deposits 3N at 0.75
+    //
+    //            Staker 1 %        Staker 2 %      Staker 3 %     Staker 4 %
+    // At T = -1000: 100                0               0               0
+    // At T = -500:    0                0               0               0
+    // At T = 0:       0               75              25               0
+    // At T = 0.25:    0                0              10              90
+    // At T = 0.5: 16.67                0            8.33              75
+    // At T = 0.75:13.33               20            6.67              60
+    // Totals:       7.5            23.75            12.5           56.25
+
+    const {
+        users: [user1, user2, user3, user4],
+        start,
+        end,
+    } = ctx;
+
+    const baseAmount = ether("100");
+    const totalTime = end - start;
+    const totalRewardsBase = TOTAL_REWARDS.div(10000);
+
+    const actions: Action[] = [
+        {
+            timestamp: start - ONE_DAY_SEC - 500_000,
+            actions: [
+                {
+                    signer: user1,
+                    amount: baseAmount,
+                    action: "deposit",
+                },
+            ],
+        },
+        {
+            timestamp: start - ONE_DAY_SEC - 100_000,
+            actions: [
+                {
+                    signer: user1,
+                    amount: 0,
+                    action: "withdraw",
+                },
+            ],
+        },
+        {
+            timestamp: start - ONE_DAY_SEC - 100,
+            actions: [
+                {
+                    signer: user2,
+                    amount: baseAmount.mul(3),
+                    action: "deposit",
+                },
+                {
+                    signer: user3,
+                    amount: baseAmount,
+                    action: "deposit",
+                },
+            ],
+        },
+        {
+            timestamp: start + totalTime * 0.25,
+            actions: [
+                {
+                    signer: user4,
+                    amount: baseAmount.mul(9),
+                    action: "deposit",
+                },
+                {
+                    signer: user2,
+                    amount: 0,
+                    action: "withdraw",
+                },
+            ],
+        },
+        {
+            timestamp: start + totalTime * 0.5,
+            actions: [
+                {
+                    signer: user1,
+                    amount: baseAmount.mul(2),
+                    action: "deposit",
+                },
+            ],
+        },
+        {
+            timestamp: start + totalTime * 0.25,
+            actions: [
+                {
+                    signer: user2,
+                    amount: baseAmount.mul(3),
+                    action: "deposit",
+                },
+            ],
+        },
+    ];
+
+    const rewards: RewardInfo[] = [
+        {
+            signer: user1,
+            expectedReward: totalRewardsBase.mul(750),
+        },
+        {
+            signer: user2,
+            expectedReward: totalRewardsBase.mul(2375),
+        },
+        {
+            signer: user3,
+            expectedReward: totalRewardsBase.mul(1250),
+        },
+        {
+            signer: user4,
+            expectedReward: totalRewardsBase.mul(5625),
+        },
+    ];
+
+    return { actions, rewards };
+};
+
+export const setupAdvancedScenario3 = (ctx: TestContext): ScenarioInfo => {
+    // Advanced Scenario 3:
+    // (Same as scenario 2, with midstream claims)
+    //
+    // Staker 1 Deposits N at -1000
+    // Staker 1 Withdraws N at -500
+    // Staker 2 Deposits 3N at 0
+    // Staker 3 Deposits N at 0
+    // Staker 4 Deposits 9N at 0.25
+    // Staker 2 Withdraws 3N at 0.25
+    // Staker 1 Deposits 2N At 0.5
+    // Staker 4 Claims at 0.5
+    // Staker 2 Deposits 3N at 0.75
+    // Staker 1 Claims at 0.75
+
+    //
+    //            Staker 1 %        Staker 2 %      Staker 3 %     Staker 4 %
+    // At T = -1000: 100                0               0               0
+    // At T = -500:    0                0               0               0
+    // At T = 0:       0               75              25               0
+    // At T = 0.25:    0                0              10              90
+    // At T = 0.5: 16.67                0            8.33              75
+    // At T = 0.75:13.33               20            6.67              60
+    // Totals:       7.5            23.75            12.5           56.25
+
+    const {
+        users: [user1, user2, user3, user4],
+        start,
+        end,
+    } = ctx;
+
+    const baseAmount = ether("100");
+    const totalTime = end - start;
+    const totalRewardsBase = TOTAL_REWARDS.div(10000);
+
+    const actions: Action[] = [
+        {
+            timestamp: start - ONE_DAY_SEC - 500_000,
+            actions: [
+                {
+                    signer: user1,
+                    amount: baseAmount,
+                    action: "deposit",
+                },
+            ],
+        },
+        {
+            timestamp: start - ONE_DAY_SEC - 100_000,
+            actions: [
+                {
+                    signer: user1,
+                    amount: 0,
+                    action: "withdraw",
+                },
+            ],
+        },
+        {
+            timestamp: start - ONE_DAY_SEC - 100,
+            actions: [
+                {
+                    signer: user2,
+                    amount: baseAmount.mul(3),
+                    action: "deposit",
+                },
+                {
+                    signer: user3,
+                    amount: baseAmount,
+                    action: "deposit",
+                },
+            ],
+        },
+        {
+            timestamp: start + totalTime * 0.25,
+            actions: [
+                {
+                    signer: user4,
+                    amount: baseAmount.mul(9),
+                    action: "deposit",
+                },
+                {
+                    signer: user2,
+                    amount: 0,
+                    action: "withdraw",
+                },
+            ],
+        },
+        {
+            timestamp: start + totalTime * 0.5,
+            actions: [
+                {
+                    signer: user1,
+                    amount: baseAmount.mul(2),
+                    action: "deposit",
+                },
+            ],
+        },
+        {
+            timestamp: start + totalTime * 0.25,
+            actions: [
+                {
+                    signer: user2,
+                    amount: baseAmount.mul(3),
+                    action: "deposit",
+                },
+            ],
+        },
+    ];
+
+    const rewards: RewardInfo[] = [
+        {
+            signer: user1,
+            expectedReward: totalRewardsBase.mul(750),
+        },
+        {
+            signer: user2,
+            expectedReward: totalRewardsBase.mul(2375),
+        },
+        {
+            signer: user3,
+            expectedReward: totalRewardsBase.mul(1250),
+        },
+        {
+            signer: user4,
+            expectedReward: totalRewardsBase.mul(5625),
+        },
+    ];
+
+    return { actions, rewards };
+};
+
+export const runScenario = async (ctx: TestContext, actions: Action[]): Promise<{ [user: string]: BigNumberish }> => {
     const { staker, end } = ctx;
+    const claims: { [user: string]: BigNumberish } = {};
+
     // Run through scenario from beginning of program until end
-    for (const deposit of scenario) {
-        const { signer, timestamp, amount } = deposit;
-        console.log("Staking", signer.address, amount.toString());
+    for (const batch of actions) {
+        const { timestamp, actions: batchActions } = batch;
 
-        const depositTime = timestamp - ONE_DAY_SEC;
-        await rollTo(depositTime);
-
-        // Make deposit one day in advance, then roll
-        let tx = await staker.connect(signer).deposit(amount);
-        await tx.wait();
-
-        // Now roll again and stake
+        // Make deposit, then roll to stake
         await rollTo(timestamp);
-        tx = await staker.stakeScheduled();
-        await tx.wait();
 
-        // Stake done
+        for (const a of batchActions) {
+            const { signer, amount, action } = a;
+
+            if (action === "deposit") {
+                const tx = await staker.connect(signer).deposit(amount);
+                await tx.wait();
+            } else if (action === "claim") {
+                // No need to roll, just claim - keep track of amount rewarded
+                const tx = await staker.connect(signer).claim();
+                const receipt = await tx.wait();
+
+                const claimEvent = receipt.events?.find(e => e.event === "UserClaim");
+
+                expect(claimEvent).to.not.be.undefined;
+                expect(claimEvent?.args?.[0]).to.eq(signer.address);
+
+                const reward = claimEvent?.args?.[1];
+
+                if (claims[signer.address]) {
+                    claims[signer.address] = ethers.BigNumber.from(claims[signer.address]).add(reward);
+                } else {
+                    claims[signer.address] = reward;
+                }
+            } else {
+                // No need to roll, just claim or withdraw
+                const tx = await staker.connect(signer)[action]();
+                await tx.wait();
+            }
+        }
+
+        const depositAction = batchActions.find(a => a.action === "deposit");
+        if (depositAction) {
+            // Now roll again and stake
+            await rollTo(timestamp + ONE_DAY_SEC);
+            const tx = await staker.stakeScheduled();
+            await tx.wait();
+        }
+
+        // Actions for timestamp done
     }
 
     // Now roll to end - all staking should be processed
     await rollTo(end);
+
+    return claims;
 };

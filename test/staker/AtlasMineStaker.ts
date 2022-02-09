@@ -27,11 +27,11 @@ import {
     setup5050Scenario,
     setup7525Scenario,
     setupAdvancedScenario1,
+    setupAdvancedScenario2,
     runScenario,
     withdrawWithRoundedRewardCheck,
     claimWithRoundedRewardCheck,
     rollToPartialWindow,
-    claimSingle,
     TOTAL_REWARDS,
 } from "./helpers";
 
@@ -1092,38 +1092,50 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
          * user unstakes but then redeposits later
          * some prestaking, some in-flow staking
          * Claiming at different times
+         * Two stakers with one NFT boosted
          *
          * For each scenario, precalculate and test all outputs
          */
         it("scenario 1", async () => {
-            const { magic, staker, start, end } = ctx;
-            const scenario = setupAdvancedScenario1(ctx);
+            const { magic, staker } = ctx;
+            const { actions, rewards } = setupAdvancedScenario1(ctx);
 
-            console.log("START END", start, end);
-
-            await runScenario(ctx, scenario);
+            await runScenario(ctx, actions);
 
             // Now check all expected rewards and user balance
-            const rewards = [];
-            for (const deposit of scenario) {
-                const { signer, expectedReward } = deposit;
+            for (const reward of rewards) {
+                const { signer, expectedReward } = reward;
                 const preclaimBalance = await magic.balanceOf(signer.address);
 
-                console.log("EXPECTE REWARDS", expectedReward);
-                const claimTx = await claimSingle(staker, signer);
-                await claimTx.wait();
-
-                // await claimWithRoundedRewardCheck(staker, signer, expectedReward);
+                await claimWithRoundedRewardCheck(staker, signer, expectedReward);
                 const postclaimBalance = await magic.balanceOf(signer.address);
 
-                // expectRoundedEqual(postclaimBalance.sub(preclaimBalance), expectedReward);
-                rewards.push(postclaimBalance.sub(preclaimBalance));
+                expectRoundedEqual(postclaimBalance.sub(preclaimBalance), expectedReward);
             }
-
-            console.log("Rewards", rewards);
         });
 
-        it("scenario 2");
+        it("scenario 2", async () => {
+            const { magic, staker } = ctx;
+            const { actions, rewards } = setupAdvancedScenario2(ctx);
+
+            await runScenario(ctx, actions);
+
+            // Now check all expected rewards and user balance
+            for (const reward of rewards) {
+                const { signer, expectedReward } = reward;
+                const preclaimBalance = await magic.balanceOf(signer.address);
+
+                console.log("CLAIMING", signer.address, expectedReward);
+
+                await claimWithRoundedRewardCheck(staker, signer, expectedReward);
+                const postclaimBalance = await magic.balanceOf(signer.address);
+
+                console.log("CLAIMED");
+
+                expectRoundedEqual(postclaimBalance.sub(preclaimBalance), expectedReward);
+            }
+        });
+
         it("scenario 3");
         it("scenario 4");
     });

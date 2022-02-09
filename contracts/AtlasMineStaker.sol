@@ -270,7 +270,6 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
             delete pendingStakes[i];
         }
 
-        console.log("STAKING IN CONTRACT", amountToStake, "at", block.timestamp);
         _stakeInMine(amountToStake);
         emit MineStake(amountToStake, unlockAt);
     }
