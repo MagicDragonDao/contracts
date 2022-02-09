@@ -217,6 +217,8 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
 
         rewardDebts[msg.sender] = accumulatedRewards;
 
+        console.log("REWARD USABLE", reward, _totalUsableMagic());
+
         require(reward <= _totalUsableMagic(), "Not enough rewards to claim");
 
         IERC20(magic).safeTransfer(msg.sender, reward);

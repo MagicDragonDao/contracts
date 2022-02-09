@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { ethers, waffle } from "hardhat";
+import { BigNumberish } from "ethers";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
 
@@ -1118,19 +1119,24 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
             const { magic, staker } = ctx;
             const { actions, rewards } = setupAdvancedScenario2(ctx);
 
-            await runScenario(ctx, actions);
+            const preclaimBalances: { [user: string]: BigNumberish } = {};
+            for (const { signer } of rewards) {
+                preclaimBalances[signer.address] = await magic.balanceOf(signer.address);
+            }
+
+            const claims = await runScenario(ctx, actions);
 
             // Now check all expected rewards and user balance
             for (const reward of rewards) {
                 const { signer, expectedReward } = reward;
-                const preclaimBalance = await magic.balanceOf(signer.address);
+                const preclaimBalance = preclaimBalances[signer.address];
 
-                console.log("CLAIMING", signer.address, expectedReward);
+                // Adjust if midstream claims/withdraws have been made
+                const adjustedExpectedReward = ethers.BigNumber.from(expectedReward).sub(claims[signer.address] || 0);
 
-                await claimWithRoundedRewardCheck(staker, signer, expectedReward);
+                console.log("Claiming", signer.address);
+                await claimWithRoundedRewardCheck(staker, signer, adjustedExpectedReward);
                 const postclaimBalance = await magic.balanceOf(signer.address);
-
-                console.log("CLAIMED");
 
                 expectRoundedEqual(postclaimBalance.sub(preclaimBalance), expectedReward);
             }
@@ -1138,5 +1144,6 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
 
         it("scenario 3");
         it("scenario 4");
+        it("scenario 5");
     });
 });

@@ -181,9 +181,29 @@ export const expectRoundedEqual = (num: BigNumberish, target: BigNumberish): voi
     num = ethers.BigNumber.from(num);
     target = ethers.BigNumber.from(target);
 
+    // Tolerable precision is 0.01%. Precision is lost in the magic mine in both
+    // calculating NFT reward boosts and timing per second
+    const precision = 50;
+
+    if (target.eq(0)) {
+        expect(num).to.be.lt(precision);
+    } else {
+        // Expect it to be within 4 0s of precision, less than 1 bp diff
+        const lowerBound = target.div(precision).mul(precision - 1);
+        const upperBound = target.div(precision).mul(precision + 1);
+
+        expect(num).to.be.gt(lowerBound);
+        expect(num).to.be.lt(upperBound);
+    }
+};
+
+export const expectRoughEqual = (num: BigNumberish, target: BigNumberish): void => {
+    num = ethers.BigNumber.from(num);
+    target = ethers.BigNumber.from(target);
+
     // Tolerable precision is 1%. Precision is lost in the magic mine in both
     // calculating NFT reward boosts and timing per second
-    const precision = 10000;
+    const precision = 100;
 
     if (target.eq(0)) {
         expect(num).to.be.lt(precision);
@@ -416,7 +436,7 @@ export const setupAdvancedScenario2 = (ctx: TestContext): ScenarioInfo => {
 
     const actions: Action[] = [
         {
-            timestamp: start - ONE_DAY_SEC - 500_000,
+            timestamp: start - ONE_DAY_SEC - 5_000_000,
             actions: [
                 {
                     signer: user1,
@@ -476,7 +496,7 @@ export const setupAdvancedScenario2 = (ctx: TestContext): ScenarioInfo => {
             ],
         },
         {
-            timestamp: start + totalTime * 0.25,
+            timestamp: start + totalTime * 0.75,
             actions: [
                 {
                     signer: user2,
@@ -546,7 +566,7 @@ export const setupAdvancedScenario3 = (ctx: TestContext): ScenarioInfo => {
 
     const actions: Action[] = [
         {
-            timestamp: start - ONE_DAY_SEC - 500_000,
+            timestamp: start - ONE_DAY_SEC - 5_000_000,
             actions: [
                 {
                     signer: user1,
@@ -606,7 +626,7 @@ export const setupAdvancedScenario3 = (ctx: TestContext): ScenarioInfo => {
             ],
         },
         {
-            timestamp: start + totalTime * 0.25,
+            timestamp: start + totalTime * 0.75,
             actions: [
                 {
                     signer: user2,
@@ -639,6 +659,12 @@ export const setupAdvancedScenario3 = (ctx: TestContext): ScenarioInfo => {
     return { actions, rewards };
 };
 
+// export const setupAdvancedScenario4 = (ctx: TestContext): ScenarioInfo => {
+//     // Advanced Scenario 4:
+//     // (Multiple deposits for same user, midstream claims, 2 stakers, one NFT boosted)
+
+// }
+
 export const runScenario = async (ctx: TestContext, actions: Action[]): Promise<{ [user: string]: BigNumberish }> => {
     const { staker, end } = ctx;
     const claims: { [user: string]: BigNumberish } = {};
@@ -649,16 +675,16 @@ export const runScenario = async (ctx: TestContext, actions: Action[]): Promise<
 
         // Make deposit, then roll to stake
         await rollTo(timestamp);
+        let tx: ContractTransaction;
 
         for (const a of batchActions) {
             const { signer, amount, action } = a;
 
             if (action === "deposit") {
-                const tx = await staker.connect(signer).deposit(amount);
-                await tx.wait();
+                tx = await staker.connect(signer).deposit(amount);
             } else if (action === "claim") {
                 // No need to roll, just claim - keep track of amount rewarded
-                const tx = await staker.connect(signer).claim();
+                tx = await staker.connect(signer).claim();
                 const receipt = await tx.wait();
 
                 const claimEvent = receipt.events?.find(e => e.event === "UserClaim");
@@ -673,12 +699,27 @@ export const runScenario = async (ctx: TestContext, actions: Action[]): Promise<
                 } else {
                     claims[signer.address] = reward;
                 }
-            } else {
-                // No need to roll, just claim or withdraw
-                const tx = await staker.connect(signer)[action]();
-                await tx.wait();
+            } else if (action === "withdraw") {
+                // No need to roll, just claim - keep track of amount rewarded
+                tx = await staker.connect(signer).withdraw();
+                const receipt = await tx.wait();
+
+                const withdrawEvent = receipt.events?.find(e => e.event === "UserWithdraw");
+
+                expect(withdrawEvent).to.not.be.undefined;
+                expect(withdrawEvent?.args?.[0]).to.eq(signer.address);
+
+                const reward = withdrawEvent?.args?.[2];
+
+                if (claims[signer.address]) {
+                    claims[signer.address] = ethers.BigNumber.from(claims[signer.address]).add(reward);
+                } else {
+                    claims[signer.address] = reward;
+                }
             }
         }
+
+        await tx!.wait();
 
         const depositAction = batchActions.find(a => a.action === "deposit");
         if (depositAction) {
