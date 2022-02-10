@@ -16,9 +16,9 @@ import "./interfaces/IAtlasMineStaker.sol";
 
 import "hardhat/console.sol";
 
-// TODO: Re-do stake accounnting to give ticket
-// TODO: Re-do treasure and legion approvals
+// TODO: Re-do stake accounnting to give withdrawal ticket
 // TODO: Look into utilization ratio
+// TODO: If not enough rewards, draw down from fee reserve
 
 /**
  * @title AtlasMineStaker
@@ -120,6 +120,7 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
 
         // Approve the mine
         IERC20(magic).safeApprove(address(mine), 2**256 - 1);
+        approveNFTs();
     }
 
     // ======================================== USER OPERATIONS ========================================
@@ -217,7 +218,20 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
 
         rewardDebts[msg.sender] = accumulatedRewards;
 
-        console.log("REWARD USABLE", reward, _totalUsableMagic());
+        if (reward > _totalUsableMagic()) {
+            uint256 needed = reward - _totalUsableMagic();
+            console.log("REWARD", reward);
+            console.log("NEEDED", needed);
+            console.log("USABLE", _totalUsableMagic());
+        }
+
+        if (reward > _totalUsableMagic() && _withinTolerance(_totalUsableMagic(), reward)) {
+            uint256 needed = reward - _totalUsableMagic();
+
+            if (feeReserve > needed) {
+                feeReserve -= needed;
+            }
+        }
 
         require(reward <= _totalUsableMagic(), "Not enough rewards to claim");
 
@@ -289,10 +303,7 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
     function stakeTreasure(uint256 _tokenId, uint256 _amount) external override onlyHoard {
         // First withdraw and approve
         address treasureAddr = mine.treasure();
-        IERC1155 treasure = IERC1155(treasureAddr);
-
-        treasure.setApprovalForAll(address(mine), true);
-        treasure.safeTransferFrom(msg.sender, address(this), _tokenId, _amount, bytes(""));
+        IERC1155(treasureAddr).safeTransferFrom(msg.sender, address(this), _tokenId, _amount, bytes(""));
 
         mine.stakeTreasure(_tokenId, _amount);
         uint256 boost = mine.boosts(address(this));
@@ -308,12 +319,11 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
      */
     function unstakeTreasure(uint256 _tokenId, uint256 _amount) external override onlyHoard {
         address treasureAddr = mine.treasure();
-        IERC1155 treasure = IERC1155(treasureAddr);
 
         mine.unstakeTreasure(_tokenId, _amount);
 
         // Distribute to hoard
-        treasure.safeTransferFrom(address(this), msg.sender, _tokenId, _amount, bytes(""));
+        IERC1155(treasureAddr).safeTransferFrom(address(this), msg.sender, _tokenId, _amount, bytes(""));
 
         uint256 boost = mine.boosts(address(this));
 
@@ -330,10 +340,8 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
     function stakeLegion(uint256 _tokenId) external override onlyHoard {
         // First withdraw and approve
         address legionAddr = mine.legion();
-        IERC721 legion = IERC721(legionAddr);
 
-        legion.safeTransferFrom(msg.sender, address(this), _tokenId);
-        legion.setApprovalForAll(address(mine), true);
+        IERC721(legionAddr).safeTransferFrom(msg.sender, address(this), _tokenId);
 
         mine.stakeLegion(_tokenId);
 
@@ -349,12 +357,11 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
      */
     function unstakeLegion(uint256 _tokenId) external override onlyHoard {
         address legionAddr = mine.legion();
-        IERC721 legion = IERC721(legionAddr);
 
         mine.unstakeLegion(_tokenId);
 
         // Distribute to hoard
-        legion.safeTransferFrom(address(this), msg.sender, _tokenId);
+        IERC721(legionAddr).safeTransferFrom(address(this), msg.sender, _tokenId);
 
         uint256 boost = mine.boosts(address(this));
 
@@ -448,6 +455,34 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
         require(_hoard != address(0), "Invalid hoard");
 
         hoard = _hoard;
+    }
+
+    /**
+     * @notice Approve treasures and legions for withdrawal from the atlas mine.
+     *         Called on startup, and should be called again in case contract
+     *         addresses for treasures and legions ever change.
+     *
+     */
+    function approveNFTs() public override onlyOwner {
+        address treasureAddr = mine.treasure();
+        IERC1155(treasureAddr).setApprovalForAll(address(mine), true);
+
+        address legionAddr = mine.legion();
+        IERC1155(legionAddr).setApprovalForAll(address(mine), true);
+    }
+
+    /**
+     * @notice Revokes approvals for the Atlas Mine. Should only be used
+     *         in case of emergency, blocking further staking, or an Atlas
+     *         Mine exploit.
+     *
+     */
+    function revokeNFTApprovals() public override onlyOwner {
+        address treasureAddr = mine.treasure();
+        IERC1155(treasureAddr).setApprovalForAll(address(mine), false);
+
+        address legionAddr = mine.legion();
+        IERC1155(legionAddr).setApprovalForAll(address(mine), false);
     }
 
     /**
@@ -737,6 +772,11 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
      */
     function _getDay(uint256 timestamp) internal pure returns (uint256) {
         return timestamp / 86400;
+    }
+
+    function _withinTolerance(uint256 num, uint256 target) internal view returns (bool) {
+        // If num is within 1% of tolerance, draw needed from fees
+        return (num / 100) * 101 >= target;
     }
 
     /**

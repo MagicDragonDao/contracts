@@ -58,6 +58,10 @@ interface IAtlasMineStaker {
 
     function setHoard(address _hoard) external;
 
+    function approveNFTs() external;
+
+    function revokeNFTApprovals() external;
+
     function toggleSchedulePause(bool paused) external;
 
     function withdrawFees() external;

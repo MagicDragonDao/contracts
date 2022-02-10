@@ -319,6 +319,8 @@ export const setupAdvancedScenario1 = (ctx: TestContext): ScenarioInfo => {
     // Staker 2 Deposits N/3 at 0.25
     // Staker 3 Deposits 2N/3 at 0.5
     // Staker 4 Deposits 2N at 0.75
+    // Average ~2.8N deposited over pool lifetime
+    // 200 unit deficit
     //
     //            Staker 1 %        Staker 2 %      Staker 3 %     Staker 4 %
     // At T = 0:    100                 0               0               0
@@ -326,6 +328,7 @@ export const setupAdvancedScenario1 = (ctx: TestContext): ScenarioInfo => {
     // At T = 0.5:   50             16.67           33.33               0
     // At T = 0.75:  25              8.33           16.67              50
     // Totals:      62.5             12.5            12.5             12.5
+    // Total Deposits:
 
     const {
         users: [user1, user2, user3, user4],
@@ -659,8 +662,123 @@ export const setupAdvancedScenario3 = (ctx: TestContext): ScenarioInfo => {
     return { actions, rewards };
 };
 
-// export const setupAdvancedScenario4 = (ctx: TestContext): ScenarioInfo => {
-//     // Advanced Scenario 4:
+export const setupAdvancedScenario4 = (ctx: TestContext): ScenarioInfo => {
+    // Advanced Scenario :
+    // Multiple deposits for same user, midstream claims, with DAO fee of 4%
+    //
+    // Staker 1 Deposits N at 0
+    // Staker 2 Deposits 2N at 0
+    // Staker 1 Deposits N at 0.25
+    // Staker 3 Deposits 2N at 0.5
+    // Staker 2 Withdraws at 0.5
+    // Staker 1 Deposits N at 0.5
+    // Staker 4 Deposits 3N at 0.75
+    // Staker 1 Claims at 0.75
+    //
+    //            Staker 1 %        Staker 2 %      Staker 3 %     Staker 4 %
+    // At T = 0:   33.33            66.67               0               0
+    // At T = 0.25:   50               50               0               0
+    // At T = 0.5:    60                0              40               0
+    // At T = 0.75: 37.5                0              25            37.5
+    // Totals:     45.21            29.17           16.25            9.38
+
+    const {
+        users: [user1, user2, user3, user4],
+        start,
+        end,
+    } = ctx;
+
+    const baseAmount = ether("100");
+    const totalTime = end - start;
+    const totalRewardsBase = TOTAL_REWARDS.div(10000);
+
+    const actions: Action[] = [
+        {
+            timestamp: start - ONE_DAY_SEC - 100,
+            actions: [
+                {
+                    signer: user1,
+                    amount: baseAmount,
+                    action: "deposit",
+                },
+                {
+                    signer: user2,
+                    amount: baseAmount.mul(2),
+                    action: "deposit",
+                },
+            ],
+        },
+        {
+            timestamp: start + totalTime * 0.25,
+            actions: [
+                {
+                    signer: user1,
+                    amount: baseAmount,
+                    action: "deposit",
+                },
+            ],
+        },
+        {
+            timestamp: start + totalTime * 0.5,
+            actions: [
+                {
+                    signer: user2,
+                    amount: 0,
+                    action: "withdraw",
+                },
+                {
+                    signer: user3,
+                    amount: baseAmount.mul(2),
+                    action: "deposit",
+                },
+                {
+                    signer: user1,
+                    amount: baseAmount,
+                    action: "deposit",
+                },
+            ],
+        },
+        {
+            timestamp: start + totalTime * 0.75,
+            actions: [
+                {
+                    signer: user1,
+                    amount: 0,
+                    action: "claim",
+                },
+                {
+                    signer: user4,
+                    amount: baseAmount.mul(3),
+                    action: "deposit",
+                },
+            ],
+        },
+    ];
+
+    const rewards: RewardInfo[] = [
+        {
+            signer: user1,
+            expectedReward: totalRewardsBase.mul(4521).div(100).mul(96),
+        },
+        {
+            signer: user2,
+            expectedReward: totalRewardsBase.mul(2917).div(100).mul(96),
+        },
+        {
+            signer: user3,
+            expectedReward: totalRewardsBase.mul(1625).div(100).mul(96),
+        },
+        {
+            signer: user4,
+            expectedReward: totalRewardsBase.mul(938).div(100).mul(96),
+        },
+    ];
+
+    return { actions, rewards };
+};
+
+// export const setupAdvancedScenario5 = (ctx: TestContext): ScenarioInfo => {
+//     // Advanced Scenario 5:
 //     // (Multiple deposits for same user, midstream claims, 2 stakers, one NFT boosted)
 
 // }

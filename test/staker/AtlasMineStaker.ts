@@ -29,6 +29,8 @@ import {
     setup7525Scenario,
     setupAdvancedScenario1,
     setupAdvancedScenario2,
+    setupAdvancedScenario3,
+    setupAdvancedScenario4,
     runScenario,
     withdrawWithRoundedRewardCheck,
     claimWithRoundedRewardCheck,
@@ -250,9 +252,8 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
         });
 
         describe("claim", () => {
-            it("does not allow a user to claim if there are not enough unlocked coins", () => {
-                // TODO: Should be able to delete after redoing staking to act more like a router
-            });
+            // TODO: Should be able to delete after redoing staking to act more like a router
+            it("does not allow a user to claim if there are not enough unlocked coins");
 
             it("distributes the correct amount of pro rata rewards", async () => {
                 const {
@@ -288,6 +289,8 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 expectRoundedEqual(await magic.balanceOf(user1.address), ether("209600"));
                 expectRoundedEqual(await magic.balanceOf(user2.address), ether("123200"));
             });
+
+            it("draws down from fee reserve if there are not enough rewards due to a rounding error");
 
             it("should not allow a user to claim twice", async () => {
                 const {
@@ -641,6 +644,12 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
 
     describe("Owner Operations", () => {
         describe("Administration", () => {
+            it("does not allow a non-owner to set atlas mine approvals");
+            it("allows an owner to set atlas mine approvals");
+
+            it("does not allow a non-owner to revoke atlas mine approvals");
+            it("allows an owner to revoke atlas mine approvals");
+
             it("does not allow a non-owner to set the reward fee", async () => {
                 const {
                     users: [user],
@@ -1098,10 +1107,13 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
          * For each scenario, precalculate and test all outputs
          */
         it("scenario 1", async () => {
-            const { magic, staker } = ctx;
+            const { magic, admin, staker } = ctx;
             const { actions, rewards } = setupAdvancedScenario1(ctx);
 
             await runScenario(ctx, actions);
+
+            // Send extra MAGIC to the contract to get around fee issues
+            await magic.connect(admin).transfer(staker.address, ether("200"));
 
             // Now check all expected rewards and user balance
             for (const reward of rewards) {
@@ -1112,11 +1124,14 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 const postclaimBalance = await magic.balanceOf(signer.address);
 
                 expectRoundedEqual(postclaimBalance.sub(preclaimBalance), expectedReward);
+
+                // Withdraw funds to make sure we can
+                await expect(staker.connect(signer).withdraw()).to.not.be.reverted;
             }
         });
 
         it("scenario 2", async () => {
-            const { magic, staker } = ctx;
+            const { magic, admin, staker } = ctx;
             const { actions, rewards } = setupAdvancedScenario2(ctx);
 
             const preclaimBalances: { [user: string]: BigNumberish } = {};
@@ -1126,6 +1141,9 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
 
             const claims = await runScenario(ctx, actions);
 
+            // Send extra MAGIC to the contract to get around fee issues
+            await magic.connect(admin).transfer(staker.address, ether("1200"));
+
             // Now check all expected rewards and user balance
             for (const reward of rewards) {
                 const { signer, expectedReward } = reward;
@@ -1134,7 +1152,75 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 // Adjust if midstream claims/withdraws have been made
                 const adjustedExpectedReward = ethers.BigNumber.from(expectedReward).sub(claims[signer.address] || 0);
 
-                console.log("Claiming", signer.address);
+                await claimWithRoundedRewardCheck(staker, signer, adjustedExpectedReward);
+                const postclaimBalance = await magic.balanceOf(signer.address);
+
+                expectRoundedEqual(postclaimBalance.sub(preclaimBalance), expectedReward);
+
+                // Withdraw funds to make sure we can
+                await expect(staker.connect(signer).withdraw()).to.not.be.reverted;
+            }
+        });
+
+        it("scenario 3", async () => {
+            const { magic, admin, staker } = ctx;
+            const { actions, rewards } = setupAdvancedScenario3(ctx);
+
+            const preclaimBalances: { [user: string]: BigNumberish } = {};
+            for (const { signer } of rewards) {
+                preclaimBalances[signer.address] = await magic.balanceOf(signer.address);
+            }
+
+            const claims = await runScenario(ctx, actions);
+
+            // Send extra MAGIC to the contract to get around fee issues
+            await magic.connect(admin).transfer(staker.address, ether("1200"));
+
+            // Now check all expected rewards and user balance
+            for (const reward of rewards) {
+                const { signer, expectedReward } = reward;
+                const preclaimBalance = preclaimBalances[signer.address];
+
+                // Adjust if midstream claims/withdraws have been made
+                const adjustedExpectedReward = ethers.BigNumber.from(expectedReward).sub(claims[signer.address] || 0);
+
+                await claimWithRoundedRewardCheck(staker, signer, adjustedExpectedReward);
+                const postclaimBalance = await magic.balanceOf(signer.address);
+
+                expectRoundedEqual(postclaimBalance.sub(preclaimBalance), expectedReward);
+
+                // Withdraw funds to make sure we can
+                await expect(staker.connect(signer).withdraw()).to.not.be.reverted;
+            }
+        });
+
+        it("scenario 4", async () => {
+            const { magic, admin, staker } = ctx;
+            const { actions, rewards } = setupAdvancedScenario4(ctx);
+
+            const preclaimBalances: { [user: string]: BigNumberish } = {};
+            for (const { signer } of rewards) {
+                preclaimBalances[signer.address] = await magic.balanceOf(signer.address);
+            }
+
+            const tx = await staker.connect(admin).setFee(400);
+            await tx.wait();
+
+            const claims = await runScenario(ctx, actions);
+
+            // Send extra MAGIC to the contract to get around fee issues
+            await magic.connect(admin).transfer(staker.address, ether("300"));
+
+            // Now check all expected rewards and user balance
+            for (const reward of rewards) {
+                const { signer, expectedReward } = reward;
+                const preclaimBalance = preclaimBalances[signer.address];
+
+                console.log("Expected reward", signer.address, expectedReward);
+
+                // Adjust if midstream claims/withdraws have been made
+                const adjustedExpectedReward = ethers.BigNumber.from(expectedReward).sub(claims[signer.address] || 0);
+
                 await claimWithRoundedRewardCheck(staker, signer, adjustedExpectedReward);
                 const postclaimBalance = await magic.balanceOf(signer.address);
 
@@ -1142,8 +1228,6 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
             }
         });
 
-        it("scenario 3");
-        it("scenario 4");
         it("scenario 5");
     });
 });
