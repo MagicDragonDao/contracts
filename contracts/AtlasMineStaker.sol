@@ -83,6 +83,8 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
     uint256 lastDepositId;
     /// @notice Total MAGIC rewards earned by staking.
     uint256 totalRewardsEarned;
+    /// @notice Rewards earned from Atlas Mine, but not withdrawn
+    uint256 currentRewardsEarned;
     /// @notice Rewards accumulated per share
     uint256 accRewardsPerShare;
 
@@ -136,15 +138,6 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
     function deposit(uint256 _amount) public virtual override {
         require(_amount > 0, "Deposit amount 0");
 
-        // if (_totalControlledMagic() > 0) {
-        //     // Make sure that after new deposit, user will own more than one shre
-        //     uint256 newBaseAmount = _totalControlledMagic() + _amount;
-        //     uint256 proRataMagicWithPrecision = (_amount * ONE) / newBaseAmount;
-        //     console.log("PRO RATA WITH PRECISION", proRataMagicWithPrecision);
-        //     uint256 proRataMagic = proRataMagicWithPrecision / ONE;
-        //     require(proRataMagic > 0, "Deposit too small");
-        // }
-
         _updateRewards();
 
         // Update accounting
@@ -190,13 +183,18 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
 
         // Set reward debt to 0 if withdrawing
         rewardDebts[msg.sender] = 0;
+        currentRewardsEarned -= reward;
 
         // If we need to unstake, unstake until we have enough
-        if (payout > _totalUsableMagic()) {
-            _unstakeToTarget(payout - _totalUsableMagic());
+        if (payout > _totalUnstaked()) {
+            _unstakeToTarget(payout - _totalUnstaked());
         }
 
+        console.log("Paying out", msg.sender, payout);
+
         IERC20(magic).safeTransfer(msg.sender, payout);
+
+        console.log("Balance after payout", IERC20(magic).balanceOf(address(this)));
 
         emit UserWithdraw(msg.sender, amount, reward);
     }
@@ -217,12 +215,10 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
 
         // Unstake if we need to to ensure we can withdraw
         int256 accumulatedRewards = ((amount * accRewardsPerShare) / ONE).toInt256();
-        // console.log('REWARD AND DEBT');
-        // console.logInt(accumulatedRewards);
-        // console.logInt(rewardDebt);
         uint256 reward = (accumulatedRewards - rewardDebt).toUint256();
 
         rewardDebts[msg.sender] = accumulatedRewards;
+        currentRewardsEarned -= reward;
 
         if (reward > _totalUsableMagic()) {
             uint256 needed = reward - _totalUsableMagic();
@@ -241,7 +237,11 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
 
         require(reward <= _totalUsableMagic(), "Not enough rewards to claim");
 
+        console.log("Paying out at claim", msg.sender, reward);
+
         IERC20(magic).safeTransfer(msg.sender, reward);
+
+        console.log("Balance after payout", IERC20(magic).balanceOf(address(this)));
 
         emit UserClaim(msg.sender, reward);
     }
@@ -666,6 +666,7 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
 
         (uint256 newRewards, ) = _harvestMine();
         totalRewardsEarned += newRewards;
+        currentRewardsEarned += newRewards;
 
         accRewardsPerShare += (newRewards * ONE) / totalStaked;
     }
@@ -732,6 +733,19 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
         uint256 unstaked = IERC20(magic).balanceOf(address(this));
 
         return unstaked - feeReserve;
+    }
+
+    /**
+     * @dev Calculate total amount of MAGIC unstaked. Same as totalUsable,
+     *      but does not count rewards that haven't yet been withdrawn
+     *
+     * @return amount               The amount of unstaked MAGIC.
+     */
+    function _totalUnstaked() internal view returns (uint256) {
+        // Current magic held in contract
+        uint256 unstaked = IERC20(magic).balanceOf(address(this));
+
+        return unstaked - feeReserve - currentRewardsEarned;
     }
 
     /**
