@@ -56,7 +56,7 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
 
     // ============= Staking State ==============
 
-    uint256 public constant ONE = 1e18;
+    uint256 public constant ONE = 1e38;
 
     /// @notice An individual stake i.e. deposit
     struct Stake {
@@ -150,7 +150,9 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
         // Update accounting
         userStake[msg.sender] += _amount;
         totalStaked += _amount;
-        rewardDebts[msg.sender] = ((_amount * accRewardsPerShare) / ONE).toInt256();
+
+        // Add debt instead of resetting it since amount might also be already deposited
+        rewardDebts[msg.sender] += ((_amount * accRewardsPerShare) / ONE).toInt256();
 
         uint256 day = _getDay(block.timestamp);
         pendingStakes[day] += _amount;
@@ -186,7 +188,8 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
         uint256 reward = (accumulatedRewards - rewardDebt).toUint256();
         uint256 payout = amount + reward;
 
-        rewardDebts[msg.sender] = accumulatedRewards;
+        // Set reward debt to 0 if withdrawing
+        rewardDebts[msg.sender] = 0;
 
         // If we need to unstake, unstake until we have enough
         if (payout > _totalUsableMagic()) {
@@ -214,6 +217,9 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
 
         // Unstake if we need to to ensure we can withdraw
         int256 accumulatedRewards = ((amount * accRewardsPerShare) / ONE).toInt256();
+        // console.log('REWARD AND DEBT');
+        // console.logInt(accumulatedRewards);
+        // console.logInt(rewardDebt);
         uint256 reward = (accumulatedRewards - rewardDebt).toUint256();
 
         rewardDebts[msg.sender] = accumulatedRewards;
@@ -774,7 +780,7 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
         return timestamp / 86400;
     }
 
-    function _withinTolerance(uint256 num, uint256 target) internal view returns (bool) {
+    function _withinTolerance(uint256 num, uint256 target) internal pure returns (bool) {
         // If num is within 1% of tolerance, draw needed from fees
         return (num / 100) * 101 >= target;
     }
