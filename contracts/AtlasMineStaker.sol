@@ -80,11 +80,11 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
     /// @notice All stakes currently active
     Stake[] public stakes;
     /// @notice Deposit ID of last stake. Also tracked in atlas mine
-    uint256 lastDepositId;
+    uint256 public lastDepositId;
     /// @notice Total MAGIC rewards earned by staking.
-    uint256 totalRewardsEarned;
+    uint256 public override totalRewardsEarned;
     /// @notice Rewards accumulated per share
-    uint256 accRewardsPerShare;
+    uint256 public accRewardsPerShare;
 
     // ============= Operator State ==============
 
@@ -186,6 +186,9 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
         if (payout > _totalUsableMagic()) {
             _unstakeToTarget(payout - _totalUsableMagic());
         }
+
+        console.log("PAYING OUT", address(this));
+        console.log(msg.sender, amount, reward);
 
         IERC20(magic).safeTransfer(msg.sender, payout);
 

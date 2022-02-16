@@ -24,6 +24,8 @@ interface IAtlasMineStaker {
 
     function totalWithdrawableMagic() external returns (uint256);
 
+    function totalRewardsEarned() external returns (uint256);
+
     // ============= Staking Operations ==============
 
     function deposit(uint256 _amount) external;

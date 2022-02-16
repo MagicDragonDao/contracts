@@ -21,6 +21,7 @@ import {
     stakeMultiple,
     stakeSequence,
     withdrawSingle,
+    claimSingle,
     rollSchedule,
     rollLock,
     rollTo,
@@ -31,6 +32,7 @@ import {
     setupAdvancedScenario2,
     setupAdvancedScenario3,
     setupAdvancedScenario4,
+    setupAdvancedScenario5,
     runScenario,
     withdrawWithRoundedRewardCheck,
     claimWithRoundedRewardCheck,
@@ -1100,7 +1102,7 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
         });
     });
 
-    describe("Advanced Rewards Calculation", () => {
+    describe.only("Advanced Rewards Calculation", () => {
         /**
          * Different advanced scenarios:
          * different deposits at different times
@@ -1267,6 +1269,91 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
             await expect(staker.connect(admin).withdrawFees()).to.not.be.reverted;
         });
 
-        it("scenario 5");
+        it.only("scenario 5", async () => {
+            const { magic, admin, staker, mine, users, legions } = ctx;
+
+            // Set up another staker and stake without boosts
+            const staker2 = <AtlasMineStaker>await deploy("AtlasMineStaker", admin, [
+                magic.address,
+                mine.address,
+                0, // 0 == AtlasMine.Lock.twoWeeks
+            ]);
+
+            const stakerApprove = users.map(u => magic.connect(u).approve(staker2.address, ether("100000")));
+            await Promise.all(stakerApprove);
+
+            const hoard = users[users.length - 1];
+            await staker.connect(admin).setHoard(hoard.address);
+            await legions.mint(hoard.address, 110);
+            await legions.connect(hoard).setApprovalForAll(staker.address, true);
+            await staker.connect(hoard).stakeLegion(110);
+
+            // total 210% boost
+            expect(await mine.boosts(staker.address)).to.eq(ether("1"));
+            expect(await mine.boosts(staker2.address)).to.eq(ether("0"));
+
+            const { actions, rewards } = setupAdvancedScenario5(ctx, [staker, staker2]);
+
+            const preclaimBalances: { [user: string]: BigNumberish } = {};
+            for (const { signer } of rewards) {
+                preclaimBalances[signer.address] = await magic.balanceOf(signer.address);
+            }
+
+            const claims = await runScenario(ctx, actions);
+
+            // Now check all expected rewards and user balance
+            const shuffledRewards = shuffle(rewards);
+            for (const reward of shuffledRewards) {
+                const { signer, expectedReward } = reward;
+                const preclaimBalance = preclaimBalances[signer.address];
+
+                console.log("total expected for", signer.address);
+                console.log(expectedReward);
+                console.log("Claims for", signer.address);
+                console.log(claims[signer.address]);
+
+                // Adjust if midstream claims/withdraws have been made
+                const adjustedExpectedReward = ethers.BigNumber.from(expectedReward).sub(claims[signer.address] || 0);
+
+                let claimed = ethers.BigNumber.from(0);
+
+                // Claim from both stakers
+                for (const s of [staker, staker2]) {
+                    const claimTx = await claimSingle(s, signer);
+
+                    const receipt = await claimTx.wait();
+
+                    // Cannot use expect matchers because of rounded equal comparison
+                    const claimEvent = receipt.events?.find(e => e.event === "UserClaim");
+
+                    expect(claimEvent).to.not.be.undefined;
+                    expect(claimEvent?.args?.[0]).to.eq(signer.address);
+                    claimed = claimed.add(claimEvent?.args?.[1]);
+                }
+
+                console.log("Checking claim...", signer.address);
+
+                expectRoundedEqual(claimed, adjustedExpectedReward, 5);
+
+                const postclaimBalance = await magic.balanceOf(signer.address);
+
+                console.log("Checking balance change...");
+
+                expectRoundedEqual(postclaimBalance.sub(preclaimBalance), expectedReward, 5);
+
+                // Withdraw funds to make sure we can
+                if ((await staker.userStake(signer.address)).gt(0)) {
+                    await expect(staker.connect(signer).withdraw()).to.not.be.reverted;
+                }
+
+                if ((await staker2.userStake(signer.address)).gt(0)) {
+                    await expect(staker2.connect(signer).withdraw()).to.not.be.reverted;
+                }
+
+                // Make sure another claim gives 0
+                await claimWithRoundedRewardCheck(staker, signer, 0);
+                await claimWithRoundedRewardCheck(staker2, signer, 0);
+            }
+        });
     });
 });

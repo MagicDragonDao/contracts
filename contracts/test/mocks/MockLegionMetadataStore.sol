@@ -34,6 +34,16 @@ contract MockLegionMetadataStore is ILegionMetadataStore {
                     0,
                     [0, 0, 0, 0, 0, 0]
                 );
+        } else if (_tokenId >= 100) {
+            return
+                LegionMetadata(
+                    LegionGeneration.GENESIS,
+                    LegionClass.NUMERAIRE,
+                    LegionRarity.UNCOMMON,
+                    0,
+                    0,
+                    [0, 0, 0, 0, 0, 0]
+                );
         } else {
             return
                 LegionMetadata(
