@@ -83,8 +83,6 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
     uint256 lastDepositId;
     /// @notice Total MAGIC rewards earned by staking.
     uint256 totalRewardsEarned;
-    /// @notice Rewards earned from Atlas Mine, but not withdrawn
-    uint256 currentRewardsEarned;
     /// @notice Rewards accumulated per share
     uint256 accRewardsPerShare;
 
@@ -183,18 +181,13 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
 
         // Set reward debt to 0 if withdrawing
         rewardDebts[msg.sender] = 0;
-        currentRewardsEarned -= reward;
 
         // If we need to unstake, unstake until we have enough
-        if (payout > _totalUnstaked()) {
-            _unstakeToTarget(payout - _totalUnstaked());
+        if (payout > _totalUsableMagic()) {
+            _unstakeToTarget(payout - _totalUsableMagic());
         }
 
-        console.log("Paying out", msg.sender, payout);
-
         IERC20(magic).safeTransfer(msg.sender, payout);
-
-        console.log("Balance after payout", IERC20(magic).balanceOf(address(this)));
 
         emit UserWithdraw(msg.sender, amount, reward);
     }
@@ -215,16 +208,16 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
 
         // Unstake if we need to to ensure we can withdraw
         int256 accumulatedRewards = ((amount * accRewardsPerShare) / ONE).toInt256();
+        // console.log("ACCUMULATED AND DEBT");
+        // console.logInt(accumulatedRewards);
+        // console.logInt(rewardDebt);
+        // console.logInt(accumulatedRewards - rewardDebt);
         uint256 reward = (accumulatedRewards - rewardDebt).toUint256();
 
         rewardDebts[msg.sender] = accumulatedRewards;
-        currentRewardsEarned -= reward;
 
         if (reward > _totalUsableMagic()) {
-            uint256 needed = reward - _totalUsableMagic();
-            console.log("REWARD", reward);
-            console.log("NEEDED", needed);
-            console.log("USABLE", _totalUsableMagic());
+            _unstakeToTarget(reward - _totalUsableMagic());
         }
 
         if (reward > _totalUsableMagic() && _withinTolerance(_totalUsableMagic(), reward)) {
@@ -237,11 +230,11 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
 
         require(reward <= _totalUsableMagic(), "Not enough rewards to claim");
 
-        console.log("Paying out at claim", msg.sender, reward);
+        // console.log("Paying out at claim", msg.sender, reward);
 
         IERC20(magic).safeTransfer(msg.sender, reward);
 
-        console.log("Balance after payout", IERC20(magic).balanceOf(address(this)));
+        // console.log("Balance after payout", IERC20(magic).balanceOf(address(this)));
 
         emit UserClaim(msg.sender, reward);
     }
@@ -412,7 +405,7 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
      * @param target                The amount of tokens to reclaim from the mine.
      */
     function unstakeToTarget(uint256 target) external override onlyOwner {
-        _harvestMine();
+        _updateRewards();
         _unstakeToTarget(target);
     }
 
@@ -643,18 +636,23 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
      */
     function _harvestMine() internal returns (uint256, uint256) {
         uint256 preclaimBalance = IERC20(magic).balanceOf(address(this));
-        mine.harvestAll();
-        uint256 postclaimBalance = IERC20(magic).balanceOf(address(this));
 
-        uint256 earned = postclaimBalance - preclaimBalance;
+        try mine.harvestAll() {
+            uint256 postclaimBalance = IERC20(magic).balanceOf(address(this));
 
-        // Reserve the 'fee' amount of what is earned
-        uint256 feeEarned = (earned * fee) / FEE_DENOMINATOR;
-        feeReserve += feeEarned;
+            uint256 earned = postclaimBalance - preclaimBalance;
 
-        emit MineHarvest(earned - feeEarned, feeEarned);
+            // Reserve the 'fee' amount of what is earned
+            uint256 feeEarned = (earned * fee) / FEE_DENOMINATOR;
+            feeReserve += feeEarned;
 
-        return (earned - feeEarned, feeEarned);
+            emit MineHarvest(earned - feeEarned, feeEarned);
+
+            return (earned - feeEarned, feeEarned);
+        } catch {
+            // Failed because of reward debt calculation - should be 0
+            return (0, 0);
+        }
     }
 
     /**
@@ -666,7 +664,6 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
 
         (uint256 newRewards, ) = _harvestMine();
         totalRewardsEarned += newRewards;
-        currentRewardsEarned += newRewards;
 
         accRewardsPerShare += (newRewards * ONE) / totalStaked;
     }
@@ -745,7 +742,7 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
         // Current magic held in contract
         uint256 unstaked = IERC20(magic).balanceOf(address(this));
 
-        return unstaked - feeReserve - currentRewardsEarned;
+        return unstaked - feeReserve;
     }
 
     /**

@@ -181,39 +181,22 @@ export const expectRoundedEqual = (num: BigNumberish, target: BigNumberish): voi
     num = ethers.BigNumber.from(num);
     target = ethers.BigNumber.from(target);
 
-    // Tolerable precision is 0.01%. Precision is lost in the magic mine in both
-    // calculating NFT reward boosts and timing per second
-    const precision = 50;
-
-    if (target.eq(0)) {
-        expect(num).to.be.lt(precision);
-    } else {
-        // Expect it to be within 4 0s of precision, less than 1 bp diff
-        const lowerBound = target.div(precision).mul(precision - 1);
-        const upperBound = target.div(precision).mul(precision + 1);
-
-        expect(num).to.be.gt(lowerBound);
-        expect(num).to.be.lt(upperBound);
-    }
-};
-
-export const expectRoughEqual = (num: BigNumberish, target: BigNumberish): void => {
-    num = ethers.BigNumber.from(num);
-    target = ethers.BigNumber.from(target);
-
-    // Tolerable precision is 1%. Precision is lost in the magic mine in both
+    // Tolerable precision is 0.1%. Precision is lost in the magic mine in both
     // calculating NFT reward boosts and timing per second
     const precision = 100;
+    const denom = ether("1").div(precision);
 
     if (target.eq(0)) {
-        expect(num).to.be.lt(precision);
+        expect(num).to.be.lte(denom);
+    } else if (num.eq(0)) {
+        expect(target).to.be.lte(denom);
     } else {
-        // Expect it to be within 4 0s of precision, less than 1 bp diff
-        const lowerBound = target.div(precision).mul(precision - 1);
-        const upperBound = target.div(precision).mul(precision + 1);
+        // Expect it to be less than 2% diff
+        const lowerBound = target.div(denom).mul(denom.div(100).mul(98));
+        const upperBound = target.div(denom).mul(denom.div(100).mul(102));
 
-        expect(num).to.be.gt(lowerBound);
-        expect(num).to.be.lt(upperBound);
+        expect(num).to.be.gte(lowerBound);
+        expect(num).to.be.lte(upperBound);
     }
 };
 
@@ -680,7 +663,7 @@ export const setupAdvancedScenario4 = (ctx: TestContext): ScenarioInfo => {
     // At T = 0.25:   50               50               0               0
     // At T = 0.5:    60                0              40               0
     // At T = 0.75: 37.5                0              25            37.5
-    // Totals:     45.21            29.17           16.25            9.38
+    // Totals:   45.2075          29.1667           16.25           9.375
 
     const {
         users: [user1, user2, user3, user4],
@@ -690,7 +673,7 @@ export const setupAdvancedScenario4 = (ctx: TestContext): ScenarioInfo => {
 
     const baseAmount = ether("100");
     const totalTime = end - start;
-    const totalRewardsBase = TOTAL_REWARDS.div(10000);
+    const totalRewardsBase = TOTAL_REWARDS.div(1000000);
 
     const actions: Action[] = [
         {
@@ -758,19 +741,23 @@ export const setupAdvancedScenario4 = (ctx: TestContext): ScenarioInfo => {
     const rewards: RewardInfo[] = [
         {
             signer: user1,
-            expectedReward: totalRewardsBase.mul(4521).div(100).mul(96),
+            expectedReward: totalRewardsBase.mul(452075).div(100).mul(96),
+            // expectedReward: totalRewardsBase.mul(452075),
         },
         {
             signer: user2,
-            expectedReward: totalRewardsBase.mul(2917).div(100).mul(96),
+            expectedReward: totalRewardsBase.mul(291667).div(100).mul(96),
+            // expectedReward: totalRewardsBase.mul(291667),
         },
         {
             signer: user3,
-            expectedReward: totalRewardsBase.mul(1625).div(100).mul(96),
+            expectedReward: totalRewardsBase.mul(162500).div(100).mul(96),
+            // expectedReward: totalRewardsBase.mul(162500),
         },
         {
             signer: user4,
-            expectedReward: totalRewardsBase.mul(938).div(100).mul(96),
+            expectedReward: totalRewardsBase.mul(93750).div(100).mul(96),
+            // expectedReward: totalRewardsBase.mul(937500),
         },
     ];
 
@@ -783,7 +770,11 @@ export const setupAdvancedScenario4 = (ctx: TestContext): ScenarioInfo => {
 
 // }
 
-export const runScenario = async (ctx: TestContext, actions: Action[]): Promise<{ [user: string]: BigNumberish }> => {
+export const runScenario = async (
+    ctx: TestContext,
+    actions: Action[],
+    logCheckpoints = false,
+): Promise<{ [user: string]: BigNumberish }> => {
     const { staker, end } = ctx;
     const claims: { [user: string]: BigNumberish } = {};
 
@@ -848,10 +839,42 @@ export const runScenario = async (ctx: TestContext, actions: Action[]): Promise<
         }
 
         // Actions for timestamp done
+
+        if (logCheckpoints) {
+            // Report balances for all coins
+            const { users, magic } = ctx;
+
+            console.log("Timestamp:", timestamp);
+            console.log("Total Staked", await staker.totalStaked());
+            console.log("Balances");
+            for (const user of users.slice(0, 4)) {
+                console.log();
+                console.log(`Wallet balance (${user.address}): ${await magic.balanceOf(user.address)}`);
+                console.log(`Staker balance (${user.address}): ${await staker.userStake(user.address)}`);
+            }
+        }
     }
 
     // Now roll to end - all staking should be processed
     await rollTo(end);
 
     return claims;
+};
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const shuffle = (array: any[]) => {
+    let currentIndex = array.length,
+        randomIndex;
+
+    // While there remain elements to shuffle...
+    while (currentIndex != 0) {
+        // Pick a remaining element...
+        randomIndex = Math.floor(Math.random() * currentIndex);
+        currentIndex--;
+
+        // And swap it with the current element.
+        [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+    }
+
+    return array;
 };
