@@ -14,11 +14,8 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "treasure-staking/contracts/AtlasMine.sol";
 import "./interfaces/IAtlasMineStaker.sol";
 
-import "hardhat/console.sol";
-
-// TODO: Re-do stake accounnting to give withdrawal ticket
+// TODO: Give users withdrawal ticket
 // TODO: Look into utilization ratio
-// TODO: If not enough rewards, draw down from fee reserve
 
 /**
  * @title AtlasMineStaker
@@ -187,9 +184,6 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
             _unstakeToTarget(payout - _totalUsableMagic());
         }
 
-        console.log("PAYING OUT", address(this));
-        console.log(msg.sender, amount, reward);
-
         IERC20(magic).safeTransfer(msg.sender, payout);
 
         emit UserWithdraw(msg.sender, amount, reward);
@@ -211,10 +205,6 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
 
         // Unstake if we need to to ensure we can withdraw
         int256 accumulatedRewards = ((amount * accRewardsPerShare) / ONE).toInt256();
-        // console.log("ACCUMULATED AND DEBT");
-        // console.logInt(accumulatedRewards);
-        // console.logInt(rewardDebt);
-        // console.logInt(accumulatedRewards - rewardDebt);
         uint256 reward = (accumulatedRewards - rewardDebt).toUint256();
 
         rewardDebts[msg.sender] = accumulatedRewards;
@@ -233,11 +223,7 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
 
         require(reward <= _totalUsableMagic(), "Not enough rewards to claim");
 
-        // console.log("Paying out at claim", msg.sender, reward);
-
         IERC20(magic).safeTransfer(msg.sender, reward);
-
-        // console.log("Balance after payout", IERC20(magic).balanceOf(address(this)));
 
         emit UserClaim(msg.sender, reward);
     }

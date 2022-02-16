@@ -303,12 +303,7 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
 
                 await setup5050Scenario(ctx);
 
-                console.log("DONE");
-
                 await claimWithRoundedRewardCheck(staker, user, ether("6500"));
-
-                console.log("OR THIS ONE");
-
                 // Claim again, get very small rewards - 1 second passed
                 await claimWithRoundedRewardCheck(staker, user, 0);
             });
@@ -1102,7 +1097,7 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
         });
     });
 
-    describe.only("Advanced Rewards Calculation", () => {
+    describe("Advanced Rewards Calculation", () => {
         /**
          * Different advanced scenarios:
          * different deposits at different times
@@ -1114,7 +1109,7 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
          * For each scenario, precalculate and test all outputs
          */
         it("scenario 1", async () => {
-            const { magic, admin, staker } = ctx;
+            const { magic, staker } = ctx;
             const { actions, rewards } = setupAdvancedScenario1(ctx);
             // const { actions, rewards } = setupAdvancedScenario4(ctx);
 
@@ -1269,7 +1264,7 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
             await expect(staker.connect(admin).withdrawFees()).to.not.be.reverted;
         });
 
-        it.only("scenario 5", async () => {
+        it("scenario 5", async () => {
             const { magic, admin, staker, mine, users, legions } = ctx;
 
             // Set up another staker and stake without boosts
@@ -1299,7 +1294,7 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 preclaimBalances[signer.address] = await magic.balanceOf(signer.address);
             }
 
-            const claims = await runScenario(ctx, actions);
+            await runScenario(ctx, actions);
 
             // Now check all expected rewards and user balance
             const shuffledRewards = shuffle(rewards);
@@ -1307,20 +1302,9 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 const { signer, expectedReward } = reward;
                 const preclaimBalance = preclaimBalances[signer.address];
 
-                console.log("total expected for", signer.address);
-                console.log(expectedReward);
-                console.log("Claims for", signer.address);
-                console.log(claims[signer.address]);
-
-                // Adjust if midstream claims/withdraws have been made
-                const adjustedExpectedReward = ethers.BigNumber.from(expectedReward).sub(claims[signer.address] || 0);
-
-                let claimed = ethers.BigNumber.from(0);
-
                 // Claim from both stakers
                 for (const s of [staker, staker2]) {
                     const claimTx = await claimSingle(s, signer);
-
                     const receipt = await claimTx.wait();
 
                     // Cannot use expect matchers because of rounded equal comparison
@@ -1328,17 +1312,9 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
 
                     expect(claimEvent).to.not.be.undefined;
                     expect(claimEvent?.args?.[0]).to.eq(signer.address);
-                    claimed = claimed.add(claimEvent?.args?.[1]);
                 }
 
-                console.log("Checking claim...", signer.address);
-
-                expectRoundedEqual(claimed, adjustedExpectedReward, 5);
-
                 const postclaimBalance = await magic.balanceOf(signer.address);
-
-                console.log("Checking balance change...");
-
                 expectRoundedEqual(postclaimBalance.sub(preclaimBalance), expectedReward, 5);
 
                 // Withdraw funds to make sure we can
