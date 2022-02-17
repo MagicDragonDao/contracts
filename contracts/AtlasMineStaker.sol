@@ -213,14 +213,6 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
             _unstakeToTarget(reward - _totalUsableMagic());
         }
 
-        if (reward > _totalUsableMagic() && _withinTolerance(_totalUsableMagic(), reward)) {
-            uint256 needed = reward - _totalUsableMagic();
-
-            if (feeReserve > needed) {
-                feeReserve -= needed;
-            }
-        }
-
         require(reward <= _totalUsableMagic(), "Not enough rewards to claim");
 
         IERC20(magic).safeTransfer(msg.sender, reward);
@@ -722,19 +714,6 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
     }
 
     /**
-     * @dev Calculate total amount of MAGIC unstaked. Same as totalUsable,
-     *      but does not count rewards that haven't yet been withdrawn
-     *
-     * @return amount               The amount of unstaked MAGIC.
-     */
-    function _totalUnstaked() internal view returns (uint256) {
-        // Current magic held in contract
-        uint256 unstaked = IERC20(magic).balanceOf(address(this));
-
-        return unstaked - feeReserve;
-    }
-
-    /**
      * @dev Calculate total amount of MAGIC under control of the contract.
      *      Counts staked and unstaked MAGIC. Does _not_ count accumulated
      *      but unclaimed rewards.
@@ -778,11 +757,6 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
      */
     function _getDay(uint256 timestamp) internal pure returns (uint256) {
         return timestamp / 86400;
-    }
-
-    function _withinTolerance(uint256 num, uint256 target) internal pure returns (bool) {
-        // If num is within 1% of tolerance, draw needed from fees
-        return (num / 100) * 101 >= target;
     }
 
     /**
