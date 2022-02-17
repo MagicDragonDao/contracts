@@ -2,10 +2,6 @@
     "name": "@millenarian/magic-deagon-contracts",
     "description": "Template for writing Solidity smart contracts",
     "version": "1.0.0",
-    "originalAuthor": {
-        "name": "Paul Razvan Berg",
-        "url": "https://paulrberg.com"
-    },
     "devDependencies": {
         "@codechecks/client": "^0.1.12",
         "@commitlint/cli": "^14.1.0",
