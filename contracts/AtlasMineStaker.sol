@@ -14,9 +14,6 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "treasure-staking/contracts/AtlasMine.sol";
 import "./interfaces/IAtlasMineStaker.sol";
 
-// TODO: Give users withdrawal ticket
-// TODO: Look into utilization ratio
-
 /**
  * @title AtlasMineStaker
  * @author kvk0x
