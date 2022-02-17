@@ -122,22 +122,6 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 await expect(stakeSingle(staker, user, 0)).to.be.revertedWith("Deposit amount 0");
             });
 
-            it("does not allow a user to stake if their deposit is too small", async () => {
-                const {
-                    users: [user1, user2],
-                    staker,
-                } = ctx;
-
-                // User 1s deposit must be 1e9 times user two's deposit
-                // Here we use 1E vs. 1 wei
-                await expect(
-                    stakeSequence(staker, [
-                        [user1, ether("1")],
-                        [user2, 1],
-                    ]),
-                ).to.be.revertedWith("Deposit too small");
-            });
-
             it("allows a user to stake", async () => {
                 const {
                     users: [user],
@@ -255,9 +239,6 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
         });
 
         describe("claim", () => {
-            // TODO: Should be able to delete after redoing staking to act more like a router
-            it("does not allow a user to claim if there are not enough unlocked coins");
-
             it("distributes the correct amount of pro rata rewards", async () => {
                 const {
                     users: [user],
@@ -292,8 +273,6 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 expectRoundedEqual(await magic.balanceOf(user1.address), ether("209600"));
                 expectRoundedEqual(await magic.balanceOf(user2.address), ether("123200"));
             });
-
-            it("draws down from fee reserve if there are not enough rewards due to a rounding error");
 
             it("should not allow a user to claim twice", async () => {
                 const {
@@ -646,11 +625,44 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
 
     describe("Owner Operations", () => {
         describe("Administration", () => {
-            it("does not allow a non-owner to set atlas mine approvals");
-            it("allows an owner to set atlas mine approvals");
+            it("does not allow a non-owner to set atlas mine approvals", async () => {
+                const {
+                    users: [user],
+                    staker,
+                } = ctx;
 
-            it("does not allow a non-owner to revoke atlas mine approvals");
-            it("allows an owner to revoke atlas mine approvals");
+                await expect(staker.connect(user).approveNFTs()).to.be.revertedWith("Ownable: caller is not the owner");
+            });
+
+            it("allows an owner to set atlas mine approvals", async () => {
+                const { admin, staker, mine, legions, treasures } = ctx;
+
+                await expect(staker.connect(admin).approveNFTs()).to.not.be.reverted;
+
+                expect(await legions.isApprovedForAll(staker.address, mine.address)).to.be.true;
+                expect(await treasures.isApprovedForAll(staker.address, mine.address)).to.be.true;
+            });
+
+            it("does not allow a non-owner to revoke atlas mine approvals", async () => {
+                const {
+                    users: [user],
+                    staker,
+                } = ctx;
+
+                await expect(staker.connect(user).revokeNFTApprovals()).to.be.revertedWith(
+                    "Ownable: caller is not the owner",
+                );
+            });
+
+            it("allows an owner to revoke atlas mine approvals", async () => {
+                const { admin, staker, mine, legions, treasures } = ctx;
+
+                await expect(staker.connect(admin).approveNFTs()).to.not.be.reverted;
+                await expect(staker.connect(admin).revokeNFTApprovals()).to.not.be.reverted;
+
+                expect(await legions.isApprovedForAll(staker.address, mine.address)).to.be.false;
+                expect(await treasures.isApprovedForAll(staker.address, mine.address)).to.be.false;
+            });
 
             it("does not allow a non-owner to set the reward fee", async () => {
                 const {
