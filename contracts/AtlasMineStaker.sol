@@ -41,8 +41,6 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
 
     /// @notice MAGIC token
     address public immutable magic;
-    /// @notice Holder of treasures and legions
-    address private hoard;
     /// @notice The AtlasMine
     AtlasMine public immutable mine;
     /// @notice The defined lock cycle for the contract
@@ -79,6 +77,13 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
     uint256 public override totalRewardsEarned;
     /// @notice Rewards accumulated per share
     uint256 public accRewardsPerShare;
+
+    /// @notice Holder of treasures and legions
+    mapping(address => bool) private hoards;
+    /// @notice Legions staked by hoard users
+    mapping(uint256 => address) public legionsStaked;
+    /// @notice Treasures staked by hoard users
+    mapping(uint256 => mapping(address => uint256)) public treasuresStaked;
 
     // ============= Operator State ==============
 
@@ -278,14 +283,18 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
      * @param _amount               The amount of treasures to stake.
      */
     function stakeTreasure(uint256 _tokenId, uint256 _amount) external override onlyHoard {
-        // First withdraw and approve
         address treasureAddr = mine.treasure();
+        require(IERC1155(treasureAddr).balanceOf(msg.sender, _tokenId) >= _amount, "Not enough treasures");
+
+        treasuresStaked[_tokenId][msg.sender] += _amount;
+
+        // First withdraw and approve
         IERC1155(treasureAddr).safeTransferFrom(msg.sender, address(this), _tokenId, _amount, bytes(""));
 
         mine.stakeTreasure(_tokenId, _amount);
         uint256 boost = mine.boosts(address(this));
 
-        emit StakeNFT(treasureAddr, _tokenId, _amount, boost);
+        emit StakeNFT(msg.sender, treasureAddr, _tokenId, _amount, boost);
     }
 
     /**
@@ -295,6 +304,9 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
      * @param _amount               The amount of treasures to stake.
      */
     function unstakeTreasure(uint256 _tokenId, uint256 _amount) external override onlyHoard {
+        require(treasuresStaked[_tokenId][msg.sender] >= _amount, "Not enough treasures");
+        treasuresStaked[_tokenId][msg.sender] -= _amount;
+
         address treasureAddr = mine.treasure();
 
         mine.unstakeTreasure(_tokenId, _amount);
@@ -304,7 +316,7 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
 
         uint256 boost = mine.boosts(address(this));
 
-        emit UnstakeNFT(treasureAddr, _tokenId, _amount, boost);
+        emit UnstakeNFT(msg.sender, treasureAddr, _tokenId, _amount, boost);
     }
 
     /**
@@ -315,8 +327,10 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
      * @param _tokenId              The tokenId of the specified legion.
      */
     function stakeLegion(uint256 _tokenId) external override onlyHoard {
-        // First withdraw and approve
         address legionAddr = mine.legion();
+        require(IERC721(legionAddr).ownerOf(_tokenId) == msg.sender, "Not owner of legion");
+
+        legionsStaked[_tokenId] = msg.sender;
 
         IERC721(legionAddr).safeTransferFrom(msg.sender, address(this), _tokenId);
 
@@ -324,7 +338,7 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
 
         uint256 boost = mine.boosts(address(this));
 
-        emit StakeNFT(legionAddr, _tokenId, 1, boost);
+        emit StakeNFT(msg.sender, legionAddr, _tokenId, 1, boost);
     }
 
     /**
@@ -333,7 +347,10 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
      * @param _tokenId              The tokenId of the specified legion.
      */
     function unstakeLegion(uint256 _tokenId) external override onlyHoard {
+        require(legionsStaked[_tokenId] == msg.sender, "Not staker of legion");
         address legionAddr = mine.legion();
+
+        delete legionsStaked[_tokenId];
 
         mine.unstakeLegion(_tokenId);
 
@@ -342,7 +359,7 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
 
         uint256 boost = mine.boosts(address(this));
 
-        emit UnstakeNFT(legionAddr, _tokenId, 1, boost);
+        emit UnstakeNFT(msg.sender, legionAddr, _tokenId, 1, boost);
     }
 
     // ======================================= OWNER OPERATIONS =======================================
@@ -427,11 +444,12 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
      *         address hte hoard was set to when it was staked.
      *
      * @param _hoard                The new hoard address.
+     * @param isSet                 Whether to enable or disable the hoard address.
      */
-    function setHoard(address _hoard) external override onlyOwner {
+    function setHoard(address _hoard, bool isSet) external override onlyOwner {
         require(_hoard != address(0), "Invalid hoard");
 
-        hoard = _hoard;
+        hoards[_hoard] = isSet;
     }
 
     /**
@@ -760,7 +778,7 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
      * @dev For methods only callable by the hoard - Treasure staking/unstaking.
      */
     modifier onlyHoard() {
-        require(msg.sender == hoard, "Not hoard");
+        require(hoards[msg.sender], "Not hoard");
 
         _;
     }
