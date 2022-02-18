@@ -304,7 +304,7 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
 
             hoard = _hoard;
 
-            await staker.connect(admin).setHoard(hoard.address);
+            await staker.connect(admin).setHoard(hoard.address, true);
 
             // Mint 4 treasures
             // Token id 161 - 7.3% boost
@@ -346,11 +346,29 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
             await expect(staker.connect(user).stakeLegion(2)).to.be.revertedWith("Not hoard");
         });
 
+        it("does not allow the hoard to unstake a treasure that is not owned", async () => {
+            const { staker } = ctx;
+            const treasureTokenId = 99;
+
+            await expect(staker.connect(hoard).stakeTreasure(treasureTokenId, 10)).to.be.revertedWith(
+                "Not enough treasures",
+            );
+        });
+
+        it("does not allow the hoard to unstake a legion that is not owned", async () => {
+            // Max boost
+            const { staker, legions, admin } = ctx;
+            await legions.mint(admin.address, 2);
+
+            await expect(staker.connect(hoard).stakeLegion(2)).to.be.revertedWith("Not owner of legion");
+        });
+
         it("allows the hoard to stake a treasure", async () => {
             const { staker, treasures } = ctx;
             const tokenId = 103;
 
             await expect(staker.connect(hoard).stakeTreasure(tokenId, 20)).to.emit(staker, "StakeNFT").withArgs(
+                hoard.address,
                 treasures.address,
                 tokenId,
                 20,
@@ -363,6 +381,7 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
             const tokenId = 0;
 
             await expect(staker.connect(hoard).stakeLegion(tokenId)).to.emit(staker, "StakeNFT").withArgs(
+                hoard.address,
                 legions.address,
                 tokenId,
                 1,
@@ -445,9 +464,32 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
             await expect(staker.connect(user).unstakeLegion(2)).to.be.revertedWith("Not hoard");
         });
 
+        it("does not allow the hoard to unstake a treasure that hasn't been staked", async () => {
+            const { staker } = ctx;
+            const treasureTokenId = 97;
+            const otherTokenId = 161;
+
+            // 15.8 * 20 = 316% boost
+            await staker.connect(hoard).stakeTreasure(treasureTokenId, 20);
+
+            await expect(staker.connect(hoard).unstakeTreasure(otherTokenId, 10)).to.be.revertedWith(
+                "Not enough treasures",
+            );
+        });
+
+        it("does not allow the hoard to unstake a legion that hasn't been staked", async () => {
+            // Max boost
+            const { staker } = ctx;
+
+            await staker.connect(hoard).stakeLegion(0);
+            await staker.connect(hoard).stakeLegion(10);
+
+            await expect(staker.connect(hoard).unstakeLegion(1)).to.be.revertedWith("Not staker of legion");
+        });
+
         it("allows the hoard to unstake a treasure", async () => {
             // Max boost
-            const { staker, mine } = ctx;
+            const { staker, mine, treasures } = ctx;
             const treasureTokenId = 97;
 
             // 15.8 * 20 = 316% boost
@@ -462,15 +504,20 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
             expect(await mine.boosts(staker.address)).to.eq(ether("13.16"));
 
             // Unstake 10 treasures - should remove 158% boost
-            await staker.connect(hoard).unstakeTreasure(treasureTokenId, 10);
+            await expect(staker.connect(hoard).unstakeTreasure(treasureTokenId, 10))
+                .to.emit(staker, "UnstakeNFT")
+                .withArgs(hoard.address, treasures.address, treasureTokenId, 10, ether("11.58"));
 
             // total 1316 - 158 =  1158% boost
             expect(await mine.boosts(staker.address)).to.eq(ether("11.58"));
+
+            // Treasures back in staker wallet
+            expect(await treasures.balanceOf(hoard.address, treasureTokenId)).to.eq(10);
         });
 
         it("allows the hoard to unstake a legion", async () => {
             // Max boost
-            const { staker, mine } = ctx;
+            const { staker, mine, legions } = ctx;
             const treasureTokenId = 97;
 
             // 15.8 * 20 = 316% boost
@@ -485,10 +532,79 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
             expect(await mine.boosts(staker.address)).to.eq(ether("13.16"));
 
             // Unstake 1/1 legion - should remove 600% boost
-            await staker.connect(hoard).unstakeLegion(0);
+            await expect(staker.connect(hoard).unstakeLegion(0))
+                .to.emit(staker, "UnstakeNFT")
+                .withArgs(hoard.address, legions.address, 0, 1, ether("7.16"));
 
             // total 1316 - 600 =  716% boost
             expect(await mine.boosts(staker.address)).to.eq(ether("7.16"));
+
+            // Legion back in staker wallet
+            expect(await legions.ownerOf(0)).to.eq(hoard.address);
+        });
+
+        it("does not allow a non-owner to remove a hoard", async () => {
+            const {
+                users: [user],
+                staker,
+            } = ctx;
+
+            await expect(staker.connect(user).setHoard(hoard.address, false)).to.be.revertedWith(
+                "Ownable: caller is not the owner",
+            );
+        });
+
+        it("allows the owner to remove a hoard", async () => {
+            const { admin, staker } = ctx;
+            const treasureTokenId = 0;
+
+            await expect(staker.connect(admin).setHoard(hoard.address, false)).to.not.be.reverted;
+
+            await expect(staker.connect(hoard).stakeTreasure(treasureTokenId, 20)).to.be.revertedWith("Not hoard");
+
+            await expect(staker.connect(hoard).stakeLegion(0)).to.be.revertedWith("Not hoard");
+        });
+
+        it("allows multiple hoards to stake in parallel", async () => {
+            // Stake from two hoards
+            const { users, admin, staker, treasures, legions, mine } = ctx;
+            const legionHoard = users[2];
+            const treasureTokenId = 97;
+
+            await staker.connect(admin).setHoard(legionHoard.address, true);
+
+            await legions.mint(legionHoard.address, 2);
+            await legions.mint(legionHoard.address, 12);
+            await legions.mint(legionHoard.address, 13);
+            await treasures.mint(legionHoard.address, treasureTokenId, 20);
+
+            await treasures.connect(legionHoard).setApprovalForAll(staker.address, true);
+            await legions.connect(legionHoard).setApprovalForAll(staker.address, true);
+
+            // Stake from both accounts
+            await staker.connect(legionHoard).stakeLegion(2);
+            await staker.connect(legionHoard).stakeLegion(12);
+            await staker.connect(legionHoard).stakeLegion(13);
+            await staker.connect(legionHoard).stakeTreasure(treasureTokenId, 10);
+            await staker.connect(hoard).stakeTreasure(treasureTokenId, 10);
+
+            // Make sure boosts correct
+            expect(await mine.boosts(staker.address)).to.eq(ether("13.16"));
+
+            // Make sure one user can't unstake the other's NFTs
+            await expect(staker.connect(legionHoard).unstakeTreasure(treasureTokenId, 15)).to.be.revertedWith(
+                "Not enough treasures",
+            );
+
+            await expect(staker.connect(hoard).unstakeLegion(12)).to.be.revertedWith("Not staker of legion");
+
+            // Make sure unstakes go to same wallet
+            await staker.connect(legionHoard).unstakeLegion(2);
+            expect(await legions.ownerOf(2)).to.eq(legionHoard.address);
+
+            await staker.connect(hoard).unstakeTreasure(treasureTokenId, 10);
+            expect(await treasures.balanceOf(hoard.address, treasureTokenId)).to.eq(20);
+            expect(await treasures.balanceOf(legionHoard.address, treasureTokenId)).to.eq(10);
         });
     });
 
@@ -740,21 +856,21 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 expectRoundedEqual(postclaimBalance.sub(preclaimBalance), fee.mul(2));
             });
 
-            it("does not allow a non-owner to change the hoard address", async () => {
+            it("does not allow a non-owner to add a hoard address", async () => {
                 const {
                     users: [user],
                     staker,
                 } = ctx;
 
-                await expect(staker.connect(user).setHoard(user.address)).to.be.revertedWith(
+                await expect(staker.connect(user).setHoard(user.address, true)).to.be.revertedWith(
                     "Ownable: caller is not the owner",
                 );
             });
 
-            it("allows the owner to change the hoard address", async () => {
+            it("allows the owner to add a hoard address", async () => {
                 const { admin, staker, users } = ctx;
 
-                await expect(staker.connect(admin).setHoard(users[3].address)).to.not.be.reverted;
+                await expect(staker.connect(admin).setHoard(users[3].address, true)).to.not.be.reverted;
             });
         });
 
@@ -1290,7 +1406,7 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
             await Promise.all(stakerApprove);
 
             const hoard = users[users.length - 1];
-            await staker.connect(admin).setHoard(hoard.address);
+            await staker.connect(admin).setHoard(hoard.address, true);
             await legions.mint(hoard.address, 110);
             await legions.connect(hoard).setApprovalForAll(staker.address, true);
             await staker.connect(hoard).stakeLegion(110);
