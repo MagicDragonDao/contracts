@@ -24,6 +24,7 @@ const chainIds = {
     mainnet: 1,
     rinkeby: 4,
     ropsten: 3,
+    arbitrumOne: 42161,
 };
 
 // Ensure that we have all the environment variables we need.
@@ -121,6 +122,11 @@ const config: HardhatUserConfig = {
         kovan: createTestnetConfig("kovan"),
         rinkeby: createTestnetConfig("rinkeby"),
         ropsten: createTestnetConfig("ropsten"),
+        arbitrumOne: {
+            url: "https://arb1.arbitrum.io/rpc",
+            accounts: { mnemonic },
+            chainId: chainIds.arbitrumOne,
+        },
         localhost: {
             accounts: {
                 mnemonic,
@@ -166,7 +172,10 @@ const config: HardhatUserConfig = {
         ],
     },
     etherscan: {
-        apiKey: process.env.ETHERSCAN_API_KEY,
+        apiKey: {
+            mainnet: process.env.ETHERSCAN_API_KEY,
+            arbitrumOne: process.env.ARBISCAN_API_KEY,
+        },
     },
 };
 
