@@ -69,6 +69,8 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
     uint256 public totalStaked;
     /// @notice The amount of tokens staked by an account
     mapping(address => uint256) public userStake;
+    /// @notice The timestamp of the last time a user deposited. Cannot withdraw until >2 weeks
+    mapping(address => uint256) public userLastDeposit;
     /// @notice The amount of tokens owed to a user who's deposited.
     mapping(address => int256) public rewardDebts;
     /// @notice All stakes currently active
@@ -134,6 +136,7 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
 
         // Update accounting
         userStake[msg.sender] += _amount;
+        userLastDeposit[msg.sender] = block.timestamp;
         totalStaked += _amount;
 
         // Add debt instead of resetting it since amount might also be already deposited
@@ -160,6 +163,7 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
         // Update accounting
         uint256 amount = userStake[msg.sender];
         require(amount > 0, "No deposit");
+        require(userLastDeposit[msg.sender] + 2 weeks < block.timestamp, "Deposit locked");
 
         // Distribute tokens
         _updateRewards();
