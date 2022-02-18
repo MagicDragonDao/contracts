@@ -64,7 +64,7 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
     /// @notice Deposited, but unstaked tokens, keyed by the day number since epoch
     mapping(uint256 => uint256) public pendingStakes;
     /// @notice Last time pending stakes were deposited
-    uint256 lastStakeTimestamp;
+    uint256 public lastStakeTimestamp;
     /// @notice The total amount of staked token
     uint256 public totalStaked;
     /// @notice The amount of tokens staked by an account
