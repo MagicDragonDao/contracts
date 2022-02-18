@@ -170,8 +170,10 @@ export const rollToPartialWindow = async (start: number, end: number, ratio: num
     return timestamp;
 };
 
-export const rollTo = async (time: number): Promise<void> => {
+export const rollTo = async (time: number): Promise<number> => {
     await setNextBlockTimestamp(time);
+
+    return time;
 };
 
 /////////////////////////////////////////////////////////////////////////////////

@@ -39,6 +39,7 @@ import {
     rollToPartialWindow,
     TOTAL_REWARDS,
     shuffle,
+    ONE_DAY_SEC,
 } from "./helpers";
 
 const ether = ethers.utils.parseEther;
@@ -137,8 +138,6 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
 
                 expect(await staker.userStake(user.address)).to.eq(amount);
                 expect(await magic.balanceOf(user.address)).to.eq(ether("99990"));
-
-                // TODO: Check mine status if we do insta-stake
             });
         });
 
@@ -153,16 +152,27 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 await expect(withdrawSingle(staker, user2)).to.be.revertedWith("No deposit");
             });
 
-            it("does not allow a user to withdraw if there are not enough unlocked coins", async () => {
+            it("does not allow a user to withdraw if their last deposit is more recent than the lock time", async () => {
                 const {
                     users: [user],
                     staker,
+                    start,
                 } = ctx;
+
+                const firstStakeTs = await rollTo(start + ONE_DAY_SEC);
                 await stakeSingle(staker, user, ether("10"));
 
-                await rollSchedule(staker);
+                await rollSchedule(staker, firstStakeTs);
 
-                await expect(withdrawSingle(staker, user)).to.be.revertedWith("Cannot unstake enough");
+                await expect(withdrawSingle(staker, user)).to.be.revertedWith("Deposits locked");
+
+                // Roll forward 7 days and stake again
+                await rollTo(firstStakeTs + ONE_DAY_SEC * 7);
+                await stakeSingle(staker, user, ether("10"));
+
+                // Roll lock and try to withdraw
+                await rollLock(firstStakeTs);
+                await expect(withdrawSingle(staker, user)).to.be.revertedWith("Deposits locked");
             });
 
             it("efficiently unstakes locked coins to retain as much reward-earning deposit as possible", async () => {
@@ -1272,7 +1282,6 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 await claimWithRoundedRewardCheck(staker, signer, 0);
             }
 
-            // TODO: make sure admin can withdraw fee
             await expect(staker.connect(admin).withdrawFees()).to.not.be.reverted;
         });
 
