@@ -19,7 +19,6 @@ import {
     TestContext,
     stakeSingle,
     stakeMultiple,
-    stakeSequence,
     withdrawSingle,
     claimSingle,
     rollSchedule,
