@@ -45,6 +45,8 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
     AtlasMine public immutable mine;
     /// @notice The defined lock cycle for the contract
     AtlasMine.Lock public immutable lock;
+    /// @notice The defined lock time for the contract
+    uint256 public immutable locktime;
 
     // ============= Staking State ==============
 
@@ -67,6 +69,8 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
     uint256 public totalStaked;
     /// @notice The amount of tokens staked by an account
     mapping(address => uint256) public userStake;
+    /// @notice The timestamp of the last time a user deposited. Cannot withdraw until locktime + 1 day elapsed
+    mapping(address => uint256) public userLastDeposit;
     /// @notice The amount of tokens owed to a user who's deposited.
     mapping(address => int256) public rewardDebts;
     /// @notice All stakes currently active
@@ -114,6 +118,8 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
         /// @notice each staker cycles its locks for a predefined amount. New
         ///         lock cycle, new contract.
         lock = _lock;
+        (, uint256 _locktime) = mine.getLockBoost(lock);
+        locktime = _locktime;
 
         lastStakeTimestamp = block.timestamp;
 
@@ -139,6 +145,7 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
 
         // Update accounting
         userStake[msg.sender] += _amount;
+        userLastDeposit[msg.sender] = block.timestamp;
         totalStaked += _amount;
 
         // Add debt instead of resetting it since amount might also be already deposited
@@ -165,6 +172,7 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
         // Update accounting
         uint256 amount = userStake[msg.sender];
         require(amount > 0, "No deposit");
+        require(userLastDeposit[msg.sender] + locktime + 1 days < block.timestamp, "Deposits locked");
 
         // Distribute tokens
         _updateRewards();
@@ -256,7 +264,6 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
         uint256 lastDay = _getDay(lastStakeTimestamp);
         lastStakeTimestamp = block.timestamp;
 
-        (, uint256 locktime) = mine.getLockBoost(lock);
         uint256 unlockAt = block.timestamp + locktime;
 
         uint256 amountToStake = 0;
@@ -572,7 +579,6 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
 
         uint256 depositId = ++lastDepositId;
 
-        (, uint256 locktime) = mine.getLockBoost(lock);
         uint256 unlockAt = block.timestamp + locktime;
 
         stakes.push(Stake({ amount: _amount, unlockAt: unlockAt, depositId: depositId }));
