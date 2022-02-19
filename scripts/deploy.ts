@@ -3,8 +3,19 @@ import { ethers } from "hardhat";
 import { SECTION_SEPARATOR } from "./constants";
 
 import type { AtlasMineStaker } from "../src/types/AtlasMineStaker";
+import type { ERC20 } from "../src/types/ERC20";
 
 export async function main(): Promise<void> {
+    // await deploy();
+    await approveMagic();
+
+    // Other possible actions:
+    // Transfer ownership
+    // Set a DAO fee
+    // Set a hoard address
+}
+
+export async function deploy(): Promise<void> {
     console.log(SECTION_SEPARATOR);
     const signers = await ethers.getSigners();
     console.log("Deployer address: ", signers[0].address);
@@ -21,11 +32,16 @@ export async function main(): Promise<void> {
     await staker.deployed();
 
     console.log("Staker deployed to:", staker.address);
+}
 
-    // Other possible actions:
-    // Transfer ownership
-    // Set a DAO fee
-    // Set a hoard address
+async function approveMagic(): Promise<void> {
+    const staker = "0x760b432f51dd210C3559987D6D55ee2DE1Db44E6";
+    const MAGIC = "0x539bde0d7dbd336b79148aa742883198bbf60342";
+
+    const factory = await ethers.getContractFactory("ERC20");
+    const magic = <ERC20>await factory.attach(MAGIC);
+
+    await magic.approve(staker, ethers.utils.parseEther("100"));
 }
 
 // We recommend this pattern to be able to use async/await everywhere
