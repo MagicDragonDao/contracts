@@ -14,9 +14,23 @@ interface IAtlasMineStaker {
     event SetFee(uint256 fee);
     event StakingPauseToggle(bool paused);
 
+    // ================= Data Types ==================
+
+    struct Stake {
+        uint256 amount;
+        uint256 unlockAt;
+        uint256 depositId;
+    }
+
+    struct UserStake {
+        uint256 amount;
+        uint256 unlockAt;
+        int256 rewardDebt;
+    }
+
     // =============== View Functions ================
 
-    function userStake(address user) external returns (uint256);
+    function getUserStake(address user, uint256 depositId) external returns (UserStake memory);
 
     function totalMagic() external returns (uint256);
 
@@ -30,9 +44,13 @@ interface IAtlasMineStaker {
 
     function deposit(uint256 _amount) external;
 
-    function withdraw() external;
+    function withdraw(uint256 depositId, uint256 amount) external;
 
-    function claim() external;
+    function withdrawAll() external;
+
+    function claim(uint256 depositId) external;
+
+    function claimAll() external;
 
     function withdrawEmergency() external;
 

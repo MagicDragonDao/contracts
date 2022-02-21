@@ -9,6 +9,7 @@ import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/utils/math/SafeCast.sol";
+import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 import "treasure-staking/contracts/AtlasMine.sol";
@@ -34,10 +35,11 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
     using Address for address;
     using SafeCast for uint256;
     using SafeCast for int256;
+    using EnumerableSet for EnumerableSet.UintSet;
 
     // ============================================ STATE ==============================================
 
-    // ============= Global State ==============
+    // ============= Global Immutable State ==============
 
     /// @notice MAGIC token
     address public immutable magic;
@@ -48,16 +50,9 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
     /// @notice The defined lock time for the contract
     uint256 public immutable locktime;
 
-    // ============= Staking State ==============
+    // ============= Global Staking State ==============
 
-    uint256 public constant ONE = 1e38;
-
-    /// @notice An individual stake i.e. deposit
-    struct Stake {
-        uint256 amount;
-        uint256 unlockAt;
-        uint256 depositId;
-    }
+    uint256 public constant ONE = 1e30;
 
     /// @notice Whether new stakes will get staked on the contract as scheduled. For emergencies
     bool public schedulePaused;
@@ -67,12 +62,6 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
     uint256 public lastStakeTimestamp;
     /// @notice The total amount of staked token
     uint256 public totalStaked;
-    /// @notice The amount of tokens staked by an account
-    mapping(address => uint256) public userStake;
-    /// @notice The timestamp of the last time a user deposited. Cannot withdraw until locktime + 1 day elapsed
-    mapping(address => uint256) public userLastDeposit;
-    /// @notice The amount of tokens owed to a user who's deposited.
-    mapping(address => int256) public rewardDebts;
     /// @notice All stakes currently active
     Stake[] public stakes;
     /// @notice Deposit ID of last stake. Also tracked in atlas mine
@@ -81,6 +70,24 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
     uint256 public override totalRewardsEarned;
     /// @notice Rewards accumulated per share
     uint256 public accRewardsPerShare;
+
+    // ============= User Staking State ==============
+
+    /// @notice Each user stake, keyed by user address => deposit ID
+    mapping(address => mapping(uint256 => UserStake)) public userStake;
+    /// @notice All deposit IDs fro a user, enumerated
+    mapping(address => EnumerableSet.UintSet) private allUserDepositIds;
+    /// @notice The current ID of the user's last deposited stake
+    mapping(address => uint256) public currentId;
+
+    // /// @notice The amount of tokens staked by an account
+    // mapping(address => uint256) public userStake;
+    // /// @notice The timestamp of the last time a user deposited. Cannot withdraw until locktime + 1 day elapsed
+    // mapping(address => uint256) public userLastDeposit;
+    // /// @notice The amount of tokens owed to a user who's deposited.
+    // mapping(address => int256) public rewardDebts;
+
+    // ============= NFT Boosting State ==============
 
     /// @notice Holder of treasures and legions
     mapping(address => bool) private hoards;
@@ -139,18 +146,22 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
      * @param _amount               The amount of tokens to deposit.
      */
     function deposit(uint256 _amount) public virtual override {
+        require(!schedulePaused, "new staking paused");
         require(_amount > 0, "Deposit amount 0");
 
         _updateRewards();
 
-        // Update accounting
-        userStake[msg.sender] += _amount;
-        userLastDeposit[msg.sender] = block.timestamp;
+        // Add user stake
+        uint256 newDepositId = ++currentId[msg.sender];
+        allUserDepositIds[msg.sender].add(newDepositId);
+        UserStake storage s = userStake[msg.sender][newDepositId];
+
+        s.amount = _amount;
+        s.unlockAt = block.timestamp + locktime + 1 days;
+        s.rewardDebt = ((_amount * accRewardsPerShare) / ONE).toInt256();
+
+        // Update global accounting
         totalStaked += _amount;
-
-        // Add debt instead of resetting it since amount might also be already deposited
-        rewardDebts[msg.sender] += ((_amount * accRewardsPerShare) / ONE).toInt256();
-
         uint256 day = _getDay(block.timestamp);
         pendingStakes[day] += _amount;
 
@@ -167,27 +178,33 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
      *         earned rewards in addition to original deposit.
      *         There must be enough unlocked tokens to withdraw.
      *
+     * @param depositId             The ID of the deposit to withdraw from.
+     * @param _amount               The amount to withdraw.
+     *
      */
-    function withdraw() public virtual override {
-        // Update accounting
-        uint256 amount = userStake[msg.sender];
-        require(amount > 0, "No deposit");
-        require(userLastDeposit[msg.sender] + locktime + 1 days < block.timestamp, "Deposits locked");
+    function withdraw(uint256 depositId, uint256 _amount) public virtual override {
+        UserStake storage s = userStake[msg.sender][depositId];
+        require(s.amount > 0, "No deposit");
+        require(block.timestamp >= s.unlockAt, "Deposit locked");
+
+        if (_amount > s.amount) {
+            _amount = s.amount;
+        }
 
         // Distribute tokens
         _updateRewards();
 
-        userStake[msg.sender] -= amount;
-        totalStaked -= amount;
-        int256 rewardDebt = rewardDebts[msg.sender];
-
         // Unstake if we need to to ensure we can withdraw
-        int256 accumulatedRewards = ((amount * accRewardsPerShare) / ONE).toInt256();
-        uint256 reward = (accumulatedRewards - rewardDebt).toUint256();
-        uint256 payout = amount + reward;
+        int256 accumulatedRewards = ((s.amount * accRewardsPerShare) / ONE).toInt256();
+        uint256 reward = (accumulatedRewards - s.rewardDebt).toUint256();
+        uint256 payout = _amount + reward;
 
-        // Set reward debt to 0 if withdrawing
-        rewardDebts[msg.sender] = 0;
+        // Update user accounting
+        s.amount -= _amount;
+        s.rewardDebt -= ((_amount * accRewardsPerShare) / ONE).toInt256();
+
+        // Update global accounting
+        totalStaked -= _amount;
 
         // If we need to unstake, unstake until we have enough
         if (payout > _totalUsableMagic()) {
@@ -196,7 +213,24 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
 
         IERC20(magic).safeTransfer(msg.sender, payout);
 
-        emit UserWithdraw(msg.sender, amount, reward);
+        emit UserWithdraw(msg.sender, _amount, reward);
+    }
+
+    /**
+     * @notice Withdraw all eligible deposits from the staker contract.
+     *         Will skip any deposits not yet unlocked. Will also
+     *         distribute rewards for all stakes via 'withdraw'.
+     *
+     */
+    function withdrawAll() public virtual {
+        uint256[] memory depositIds = allUserDepositIds[msg.sender].values();
+        for (uint256 i = 0; i < depositIds.length; i++) {
+            UserStake storage s = userStake[msg.sender][depositIds[i]];
+
+            if (s.unlockAt > 0 && s.unlockAt <= block.timestamp) {
+                withdraw(depositIds[i], type(uint256).max);
+            }
+        }
     }
 
     /**
@@ -204,21 +238,23 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
      *         are not enough tokens in the contract to claim rewards.
      *         Does not attempt to unstake.
      *
+     * @param depositId             The ID of the deposit to claim rewards from.
+     *
      */
-    function claim() public virtual override {
-        // Update accounting
-        uint256 amount = userStake[msg.sender];
-        int256 rewardDebt = rewardDebts[msg.sender];
+    function claim(uint256 depositId) public virtual override {
+        UserStake storage s = userStake[msg.sender][depositId];
+        require(s.amount > 0, "No deposit");
 
         // Distribute tokens
         _updateRewards();
 
+        // Update accounting
+        int256 accumulatedRewards = ((s.amount * accRewardsPerShare) / ONE).toInt256();
+        uint256 reward = (accumulatedRewards - s.rewardDebt).toUint256();
+
+        s.rewardDebt = accumulatedRewards;
+
         // Unstake if we need to to ensure we can withdraw
-        int256 accumulatedRewards = ((amount * accRewardsPerShare) / ONE).toInt256();
-        uint256 reward = (accumulatedRewards - rewardDebt).toUint256();
-
-        rewardDebts[msg.sender] = accumulatedRewards;
-
         if (reward > _totalUsableMagic()) {
             _unstakeToTarget(reward - _totalUsableMagic());
         }
@@ -228,6 +264,18 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
         IERC20(magic).safeTransfer(msg.sender, reward);
 
         emit UserClaim(msg.sender, reward);
+    }
+
+    /**
+     * @notice Claim all possible rewards from the staker contract.
+     *         Will apply to both locked and unlocked deposits.
+     *
+     */
+    function claimAll() public virtual {
+        uint256[] memory depositIds = allUserDepositIds[msg.sender].values();
+        for (uint256 i = 0; i < depositIds.length; i++) {
+            claim(depositIds[i]);
+        }
     }
 
     /**
@@ -546,7 +594,7 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
      * @notice Returns all magic that has been deposited, but not staked, and is eligible
      *         to be staked (deposit time < current day).
      *
-     * @return total               The total amount of MAGIC that can be withdrawn
+     * @return total               The total amount of MAGIC that can be withdrawn.
      */
     function totalWithdrawableMagic() external view override returns (uint256) {
         uint256 pendingRewards;
@@ -564,6 +612,15 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
         }
 
         return _totalUsableMagic() + pendingRewards + vestedPrincipal;
+    }
+
+    /**
+     * @notice Returns the details of a user stake.
+     *
+     * @return userStake           The details of a user stake.
+     */
+    function getUserStake(address user, uint256 depositId) external view override returns (UserStake memory) {
+        return userStake[user][depositId];
     }
 
     // ============================================ HELPERS ============================================
