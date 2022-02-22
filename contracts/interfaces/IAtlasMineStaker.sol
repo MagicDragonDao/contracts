@@ -32,6 +32,8 @@ interface IAtlasMineStaker {
 
     function getUserStake(address user, uint256 depositId) external returns (UserStake memory);
 
+    function userTotalStake(address user) external returns (uint256);
+
     function totalMagic() external returns (uint256);
 
     function totalPendingStake() external returns (uint256);

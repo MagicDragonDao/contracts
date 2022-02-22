@@ -20,6 +20,7 @@ import {
     stakeSingle,
     stakeMultiple,
     withdrawSingle,
+    withdrawExactDeposit,
     claimSingle,
     rollSchedule,
     rollLock,
@@ -135,7 +136,7 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                     .to.emit(staker, "UserDeposit")
                     .withArgs(user.address, amount);
 
-                expect(await staker.userStake(user.address)).to.eq(amount);
+                expect(await staker.userTotalStake(user.address)).to.eq(amount);
                 expect(await magic.balanceOf(user.address)).to.eq(ether("99990"));
             });
         });
@@ -148,7 +149,8 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 } = ctx;
                 await stakeSingle(staker, user1, ether("10"));
 
-                await expect(withdrawSingle(staker, user2)).to.be.revertedWith("No deposit");
+                const lastDepositId = await staker.currentId(user1.address);
+                await expect(withdrawExactDeposit(staker, user2, lastDepositId)).to.be.revertedWith("No deposit");
             });
 
             it("does not allow a user to withdraw if their last deposit is more recent than the lock time", async () => {
@@ -160,18 +162,21 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
 
                 const firstStakeTs = await rollTo(start + ONE_DAY_SEC);
                 await stakeSingle(staker, user, ether("10"));
+                const firstDepositId = await staker.currentId(user.address);
 
                 await rollSchedule(staker, firstStakeTs);
 
-                await expect(withdrawSingle(staker, user)).to.be.revertedWith("Deposits locked");
+                await expect(withdrawExactDeposit(staker, user, firstDepositId)).to.be.revertedWith("Deposit locked");
 
                 // Roll forward 7 days and stake again
                 await rollTo(firstStakeTs + ONE_DAY_SEC * 7);
                 await stakeSingle(staker, user, ether("10"));
+                const secondDepositId = await staker.currentId(user.address);
 
                 // Roll lock and try to withdraw
                 await rollLock(firstStakeTs);
-                await expect(withdrawSingle(staker, user)).to.be.revertedWith("Deposits locked");
+                await expect(withdrawExactDeposit(staker, user, secondDepositId)).to.be.revertedWith("Deposit locked");
+                await expect(withdrawExactDeposit(staker, user, firstDepositId)).to.not.be.reverted;
             });
 
             it("efficiently unstakes locked coins to retain as much reward-earning deposit as possible", async () => {
@@ -630,8 +635,8 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
             ]);
 
             // Check stakes
-            expect(await staker.userStake(user1.address)).to.eq(ether("1"));
-            expect(await staker.userStake(user2.address)).to.eq(ether("55"));
+            expect(await staker.userTotalStake(user1.address)).to.eq(ether("1"));
+            expect(await staker.userTotalStake(user2.address)).to.eq(ether("55"));
         });
 
         it("returns the correct amount of magic controlled by the contract", async () => {
@@ -740,7 +745,7 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
             expectRoundedEqual(await staker.totalWithdrawableMagic(), TOTAL_REWARDS.add(ether("10")));
 
             // Have one user withdraw
-            tx = await staker.connect(user2).withdraw();
+            tx = await staker.connect(user2).withdrawAll();
             await tx.wait();
 
             // Should have 10 percent of rewards plus deposit withdrawable
@@ -990,10 +995,9 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
 
         it("allows the owner to pause the stake schedule", async () => {
             const {
-                users: [user1, user2],
+                users: [user1],
                 admin,
                 staker,
-                start,
             } = ctx;
 
             await expect(staker.connect(admin).toggleSchedulePause(true))
@@ -1001,16 +1005,7 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 .withArgs(true);
 
             // New stakes should not be allowed
-            await stakeMultiple(staker, [
-                [user1, ether("1")],
-                [user2, ether("9")],
-            ]);
-
-            // Should be able to withdraw anything since it hasn't been staked
-            expect(await staker.totalWithdrawableMagic()).to.eq(ether("10"));
-
-            await rollTo(start);
-            await expect(staker.stakeScheduled()).to.be.revertedWith("new staking paused");
+            await expect(staker.connect(user1).deposit(ether("1"))).to.be.revertedWith("new staking paused");
         });
 
         it("does not allow a non-owner to unstake everything from the mine", async () => {
@@ -1234,7 +1229,7 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
         });
     });
 
-    describe("Advanced Rewards Calculation", () => {
+    describe.only("Advanced Rewards Calculation", () => {
         /**
          * Different advanced scenarios:
          * different deposits at different times
@@ -1269,7 +1264,7 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 expectRoundedEqual(postclaimBalance.sub(preclaimBalance), expectedReward);
 
                 // Withdraw funds to make sure we can
-                await expect(staker.connect(signer).withdraw()).to.not.be.reverted;
+                await expect(staker.connect(signer).withdrawAll()).to.not.be.reverted;
 
                 // Mine a block to wind clock
                 await ethers.provider.send("evm_increaseTime", [10]);
@@ -1282,12 +1277,13 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
             }
         });
 
-        it("scenario 2", async () => {
+        it.only("scenario 2", async () => {
             const { magic, admin, staker } = ctx;
             const { actions, rewards } = setupAdvancedScenario2(ctx);
 
             const preclaimBalances: { [user: string]: BigNumberish } = {};
             for (const { signer } of rewards) {
+                console.log("Signer", signer.address);
                 preclaimBalances[signer.address] = await magic.balanceOf(signer.address);
             }
 
@@ -1304,7 +1300,7 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
 
                 // Adjust if midstream claims/withdraws have been made
                 const adjustedExpectedReward = ethers.BigNumber.from(expectedReward).sub(claims[signer.address] || 0);
-                // console.log('Expected', signer.address, adjustedExpectedReward);
+                console.log("Expected", signer.address, adjustedExpectedReward);
 
                 await claimWithRoundedRewardCheck(staker, signer, adjustedExpectedReward);
                 const postclaimBalance = await magic.balanceOf(signer.address);
@@ -1312,8 +1308,8 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 expectRoundedEqual(postclaimBalance.sub(preclaimBalance), expectedReward);
 
                 // Withdraw funds to make sure we can
-                if ((await staker.userStake(signer.address)).gt(0)) {
-                    await expect(staker.connect(signer).withdraw()).to.not.be.reverted;
+                if ((await staker.userTotalStake(signer.address)).gt(0)) {
+                    await expect(staker.connect(signer).withdrawAll()).to.not.be.reverted;
                 }
 
                 // Make sure another claim gives 0
@@ -1350,8 +1346,8 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 expectRoundedEqual(postclaimBalance.sub(preclaimBalance), expectedReward);
 
                 // Withdraw funds to make sure we can
-                if ((await staker.userStake(signer.address)).gt(0)) {
-                    await expect(staker.connect(signer).withdraw()).to.not.be.reverted;
+                if ((await staker.userTotalStake(signer.address)).gt(0)) {
+                    await expect(staker.connect(signer).withdrawAll()).to.not.be.reverted;
                 }
 
                 // Make sure another claim gives 0
@@ -1389,8 +1385,8 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 expectRoundedEqual(postclaimBalance.sub(preclaimBalance), expectedReward);
 
                 // Withdraw funds to make sure we can
-                if ((await staker.userStake(signer.address)).gt(0)) {
-                    await expect(staker.connect(signer).withdraw()).to.not.be.reverted;
+                if ((await staker.userTotalStake(signer.address)).gt(0)) {
+                    await expect(staker.connect(signer).withdrawAll()).to.not.be.reverted;
                 }
 
                 // Make sure another claim gives 0
@@ -1454,12 +1450,12 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 expectRoundedEqual(postclaimBalance.sub(preclaimBalance), expectedReward, 5);
 
                 // Withdraw funds to make sure we can
-                if ((await staker.userStake(signer.address)).gt(0)) {
-                    await expect(staker.connect(signer).withdraw()).to.not.be.reverted;
+                if ((await staker.userTotalStake(signer.address)).gt(0)) {
+                    await expect(staker.connect(signer).withdrawAll()).to.not.be.reverted;
                 }
 
-                if ((await staker2.userStake(signer.address)).gt(0)) {
-                    await expect(staker2.connect(signer).withdraw()).to.not.be.reverted;
+                if ((await staker2.userTotalStake(signer.address)).gt(0)) {
+                    await expect(staker2.connect(signer).withdrawAll()).to.not.be.reverted;
                 }
 
                 // Make sure another claim gives 0

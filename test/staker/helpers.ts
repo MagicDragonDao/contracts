@@ -13,6 +13,7 @@ import type { AtlasMine } from "../../src/types/AtlasMine";
 import type { TestERC20 } from "../../src/types/TestERC20";
 import type { TestERC1155 } from "../../src/types/TestERC1155";
 import type { TestERC721 } from "../../src/types/TestERC721";
+import { MAX_UINT64 } from "ethereumjs-util";
 
 chai.use(solidity);
 
@@ -94,7 +95,15 @@ export const withdrawSingle = async (
     staker: AtlasMineStaker,
     user: SignerWithAddress,
 ): Promise<ContractTransaction> => {
-    return staker.connect(user).withdraw();
+    return staker.connect(user).withdrawAll();
+};
+
+export const withdrawExactDeposit = async (
+    staker: AtlasMineStaker,
+    user: SignerWithAddress,
+    depositId: BigNumberish,
+): Promise<ContractTransaction> => {
+    return staker.connect(user).withdraw(depositId, TOTAL_REWARDS);
 };
 
 export const withdrawWithRoundedRewardCheck = async (
@@ -136,7 +145,7 @@ export const claimWithRoundedRewardCheck = async (
 };
 
 export const claimSingle = async (staker: AtlasMineStaker, user: SignerWithAddress): Promise<ContractTransaction> => {
-    return staker.connect(user).claim();
+    return staker.connect(user).claimAll();
 };
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -1008,7 +1017,7 @@ export const runScenario = async (
                 tx = await staker.connect(signer).deposit(amount);
             } else if (action === "claim") {
                 // No need to roll, just claim - keep track of amount rewarded
-                tx = await staker.connect(signer).claim();
+                tx = await staker.connect(signer).claimAll();
                 const receipt = await tx.wait();
 
                 const claimEvent = receipt.events?.find(e => e.event === "UserClaim");
@@ -1025,7 +1034,7 @@ export const runScenario = async (
                 }
             } else if (action === "withdraw") {
                 // No need to roll, just claim - keep track of amount rewarded
-                tx = await staker.connect(signer).withdraw();
+                tx = await staker.connect(signer).withdrawAll();
                 const receipt = await tx.wait();
 
                 const withdrawEvent = receipt.events?.find(e => e.event === "UserWithdraw");
@@ -1084,7 +1093,7 @@ export const runScenario = async (
             for (const user of users.slice(0, 4)) {
                 console.log();
                 console.log(`Wallet balance (${user.address}): ${await magic.balanceOf(user.address)}`);
-                console.log(`Staker balance (${user.address}): ${await globalStaker.userStake(user.address)}`);
+                console.log(`Staker balance (${user.address}): ${await globalStaker.userTotalStake(user.address)}`);
             }
         }
     }

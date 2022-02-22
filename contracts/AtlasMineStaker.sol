@@ -243,7 +243,6 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
      */
     function claim(uint256 depositId) public virtual override {
         UserStake storage s = userStake[msg.sender][depositId];
-        require(s.amount > 0, "No deposit");
 
         // Distribute tokens
         _updateRewards();
@@ -629,6 +628,19 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
      */
     function getUserStake(address user, uint256 depositId) external view override returns (UserStake memory) {
         return userStake[user][depositId];
+    }
+
+    /**
+     * @notice Returns the total amount staked by a user.
+     *
+     * @return totalStake           The total amount of MAGIC staked by a user.
+     */
+    function userTotalStake(address user) external view override returns (uint256 totalStake) {
+        uint256[] memory depositIds = allUserDepositIds[user].values();
+        for (uint256 i = 0; i < depositIds.length; i++) {
+            UserStake storage s = userStake[user][depositIds[i]];
+            totalStake += s.amount;
+        }
     }
 
     // ============================================ HELPERS ============================================
