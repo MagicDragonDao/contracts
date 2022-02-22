@@ -201,7 +201,7 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
 
         // Update user accounting
         s.amount -= _amount;
-        s.rewardDebt -= ((_amount * accRewardsPerShare) / ONE).toInt256();
+        s.rewardDebt = accumulatedRewards;
 
         // Update global accounting
         totalStaked -= _amount;

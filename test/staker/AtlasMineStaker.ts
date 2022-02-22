@@ -1277,7 +1277,7 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
             }
         });
 
-        it.only("scenario 2", async () => {
+        it("scenario 2", async () => {
             const { magic, admin, staker } = ctx;
             const { actions, rewards } = setupAdvancedScenario2(ctx);
 
