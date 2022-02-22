@@ -288,15 +288,23 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
     function withdrawEmergency() public virtual override {
         require(schedulePaused, "Not in emergency state");
 
-        uint256 amount = userStake[msg.sender];
-        userStake[msg.sender] -= amount;
-        totalStaked -= amount;
+        uint256 totalStake;
 
-        require(amount <= _totalUsableMagic(), "Not enough unstaked");
+        uint256[] memory depositIds = allUserDepositIds[msg.sender].values();
+        for (uint256 i = 0; i < depositIds.length; i++) {
+            UserStake storage s = userStake[msg.sender][depositIds[i]];
 
-        IERC20(magic).safeTransfer(msg.sender, amount);
+            totalStake += s.amount;
+            s.amount = 0;
 
-        emit UserWithdraw(msg.sender, amount, 0);
+            require(totalStake <= _totalUsableMagic(), "Not enough unstaked");
+        }
+
+        totalStaked -= totalStake;
+
+        IERC20(magic).safeTransfer(msg.sender, totalStake);
+
+        emit UserWithdraw(msg.sender, totalStake, 0);
     }
 
     /**
