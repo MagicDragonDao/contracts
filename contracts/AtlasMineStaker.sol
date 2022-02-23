@@ -194,10 +194,6 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
 
         // Update user accounting
         s.amount -= _amount;
-
-        // TODO: What is the right value here
-        // Used to be 0 (since no debt if withdrawing)
-        // Or should accumulatedRewards be added or removed
         s.rewardDebt = 0;
 
         // Update global accounting
