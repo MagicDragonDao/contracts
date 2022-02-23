@@ -17,8 +17,6 @@ import "./interfaces/IAtlasMineStaker.sol";
 
 import "hardhat/console.sol";
 
-// TODO: Update events to use depositId
-
 /**
  * @title AtlasMineStaker
  * @author kvk0x
@@ -221,7 +219,7 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
 
         IERC20(magic).safeTransfer(msg.sender, payout);
 
-        emit UserWithdraw(msg.sender, _amount, reward);
+        emit UserWithdraw(msg.sender, depositId, _amount, reward);
     }
 
     /**
@@ -270,7 +268,7 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
 
         IERC20(magic).safeTransfer(msg.sender, reward);
 
-        emit UserClaim(msg.sender, reward);
+        emit UserClaim(msg.sender, depositId, reward);
     }
 
     /**
@@ -311,7 +309,7 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
 
         IERC20(magic).safeTransfer(msg.sender, totalStake);
 
-        emit UserWithdraw(msg.sender, totalStake, 0);
+        emit UserWithdraw(msg.sender, 0, totalStake, 0);
     }
 
     /**

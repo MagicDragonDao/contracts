@@ -203,7 +203,7 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 // No rewards because program hasn't started yet
                 await expect(withdrawSingle(staker, user1))
                     .to.emit(staker, "UserWithdraw")
-                    .withArgs(user1.address, amount, 0);
+                    .withArgs(user1.address, 1, amount, 0);
 
                 // User returned all funds
                 expect(await magic.balanceOf(user1.address)).to.eq(ether("100000"));
@@ -247,8 +247,9 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 const withdrawEvent = receipt.events?.find(e => e.event === "UserWithdraw");
                 expect(withdrawEvent).to.not.be.undefined;
                 expect(withdrawEvent?.args?.[0]).to.eq(user1.address);
-                expect(withdrawEvent?.args?.[1]).to.eq(amount);
-                expectRoundedEqual(withdrawEvent?.args?.[2], ether("6500"));
+                expect(withdrawEvent?.args?.[1]).to.eq(depositId);
+                expect(withdrawEvent?.args?.[2]).to.eq(amount);
+                expectRoundedEqual(withdrawEvent?.args?.[3], ether("6500"));
 
                 // User returned a single stake + reward
                 expectRoundedEqual(await magic.balanceOf(user1.address), ether("86500"));
@@ -288,8 +289,9 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 const withdrawEvent = receipt.events?.find(e => e.event === "UserWithdraw");
                 expect(withdrawEvent).to.not.be.undefined;
                 expect(withdrawEvent?.args?.[0]).to.eq(user1.address);
-                expect(withdrawEvent?.args?.[1]).to.eq(amount);
-                expectRoundedEqual(withdrawEvent?.args?.[2], ether("6500"));
+                expect(withdrawEvent?.args?.[1]).to.eq(depositId);
+                expect(withdrawEvent?.args?.[2]).to.eq(amount);
+                expectRoundedEqual(withdrawEvent?.args?.[3], ether("6500"));
 
                 // User returned a single stake + reward
                 expectRoundedEqual(await magic.balanceOf(user1.address), ether("86500"));
@@ -365,7 +367,8 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 const claimEvent = receipt.events?.find(e => e.event === "UserClaim");
                 expect(claimEvent).to.not.be.undefined;
                 expect(claimEvent?.args?.[0]).to.eq(user1.address);
-                expectRoundedEqual(claimEvent?.args?.[1], ether("6500"));
+                expect(claimEvent?.args?.[1]).to.eq(depositId);
+                expectRoundedEqual(claimEvent?.args?.[2], ether("6500"));
 
                 // User returned a single stake + reward
                 expectRoundedEqual(await magic.balanceOf(user1.address), ether("66500"));
@@ -771,10 +774,10 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
             // Check stakes
             expect(await staker.userTotalStake(user1.address)).to.eq(ether("56"));
 
-            const stake1 = await staker.userStake(user1.address, 1);
+            const stake1 = await staker.getUserStake(user1.address, 1);
             expect(stake1.amount).to.eq(ether("1"));
 
-            const stake2 = await staker.userStake(user1.address, 2);
+            const stake2 = await staker.getUserStake(user1.address, 2);
             expect(stake2.amount).to.eq(ether("55"));
         });
 
@@ -1329,7 +1332,7 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
 
             await expect(staker.connect(user1).withdrawEmergency())
                 .to.emit(staker, "UserWithdraw")
-                .withArgs(user1.address, ether("20000"), 0);
+                .withArgs(user1.address, 0, ether("20000"), 0);
 
             // Make sure all funds returned, with no rewards
             expect(await magic.balanceOf(user1.address)).to.eq(ether("100000"));
@@ -1368,7 +1371,7 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
 
             await expect(staker.connect(user1).withdrawEmergency())
                 .to.emit(staker, "UserWithdraw")
-                .withArgs(user1.address, ether("20000"), 0);
+                .withArgs(user1.address, 0, ether("20000"), 0);
 
             // Make sure all funds returned, with no rewards
             expect(await magic.balanceOf(user1.address)).to.eq(ether("100000"));

@@ -5,8 +5,8 @@ interface IAtlasMineStaker {
     // ============= Events ==============
 
     event UserDeposit(address indexed user, uint256 amount);
-    event UserWithdraw(address indexed user, uint256 amount, uint256 reward);
-    event UserClaim(address indexed user, uint256 reward);
+    event UserWithdraw(address indexed user, uint256 indexed depositId, uint256 amount, uint256 reward);
+    event UserClaim(address indexed user, uint256 indexed depositId, uint256 reward);
     event MineStake(uint256 currentDepositId, uint256 unlockTime);
     event MineHarvest(uint256 earned, uint256 feeEarned);
     event StakeNFT(address indexed user, address indexed nft, uint256 tokenId, uint256 amount, uint256 currentBoost);

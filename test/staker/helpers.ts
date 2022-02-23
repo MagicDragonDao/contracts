@@ -123,9 +123,9 @@ export const withdrawWithRoundedRewardCheck = async (
     for (const event of withdrawEvents!) {
         expect(event).to.not.be.undefined;
         expect(event?.args?.[0]).to.eq(user.address);
-        amount = amount.add(event?.args?.[1]);
+        amount = amount.add(event?.args?.[2]);
 
-        reward = reward.add(event?.args?.[2]);
+        reward = reward.add(event?.args?.[3]);
     }
 
     expectRoundedEqual(amount, stakeAmount);
@@ -150,7 +150,7 @@ export const claimWithRoundedRewardCheck = async (
         expect(event).to.not.be.undefined;
         expect(event?.args?.[0]).to.eq(user.address);
 
-        reward = reward.add(event?.args?.[1]);
+        reward = reward.add(event?.args?.[2]);
     }
 
     expectRoundedEqual(reward, expectedReward);
@@ -1041,7 +1041,7 @@ export const runScenario = async (
                     expect(event).to.not.be.undefined;
                     expect(event?.args?.[0]).to.eq(signer.address);
 
-                    reward = reward.add(event?.args?.[1]);
+                    reward = reward.add(event?.args?.[2]);
                 }
 
                 if (claims[signer.address]) {
@@ -1061,7 +1061,7 @@ export const runScenario = async (
                     expect(event).to.not.be.undefined;
                     expect(event?.args?.[0]).to.eq(signer.address);
 
-                    reward = reward.add(event?.args?.[2]);
+                    reward = reward.add(event?.args?.[3]);
                 }
 
                 if (claims[signer.address]) {
