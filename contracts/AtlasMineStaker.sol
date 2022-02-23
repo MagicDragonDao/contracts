@@ -17,7 +17,6 @@ import "./interfaces/IAtlasMineStaker.sol";
 
 import "hardhat/console.sol";
 
-// TODO: Add tests for single withdrawals and claims
 // TODO: Update events to use depositId
 
 /**

@@ -215,6 +215,86 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 expect(stakeInfo.depositAmount).to.eq(amount);
             });
 
+            it("withdraws a single deposit", async () => {
+                const {
+                    users: [user1],
+                    staker,
+                    magic,
+                    start,
+                } = ctx;
+
+                const amount = ether("20000");
+                await stakeMultiple(staker, [
+                    [user1, amount],
+                    [user1, amount],
+                ]);
+
+                // Go to start of rewards program
+                await rollTo(start);
+
+                // Make a tx to deposit
+                const tx = await staker.stakeScheduled();
+                await tx.wait();
+
+                await rollLock(start);
+
+                // Fast-forward in scenarios - 1.3mm seconds should pass,
+                // so 13k MAGIC to pool. First user stake should get half
+                const depositId = 1;
+                const withdrawTx = await staker.connect(user1).withdraw(depositId, amount);
+                const receipt = await withdrawTx.wait();
+
+                const withdrawEvent = receipt.events?.find(e => e.event === "UserWithdraw");
+                expect(withdrawEvent).to.not.be.undefined;
+                expect(withdrawEvent?.args?.[0]).to.eq(user1.address);
+                expect(withdrawEvent?.args?.[1]).to.eq(amount);
+                expectRoundedEqual(withdrawEvent?.args?.[2], ether("6500"));
+
+                // User returned a single stake + reward
+                expectRoundedEqual(await magic.balanceOf(user1.address), ether("86500"));
+            });
+
+            it("withdraws the entire deposit if the specified amount is larger than the deposit amount", async () => {
+                const {
+                    users: [user1],
+                    staker,
+                    magic,
+                    start,
+                } = ctx;
+
+                const amount = ether("20000");
+                await stakeMultiple(staker, [
+                    [user1, amount],
+                    [user1, amount],
+                ]);
+
+                // Go to start of rewards program
+                await rollTo(start);
+
+                // Make a tx to deposit
+                const tx = await staker.stakeScheduled();
+                await tx.wait();
+
+                await rollLock(start);
+
+                // Fast-forward in scenarios - 1.3mm seconds should pass,
+                // so 13k MAGIC to pool. First user stake should get half
+                const depositId = 1;
+
+                // Same as last test, but 100x the amount
+                const withdrawTx = await staker.connect(user1).withdraw(depositId, amount.mul(100));
+                const receipt = await withdrawTx.wait();
+
+                const withdrawEvent = receipt.events?.find(e => e.event === "UserWithdraw");
+                expect(withdrawEvent).to.not.be.undefined;
+                expect(withdrawEvent?.args?.[0]).to.eq(user1.address);
+                expect(withdrawEvent?.args?.[1]).to.eq(amount);
+                expectRoundedEqual(withdrawEvent?.args?.[2], ether("6500"));
+
+                // User returned a single stake + reward
+                expectRoundedEqual(await magic.balanceOf(user1.address), ether("86500"));
+            });
+
             it("withdrawal distributes the correct amount of pro rata rewards", async () => {
                 const {
                     users: [user1],
@@ -253,6 +333,44 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
         });
 
         describe("claim", () => {
+            it("claims rewards for a single deposit", async () => {
+                const {
+                    users: [user1],
+                    staker,
+                    magic,
+                    start,
+                } = ctx;
+
+                const amount = ether("20000");
+                await stakeMultiple(staker, [
+                    [user1, amount],
+                    [user1, amount],
+                ]);
+
+                // Go to start of rewards program
+                await rollTo(start);
+
+                // Make a tx to deposit
+                const tx = await staker.stakeScheduled();
+                await tx.wait();
+
+                await rollLock(start);
+
+                // Fast-forward in scenarios - 1.3mm seconds should pass,
+                // so 13k MAGIC to pool. First user stake should get half
+                const depositId = 1;
+                const claimTx = await staker.connect(user1).claim(depositId);
+                const receipt = await claimTx.wait();
+
+                const claimEvent = receipt.events?.find(e => e.event === "UserClaim");
+                expect(claimEvent).to.not.be.undefined;
+                expect(claimEvent?.args?.[0]).to.eq(user1.address);
+                expectRoundedEqual(claimEvent?.args?.[1], ether("6500"));
+
+                // User returned a single stake + reward
+                expectRoundedEqual(await magic.balanceOf(user1.address), ether("66500"));
+            });
+
             it("distributes the correct amount of pro rata rewards", async () => {
                 const {
                     users: [user],
@@ -639,6 +757,27 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
             expect(await staker.userTotalStake(user2.address)).to.eq(ether("55"));
         });
 
+        it("returns the correct details of a single user stake", async () => {
+            const {
+                users: [user1],
+                staker,
+            } = ctx;
+
+            await stakeMultiple(staker, [
+                [user1, ether("1")],
+                [user1, ether("55")],
+            ]);
+
+            // Check stakes
+            expect(await staker.userTotalStake(user1.address)).to.eq(ether("56"));
+
+            const stake1 = await staker.userStake(user1.address, 1);
+            expect(stake1.amount).to.eq(ether("1"));
+
+            const stake2 = await staker.userStake(user1.address, 2);
+            expect(stake2.amount).to.eq(ether("55"));
+        });
+
         it("returns the correct amount of magic controlled by the contract", async () => {
             const {
                 users: [user1, user2],
@@ -807,6 +946,12 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 const { admin, staker } = ctx;
 
                 await expect(staker.connect(admin).setFee(200)).to.emit(staker, "SetFee").withArgs(200);
+            });
+
+            it("does not allow the owner to set a fee larger than the maximum", async () => {
+                const { admin, staker } = ctx;
+
+                await expect(staker.connect(admin).setFee(2000)).to.be.revertedWith("Invalid fee");
             });
 
             it("collects the correct fee when rewards are claimed", async () => {
@@ -1006,6 +1151,7 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
 
             // New stakes should not be allowed
             await expect(staker.connect(user1).deposit(ether("1"))).to.be.revertedWith("new staking paused");
+            await expect(staker.connect(admin).stakeScheduled()).to.be.revertedWith("new staking paused");
         });
 
         it("does not allow a non-owner to unstake everything from the mine", async () => {
