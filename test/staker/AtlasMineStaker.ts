@@ -1229,7 +1229,7 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
         });
     });
 
-    describe.only("Advanced Rewards Calculation", () => {
+    describe("Advanced Rewards Calculation", () => {
         /**
          * Different advanced scenarios:
          * different deposits at different times
@@ -1283,7 +1283,6 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
 
             const preclaimBalances: { [user: string]: BigNumberish } = {};
             for (const { signer } of rewards) {
-                console.log("Signer", signer.address);
                 preclaimBalances[signer.address] = await magic.balanceOf(signer.address);
             }
 
@@ -1300,7 +1299,6 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
 
                 // Adjust if midstream claims/withdraws have been made
                 const adjustedExpectedReward = ethers.BigNumber.from(expectedReward).sub(claims[signer.address] || 0);
-                console.log("Expected", signer.address, adjustedExpectedReward);
 
                 await claimWithRoundedRewardCheck(staker, signer, adjustedExpectedReward);
                 const postclaimBalance = await magic.balanceOf(signer.address);
@@ -1309,6 +1307,7 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
 
                 // Withdraw funds to make sure we can
                 if ((await staker.userTotalStake(signer.address)).gt(0)) {
+                    // await staker.connect(signer).withdrawAll();
                     await expect(staker.connect(signer).withdrawAll()).to.not.be.reverted;
                 }
 

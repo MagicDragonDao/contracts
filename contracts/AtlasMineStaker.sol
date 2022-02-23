@@ -15,6 +15,11 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "treasure-staking/contracts/AtlasMine.sol";
 import "./interfaces/IAtlasMineStaker.sol";
 
+import "hardhat/console.sol";
+
+// TODO: Add tests for single withdrawals and claims
+// TODO: Update events to use depositId
+
 /**
  * @title AtlasMineStaker
  * @author kvk0x
@@ -201,7 +206,11 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
 
         // Update user accounting
         s.amount -= _amount;
-        s.rewardDebt = accumulatedRewards;
+
+        // TODO: What is the right value here
+        // Used to be 0 (since no debt if withdrawing)
+        // Or should accumulatedRewards be added or removed
+        s.rewardDebt = 0;
 
         // Update global accounting
         totalStaked -= _amount;
@@ -227,7 +236,7 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
         for (uint256 i = 0; i < depositIds.length; i++) {
             UserStake storage s = userStake[msg.sender][depositIds[i]];
 
-            if (s.unlockAt > 0 && s.unlockAt <= block.timestamp) {
+            if (s.amount > 0 && s.unlockAt > 0 && s.unlockAt <= block.timestamp) {
                 withdraw(depositIds[i], type(uint256).max);
             }
         }

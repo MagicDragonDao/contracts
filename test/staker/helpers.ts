@@ -116,12 +116,20 @@ export const withdrawWithRoundedRewardCheck = async (
     const receipt = await withdrawTx.wait();
 
     // Cannot use expect matchers because of rounded equal comparison
-    const withdrawEvent = receipt.events?.find(e => e.event === "UserWithdraw");
+    const withdrawEvents = receipt.events?.filter(e => e.event === "UserWithdraw");
 
-    expect(withdrawEvent).to.not.be.undefined;
-    expect(withdrawEvent?.args?.[0]).to.eq(user.address);
-    expect(withdrawEvent?.args?.[1]).to.eq(stakeAmount);
-    expectRoundedEqual(withdrawEvent?.args?.[2], expectedReward);
+    let reward = ethers.BigNumber.from(0);
+    let amount = ethers.BigNumber.from(0);
+    for (const event of withdrawEvents!) {
+        expect(event).to.not.be.undefined;
+        expect(event?.args?.[0]).to.eq(user.address);
+        amount = amount.add(event?.args?.[1]);
+
+        reward = reward.add(event?.args?.[2]);
+    }
+
+    expectRoundedEqual(amount, stakeAmount);
+    expectRoundedEqual(reward, expectedReward);
 
     return withdrawTx;
 };
@@ -135,11 +143,17 @@ export const claimWithRoundedRewardCheck = async (
     const receipt = await claimTx.wait();
 
     // Cannot use expect matchers because of rounded equal comparison
-    const claimEvent = receipt.events?.find(e => e.event === "UserClaim");
+    const claimEvents = receipt.events?.filter(e => e.event === "UserClaim");
 
-    expect(claimEvent).to.not.be.undefined;
-    expect(claimEvent?.args?.[0]).to.eq(user.address);
-    expectRoundedEqual(claimEvent?.args?.[1], expectedReward);
+    let reward = ethers.BigNumber.from(0);
+    for (const event of claimEvents!) {
+        expect(event).to.not.be.undefined;
+        expect(event?.args?.[0]).to.eq(user.address);
+
+        reward = reward.add(event?.args?.[1]);
+    }
+
+    expectRoundedEqual(reward, expectedReward);
 
     return claimTx;
 };
@@ -1020,12 +1034,15 @@ export const runScenario = async (
                 tx = await staker.connect(signer).claimAll();
                 const receipt = await tx.wait();
 
-                const claimEvent = receipt.events?.find(e => e.event === "UserClaim");
+                const claimEvents = receipt.events?.filter(e => e.event === "UserClaim");
 
-                expect(claimEvent).to.not.be.undefined;
-                expect(claimEvent?.args?.[0]).to.eq(signer.address);
+                let reward = ethers.BigNumber.from(0);
+                for (const event of claimEvents!) {
+                    expect(event).to.not.be.undefined;
+                    expect(event?.args?.[0]).to.eq(signer.address);
 
-                const reward = claimEvent?.args?.[1];
+                    reward = reward.add(event?.args?.[1]);
+                }
 
                 if (claims[signer.address]) {
                     claims[signer.address] = ethers.BigNumber.from(claims[signer.address]).add(reward);
@@ -1037,12 +1054,15 @@ export const runScenario = async (
                 tx = await staker.connect(signer).withdrawAll();
                 const receipt = await tx.wait();
 
-                const withdrawEvent = receipt.events?.find(e => e.event === "UserWithdraw");
+                const withdrawEvents = receipt.events?.filter(e => e.event === "UserWithdraw");
 
-                expect(withdrawEvent).to.not.be.undefined;
-                expect(withdrawEvent?.args?.[0]).to.eq(signer.address);
+                let reward = ethers.BigNumber.from(0);
+                for (const event of withdrawEvents!) {
+                    expect(event).to.not.be.undefined;
+                    expect(event?.args?.[0]).to.eq(signer.address);
 
-                const reward = withdrawEvent?.args?.[2];
+                    reward = reward.add(event?.args?.[2]);
+                }
 
                 if (claims[signer.address]) {
                     claims[signer.address] = ethers.BigNumber.from(claims[signer.address]).add(reward);
