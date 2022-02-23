@@ -80,13 +80,6 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
     /// @notice The current ID of the user's last deposited stake
     mapping(address => uint256) public currentId;
 
-    // /// @notice The amount of tokens staked by an account
-    // mapping(address => uint256) public userStake;
-    // /// @notice The timestamp of the last time a user deposited. Cannot withdraw until locktime + 1 day elapsed
-    // mapping(address => uint256) public userLastDeposit;
-    // /// @notice The amount of tokens owed to a user who's deposited.
-    // mapping(address => int256) public rewardDebts;
-
     // ============= NFT Boosting State ==============
 
     /// @notice Holder of treasures and legions
