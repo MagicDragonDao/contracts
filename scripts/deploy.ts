@@ -6,8 +6,8 @@ import type { AtlasMineStaker } from "../src/types/AtlasMineStaker";
 import type { ERC20 } from "../src/types/ERC20";
 
 export async function main(): Promise<void> {
-    // await deploy();
-    await approveMagic();
+    await deploy();
+    // await approveMagic();
 
     // Other possible actions:
     // Transfer ownership
