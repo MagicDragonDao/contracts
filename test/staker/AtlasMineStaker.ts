@@ -781,6 +781,69 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
             expect(stake2.amount).to.eq(ether("55"));
         });
 
+        it("returns the correct pending rewards for a single deposit", async () => {
+            const {
+                users: [user1, user2],
+                staker,
+                start,
+            } = ctx;
+
+            const amount = ether("20000");
+            await stakeMultiple(staker, [
+                [user1, amount],
+                [user1, amount],
+            ]);
+
+            // Go to start of rewards program
+            await rollTo(start);
+
+            // Make a tx to deposit
+            const tx = await staker.stakeScheduled();
+            await tx.wait();
+
+            await rollLock(start);
+
+            // Deposit one more time to update reards
+            await stakeSingle(staker, user2, amount);
+
+            // Fast-forward in scenarios - 1.3mm seconds should pass,
+            // so 13k MAGIC to pool. First user stake should get half
+            const depositId = 1;
+            const pending = await staker.pendingRewards(user1.address, depositId);
+            expectRoundedEqual(pending, ether("6500"));
+        });
+
+        it("returns the correct pending rewards for a user", async () => {
+            const {
+                users: [user1, user2],
+                staker,
+                start,
+            } = ctx;
+
+            const amount = ether("20000");
+            await stakeMultiple(staker, [
+                [user1, amount],
+                [user1, amount],
+            ]);
+
+            // Go to start of rewards program
+            await rollTo(start);
+
+            // Make a tx to deposit
+            const tx = await staker.stakeScheduled();
+            await tx.wait();
+
+            await rollLock(start);
+
+            // Deposit one more time to update reards
+            await stakeSingle(staker, user2, amount);
+
+            // Fast-forward in scenarios - 1.3mm seconds should pass,
+            // so 13k MAGIC to pool, all to user1
+            const pending = await staker.pendingRewardsAll(user1.address);
+            expectRoundedEqual(pending, ether("13000"));
+        });
+
         it("returns the correct amount of magic controlled by the contract", async () => {
             const {
                 users: [user1, user2],

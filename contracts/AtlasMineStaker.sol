@@ -597,13 +597,13 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
      * @return total               The total amount of MAGIC that can be withdrawn.
      */
     function totalWithdrawableMagic() external view override returns (uint256) {
-        uint256 pendingRewards;
+        uint256 totalPendingRewards;
 
         // AtlasMine attempts to divide by 0 if there are no deposits
         try mine.pendingRewardsAll(address(this)) returns (uint256 _pending) {
-            pendingRewards = _pending;
+            totalPendingRewards = _pending;
         } catch Panic(uint256) {
-            pendingRewards = 0;
+            totalPendingRewards = 0;
         }
 
         uint256 vestedPrincipal;
@@ -611,7 +611,7 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
             vestedPrincipal += mine.calcualteVestedPrincipal(address(this), stakes[i].depositId);
         }
 
-        return _totalUsableMagic() + pendingRewards + vestedPrincipal;
+        return _totalUsableMagic() + totalPendingRewards + vestedPrincipal;
     }
 
     /**
@@ -649,7 +649,6 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
     function pendingRewards(address user, uint256 depositId) public view override returns (uint256 reward) {
         UserStake storage s = userStake[user][depositId];
 
-        // Update accounting
         int256 accumulatedRewards = ((s.amount * accRewardsPerShare) / ONE).toInt256();
         reward = (accumulatedRewards - s.rewardDebt).toUint256();
     }
@@ -667,7 +666,7 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
         uint256[] memory depositIds = allUserDepositIds[user].values();
 
         for (uint256 i = 0; i < depositIds.length; i++) {
-            reward += pendingRewards(user, i);
+            reward += pendingRewards(user, depositIds[i]);
         }
     }
 
