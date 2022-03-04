@@ -34,6 +34,10 @@ interface IAtlasMineStaker {
 
     function userTotalStake(address user) external returns (uint256);
 
+    function pendingRewards(address user, uint256 depositId) external returns (uint256);
+
+    function pendingRewardsAll(address user) external returns (uint256);
+
     function totalMagic() external returns (uint256);
 
     function totalPendingStake() external returns (uint256);

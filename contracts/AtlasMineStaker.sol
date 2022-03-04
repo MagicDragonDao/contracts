@@ -636,6 +636,41 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
         }
     }
 
+    /**
+     * @notice Returns the pending, claimable rewards for a deposit.
+     * @dev    This does not update rewards, so out of date if rewards not recently updated.
+     *         Needed to maintain 'view' function type.
+     *
+     * @param user              The user to check rewards for.
+     * @param depositId         The specific deposit to check rewards for.
+     *
+     * @return reward           The total amount of MAGIC reward pending.
+     */
+    function pendingRewards(address user, uint256 depositId) public view override returns (uint256 reward) {
+        UserStake storage s = userStake[user][depositId];
+
+        // Update accounting
+        int256 accumulatedRewards = ((s.amount * accRewardsPerShare) / ONE).toInt256();
+        reward = (accumulatedRewards - s.rewardDebt).toUint256();
+    }
+
+    /**
+     * @notice Returns the pending, claimable rewards for all of a user's deposits.
+     * @dev    This does not update rewards, so out of date if rewards not recently updated.
+     *         Needed to maintain 'view' function type.
+     *
+     * @param user              The user to check rewards for.
+     *
+     * @return reward           The total amount of MAGIC reward pending.
+     */
+    function pendingRewardsAll(address user) external view override returns (uint256 reward) {
+        uint256[] memory depositIds = allUserDepositIds[user].values();
+
+        for (uint256 i = 0; i < depositIds.length; i++) {
+            reward += pendingRewards(user, i);
+        }
+    }
+
     // ============================================ HELPERS ============================================
 
     /**
