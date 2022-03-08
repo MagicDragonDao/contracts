@@ -6,8 +6,8 @@ import type { AtlasMineStaker } from "../src/types/AtlasMineStaker";
 import type { ERC20 } from "../src/types/ERC20";
 
 export async function main(): Promise<void> {
-    await deploy();
-    // await approveMagic();
+    // await deploy();
+    await approveMagic();
 
     // Other possible actions:
     // Transfer ownership
@@ -35,7 +35,7 @@ export async function deploy(): Promise<void> {
 }
 
 async function approveMagic(): Promise<void> {
-    const staker = "0x760b432f51dd210C3559987D6D55ee2DE1Db44E6";
+    const staker = "0xE92e7eE2ae2CC43C7d4Cb0da286fe0F72D452B0B";
     const MAGIC = "0x539bde0d7dbd336b79148aa742883198bbf60342";
 
     const factory = await ethers.getContractFactory("ERC20");
