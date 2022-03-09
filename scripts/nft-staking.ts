@@ -5,8 +5,8 @@ import { SECTION_SEPARATOR } from "./constants";
 import type { AtlasMineStaker } from "../src/types/AtlasMineStaker";
 export async function main(): Promise<void> {
     // await deploy();
-    // await generateApprove();
-    await generateStake();
+    await generateApprove();
+    // await generateStake();
 
     // Other possible actions:
     // Transfer ownership
@@ -20,7 +20,7 @@ async function generateApprove(): Promise<void> {
 
     const factory = await ethers.getContractFactory("ERC721");
 
-    const data = factory.interface.encodeFunctionData("setApprovalForAll", [legionsAddr, true]);
+    const data = factory.interface.encodeFunctionData("setApprovalForAll", [staker, true]);
 
     console.log("Encoded Calldata:");
     console.log(data);

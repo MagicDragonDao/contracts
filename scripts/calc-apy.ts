@@ -12,7 +12,8 @@ export async function main(): Promise<string> {
     const MASTER_OF_COIN_ADDR = "0x3563590e19d2b9216e7879d269a04ec67ed95a87";
     const MINE_ADDR = "0xa0a89db1c899c49f98e6326b764bafcf167fc2ce";
     // const STAKER_ADDR = "0x7779Bb39C2ae74f652f6490eE497Ab7E088548A1";
-    const STAKER_ADDR = "0x760b432f51dd210c3559987d6d55ee2de1db44e6";
+    // const STAKER_ADDR = "0x760b432f51dd210c3559987d6d55ee2de1db44e6";
+    const STAKER_ADDR = "0xE92e7eE2ae2CC43C7d4Cb0da286fe0F72D452B0B";
 
     const mocf = await ethers.getContractFactory("MasterOfCoin");
     const minef = await ethers.getContractFactory("AtlasMine");
