@@ -95,8 +95,8 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
     uint256 public fee;
     /// @notice Amount of fees reserved for withdrawal by the operator.
     uint256 public feeReserve;
-    /// @notice Max fee the owner can ever take - 10%
-    uint256 public constant MAX_FEE = 1000;
+    /// @notice Max fee the owner can ever take - 20%
+    uint256 public constant MAX_FEE = 2000;
 
     uint256 public constant FEE_DENOMINATOR = 10000;
 
