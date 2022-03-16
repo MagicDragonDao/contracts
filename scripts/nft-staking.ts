@@ -5,13 +5,25 @@ import { SECTION_SEPARATOR } from "./constants";
 import type { AtlasMineStaker } from "../src/types/AtlasMineStaker";
 export async function main(): Promise<void> {
     // await deploy();
-    await generateApprove();
+    // await generateApprove();
     // await generateStake();
+    await transferOwnership();
 
     // Other possible actions:
     // Transfer ownership
     // Set a DAO fee
     // Set a hoard address
+}
+
+async function transferOwnership(): Promise<void> {
+    const stakerAddr = "0xE92e7eE2ae2CC43C7d4Cb0da286fe0F72D452B0B";
+    const multisig = "0x4deFaa0B91EA699F0Da90DEC276bbaa629015140";
+
+    const factory = await ethers.getContractFactory("AtlasMineStaker");
+    const staker = <AtlasMineStaker>await factory.attach(stakerAddr);
+
+    const tx = await staker.transferOwnership(multisig);
+    console.log("Sent tx:", tx.hash);
 }
 
 async function generateApprove(): Promise<void> {

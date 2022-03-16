@@ -10,6 +10,7 @@ import "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/utils/math/SafeCast.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 import "treasure-staking/contracts/AtlasMine.sol";
@@ -30,7 +31,7 @@ import "./interfaces/IAtlasMineStaker.sol";
  * Atlas Mine yield.
  *
  */
-contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Holder {
+contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Holder, ReentrancyGuard {
     using SafeERC20 for IERC20;
     using Address for address;
     using SafeCast for uint256;
@@ -138,7 +139,7 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
      *
      * @param _amount               The amount of tokens to deposit.
      */
-    function deposit(uint256 _amount) public virtual override {
+    function deposit(uint256 _amount) public virtual override nonReentrant {
         require(!schedulePaused, "new staking paused");
         require(_amount > 0, "Deposit amount 0");
 
@@ -175,7 +176,7 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
      * @param _amount               The amount to withdraw.
      *
      */
-    function withdraw(uint256 depositId, uint256 _amount) public virtual override {
+    function withdraw(uint256 depositId, uint256 _amount) public virtual override nonReentrant {
         UserStake storage s = userStake[msg.sender][depositId];
         require(s.amount > 0, "No deposit");
         require(block.timestamp >= s.unlockAt, "Deposit locked");
@@ -234,7 +235,7 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
      * @param depositId             The ID of the deposit to claim rewards from.
      *
      */
-    function claim(uint256 depositId) public virtual override {
+    function claim(uint256 depositId) public virtual override nonReentrant {
         UserStake storage s = userStake[msg.sender][depositId];
 
         // Distribute tokens
@@ -263,7 +264,7 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
      *         Will apply to both locked and unlocked deposits.
      *
      */
-    function claimAll() public virtual {
+    function claimAll() public virtual nonReentrant {
         uint256[] memory depositIds = allUserDepositIds[msg.sender].values();
         for (uint256 i = 0; i < depositIds.length; i++) {
             claim(depositIds[i]);
@@ -277,7 +278,7 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
      *         since it does not attempt to unstake.
      *
      */
-    function withdrawEmergency() public virtual override {
+    function withdrawEmergency() public virtual override nonReentrant {
         require(schedulePaused, "Not in emergency state");
 
         uint256 totalStake;
