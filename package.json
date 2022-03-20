@@ -87,6 +87,7 @@
     "dependencies": {
         "@openzeppelin/contracts": "^4.4.2",
         "@openzeppelin/contracts-upgradeable": "^4.5.2",
+        "@openzeppelin/hardhat-upgrades": "^1.16.1",
         "treasure-staking": "https://github.com/ghoul-sol/treasure-staking"
     }
 }

@@ -1,4 +1,4 @@
-import { ethers } from "hardhat";
+import { ethers, upgrades } from "hardhat";
 
 import { SECTION_SEPARATOR } from "./constants";
 
@@ -28,7 +28,7 @@ export async function deploy(): Promise<void> {
 
     // Deploy the contracts
     const factory = await ethers.getContractFactory("AtlasMineStaker");
-    const staker = <AtlasMineStaker>await factory.deploy(MAGIC, MINE, lock);
+    const staker = await upgrades.deployProxy(factory, [MAGIC, MINE, lock]);
     await staker.deployed();
 
     console.log("Staker deployed to:", staker.address);
