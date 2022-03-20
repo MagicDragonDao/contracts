@@ -11,8 +11,29 @@ const { deployContract } = hre.waffle;
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function deploy<T extends Contract>(contractName: string, deployer: Signer, params: any[]): Promise<T> {
-    const artifact: Artifact = await hre.artifacts.readArtifact(contractName);
-    return <T>await deployContract(deployer, artifact, params);
+    const factory = await ethers.getContractFactory(contractName);
+    const deployerFactory = await factory.connect(deployer);
+    return <T>await deployerFactory.deploy(...params);
+}
+
+export async function deployUpgradeable<T extends Contract>(
+    contractName: string,
+    deployer: Signer,
+    params: any[],
+): Promise<T> {
+    const impl = await deploy(contractName, deployer, []);
+
+    // Deploy proxy
+    const proxyAdminFactory = await ethers.getContractFactory("ProxyAdmin");
+    const proxyAdmin = await proxyAdminFactory.deploy();
+
+    const proxyFactory = await ethers.getContractFactory("TransparentUpgradeableProxy");
+    const proxy = await proxyFactory.deploy(impl.address, proxyAdmin.address, Buffer.from(""));
+    const contract = <T>await ethers.getContractAt(contractName, proxy.address);
+
+    await contract.initialize(...params);
+
+    return contract;
 }
 
 export async function increaseTime(seconds: number): Promise<void> {

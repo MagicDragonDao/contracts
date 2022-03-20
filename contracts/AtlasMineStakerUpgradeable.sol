@@ -32,7 +32,7 @@ import "./interfaces/IAtlasMineStaker.sol";
  * Atlas Mine yield.
  *
  */
-contract AtlasMineStaker is
+contract AtlasMineStakerUpgradeable is
     IAtlasMineStaker,
     Initializable,
     OwnableUpgradeable,

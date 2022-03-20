@@ -166,6 +166,8 @@ const config: HardhatUserConfig = {
     },
     dependencyCompiler: {
         paths: [
+            "@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol",
+            "@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol",
             "treasure-staking/contracts/AtlasMine.sol",
             "treasure-staking/contracts/MasterOfCoin.sol",
             "treasure-staking/contracts/interfaces/ILegionMetadataStore.sol",

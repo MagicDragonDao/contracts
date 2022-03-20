@@ -2,11 +2,11 @@
 import { ethers, waffle } from "hardhat";
 import { BigNumberish } from "ethers";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { expect } from "chai";
+import { expect, should } from "chai";
 
 const { loadFixture } = waffle;
 
-import { deploy, increaseTime } from "../utils";
+import { deploy, deployUpgradeable, increaseTime } from "../utils";
 import type { AtlasMineStaker } from "../../src/types/AtlasMineStaker";
 import type { MasterOfCoin } from "../../src/types/MasterOfCoin";
 import type { MockLegionMetadataStore } from "../../src/types/MockLegionMetadataStore";
@@ -68,11 +68,17 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
         await mine.setLegionMetadataStore(metadataStore.address);
         await mine.setUtilizationOverride(ether("1"));
 
-        const staker = <AtlasMineStaker>await deploy("AtlasMineStaker", admin, [
+        const staker = <AtlasMineStaker>await deployUpgradeable("AtlasMineStakerUpgradeable", admin, [
             magic.address,
             mine.address,
             0, // 0 == AtlasMine.Lock.twoWeeks
         ]);
+
+        // const staker = <AtlasMineStaker>await deploy("AtlasMineStaker", admin, [
+        //     magic.address,
+        //     mine.address,
+        //     0, // 0 == AtlasMine.Lock.twoWeeks
+        // ]);
 
         // Distribute coins and set up staking program
         await magic.mint(admin.address, ether("10000"));
