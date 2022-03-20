@@ -105,7 +105,7 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
 
     /**
      * @param _mine                 The AtlasMine contract.
-     * @param _lock                 The locking strategy of the staknig pool.
+     * @param _lock                 The locking strategy of the staking pool.
      *                              Maps to a timelock for AtlasMine deposits.
      */
     constructor(
@@ -132,7 +132,7 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
     // ======================================== USER OPERATIONS ========================================
 
     /**
-     * @notice Make a new depoit into the Staker. The Staker will collect
+     * @notice Make a new deposit into the Staker. The Staker will collect
      *         the tokens, to be later staked in atlas mine by the owner,
      *         according to the stake/unlock schedule.
      * @dev    Specified amount of token must be approved by the caller.
@@ -451,7 +451,7 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
 
     /**
      * @notice Let owner unstake a specified amount as needed to make sure the contract is funded.
-     *         Can be used to faciliate expected future withdrawals.
+     *         Can be used to facilitate expected future withdrawals.
      *
      * @param target                The amount of tokens to reclaim from the mine.
      */
@@ -497,7 +497,7 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
      * @notice Change the designated hoard, the address where treasures and
      *         legions are held. Staked NFTs can only be
      *         withdrawn to the current hoard address, regardless of which
-     *         address hte hoard was set to when it was staked.
+     *         address the hoard was set to when it was staked.
      *
      * @param _hoard                The new hoard address.
      * @param isSet                 Whether to enable or disable the hoard address.
