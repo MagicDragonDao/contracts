@@ -181,6 +181,43 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
         require(s.amount > 0, "No deposit");
         require(block.timestamp >= s.unlockAt, "Deposit locked");
 
+        _withdraw(s, depositId, _amount);
+    }
+
+    /**
+     * @notice Withdraw all eligible deposits from the staker contract.
+     *         Will skip any deposits not yet unlocked. Will also
+     *         distribute rewards for all stakes via 'withdraw'.
+     *
+     */
+    function withdrawAll() public virtual nonReentrant {
+        uint256[] memory depositIds = allUserDepositIds[msg.sender].values();
+        for (uint256 i = 0; i < depositIds.length; i++) {
+            UserStake storage s = userStake[msg.sender][depositIds[i]];
+
+            if (s.amount > 0 && s.unlockAt > 0 && s.unlockAt <= block.timestamp) {
+                _withdraw(s, depositIds[i], type(uint256).max);
+            }
+        }
+    }
+
+    /**
+     * @dev Logic for withdrawing a deposit. Calculates pro rata share of
+     *      accumulated MAGIC and dsitributed any earned rewards in addition
+     *      to original deposit.
+     *
+     * @dev An _amount argument larger than the total deposit amount will
+     *      withdraw the entire deposit.
+     *
+     * @param s                     The UserStake struct to withdraw from.
+     * @param depositId             The ID of the deposit to withdraw from (for event).
+     * @param _amount               The amount to withdraw.
+     */
+    function _withdraw(
+        UserStake storage s,
+        uint256 depositId,
+        uint256 _amount
+    ) internal {
         if (_amount > s.amount) {
             _amount = s.amount;
         }
@@ -211,23 +248,6 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
     }
 
     /**
-     * @notice Withdraw all eligible deposits from the staker contract.
-     *         Will skip any deposits not yet unlocked. Will also
-     *         distribute rewards for all stakes via 'withdraw'.
-     *
-     */
-    function withdrawAll() public virtual {
-        uint256[] memory depositIds = allUserDepositIds[msg.sender].values();
-        for (uint256 i = 0; i < depositIds.length; i++) {
-            UserStake storage s = userStake[msg.sender][depositIds[i]];
-
-            if (s.amount > 0 && s.unlockAt > 0 && s.unlockAt <= block.timestamp) {
-                withdraw(depositIds[i], type(uint256).max);
-            }
-        }
-    }
-
-    /**
      * @notice Claim rewards without unstaking. Will fail if there
      *         are not enough tokens in the contract to claim rewards.
      *         Does not attempt to unstake.
@@ -238,6 +258,31 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
     function claim(uint256 depositId) public virtual override nonReentrant {
         UserStake storage s = userStake[msg.sender][depositId];
 
+        _claim(s, depositId);
+    }
+
+    /**
+     * @notice Claim all possible rewards from the staker contract.
+     *         Will apply to both locked and unlocked deposits.
+     *
+     */
+    function claimAll() public virtual nonReentrant {
+        uint256[] memory depositIds = allUserDepositIds[msg.sender].values();
+        for (uint256 i = 0; i < depositIds.length; i++) {
+            UserStake storage s = userStake[msg.sender][depositIds[i]];
+            _claim(s, depositIds[i]);
+        }
+    }
+
+    /**
+     * @dev Logic for claiming rewards on a deposit. Calculates pro rata share of
+     *      accumulated MAGIC and dsitributed any earned rewards in addition
+     *      to original deposit.
+     *
+     * @param s                     The UserStake struct to claim from.
+     * @param depositId             The ID of the deposit to claim from (for event).
+     */
+    function _claim(UserStake storage s, uint256 depositId) internal {
         // Distribute tokens
         _updateRewards();
 
@@ -257,18 +302,6 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
         IERC20(magic).safeTransfer(msg.sender, reward);
 
         emit UserClaim(msg.sender, depositId, reward);
-    }
-
-    /**
-     * @notice Claim all possible rewards from the staker contract.
-     *         Will apply to both locked and unlocked deposits.
-     *
-     */
-    function claimAll() public virtual nonReentrant {
-        uint256[] memory depositIds = allUserDepositIds[msg.sender].values();
-        for (uint256 i = 0; i < depositIds.length; i++) {
-            claim(depositIds[i]);
-        }
     }
 
     /**
@@ -338,7 +371,7 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
      * @param _tokenId              The tokenId of the specified treasure.
      * @param _amount               The amount of treasures to stake.
      */
-    function stakeTreasure(uint256 _tokenId, uint256 _amount) external override onlyHoard {
+    function stakeTreasure(uint256 _tokenId, uint256 _amount) external override onlyHoard nonReentrant {
         address treasureAddr = mine.treasure();
         require(IERC1155(treasureAddr).balanceOf(msg.sender, _tokenId) >= _amount, "Not enough treasures");
 
@@ -359,7 +392,7 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
      * @param _tokenId              The tokenId of the specified treasure.
      * @param _amount               The amount of treasures to stake.
      */
-    function unstakeTreasure(uint256 _tokenId, uint256 _amount) external override onlyHoard {
+    function unstakeTreasure(uint256 _tokenId, uint256 _amount) external override onlyHoard nonReentrant {
         require(treasuresStaked[_tokenId][msg.sender] >= _amount, "Not enough treasures");
         treasuresStaked[_tokenId][msg.sender] -= _amount;
 
@@ -382,7 +415,7 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
      *
      * @param _tokenId              The tokenId of the specified legion.
      */
-    function stakeLegion(uint256 _tokenId) external override onlyHoard {
+    function stakeLegion(uint256 _tokenId) external override onlyHoard nonReentrant {
         address legionAddr = mine.legion();
         require(IERC721(legionAddr).ownerOf(_tokenId) == msg.sender, "Not owner of legion");
 
@@ -402,7 +435,7 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
      *
      * @param _tokenId              The tokenId of the specified legion.
      */
-    function unstakeLegion(uint256 _tokenId) external override onlyHoard {
+    function unstakeLegion(uint256 _tokenId) external override onlyHoard nonReentrant {
         require(legionsStaked[_tokenId] == msg.sender, "Not staker of legion");
         address legionAddr = mine.legion();
 
