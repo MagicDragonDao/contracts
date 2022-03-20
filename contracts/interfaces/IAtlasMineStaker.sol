@@ -88,6 +88,8 @@ interface IAtlasMineStaker {
 
     function revokeNFTApprovals() external;
 
+    function setMinimumStakingWait(uint256 wait) external;
+
     function toggleSchedulePause(bool paused) external;
 
     function withdrawFees() external;

@@ -6,7 +6,7 @@ import { expect } from "chai";
 
 const { loadFixture } = waffle;
 
-import { deploy } from "../utils";
+import { deploy, increaseTime } from "../utils";
 import type { AtlasMineStaker } from "../../src/types/AtlasMineStaker";
 import type { MasterOfCoin } from "../../src/types/MasterOfCoin";
 import type { MockLegionMetadataStore } from "../../src/types/MockLegionMetadataStore";
@@ -420,6 +420,22 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 await claimWithRoundedRewardCheck(staker, user, ether("6500"));
                 // Claim again, get very small rewards - 1 second passed
                 await claimWithRoundedRewardCheck(staker, user, 0);
+            });
+        });
+
+        describe("stakeScheduled", async () => {
+            it("does not allow staking again less than 12 hours since last staking", async () => {
+                const {
+                    users: [user],
+                    staker,
+                    start,
+                } = ctx;
+
+                const firstStakeTs = await rollTo(start + ONE_DAY_SEC);
+                await stakeSingle(staker, user, ether("10"));
+                await rollSchedule(staker, firstStakeTs);
+
+                await expect(staker.stakeScheduled()).to.be.revertedWith("not enough time since last stake");
             });
         });
     });
@@ -1096,6 +1112,36 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 const { admin, staker, users } = ctx;
 
                 await expect(staker.connect(admin).setHoard(users[3].address, true)).to.not.be.reverted;
+            });
+
+            it("does not allow a non-owner to change the staking wait", async () => {
+                const {
+                    users: [user],
+                    staker,
+                } = ctx;
+
+                await expect(staker.connect(user).setMinimumStakingWait(0)).to.be.revertedWith(
+                    "Ownable: caller is not the owner",
+                );
+            });
+
+            it("allows an owner to change the staking wait", async () => {
+                const {
+                    admin,
+                    users: [user],
+                    staker,
+                    start,
+                } = ctx;
+
+                const firstStakeTs = await rollTo(start + ONE_DAY_SEC);
+                await stakeSingle(staker, user, ether("10"));
+                await rollSchedule(staker, firstStakeTs);
+
+                await expect(staker.stakeScheduled()).to.be.revertedWith("not enough time since last stake");
+
+                await expect(staker.connect(admin).setMinimumStakingWait(3600)).to.not.be.reverted;
+                await increaseTime(3600);
+                await expect(staker.stakeScheduled()).to.not.be.reverted;
             });
         });
 

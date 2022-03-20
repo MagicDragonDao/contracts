@@ -61,6 +61,8 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
     mapping(uint256 => uint256) public pendingStakes;
     /// @notice Last time pending stakes were deposited
     uint256 public lastStakeTimestamp;
+    /// @notice The minimum amount of time between atlas mine stakes
+    uint256 public minimumStakingWait = 12 hours;
     /// @notice The total amount of staked token
     uint256 public totalStaked;
     /// @notice All stakes currently active
@@ -341,6 +343,7 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
      */
     function stakeScheduled() public virtual override {
         require(!schedulePaused, "new staking paused");
+        require(block.timestamp - lastStakeTimestamp >= minimumStakingWait, "not enough time since last stake");
 
         uint256 currentDay = _getDay(block.timestamp);
         uint256 lastDay = _getDay(lastStakeTimestamp);
@@ -577,6 +580,18 @@ contract AtlasMineStaker is Ownable, IAtlasMineStaker, ERC1155Holder, ERC721Hold
         feeReserve = 0;
 
         IERC20(magic).safeTransfer(msg.sender, amount);
+    }
+
+    /**
+     * @notice Set the minimum amount of time needed to wait between stakes.
+     *         Default 12 hours. Can be adjusted to be longer (if incremental
+     *         stakes are too small or we are staking too often) or shorter
+     *         if too much unstaked deposit is building up.
+     *
+     * @param  wait                 The minimum amount of time to wait in between stakes.
+     */
+    function setMinimumStakingWait(uint256 wait) external override onlyOwner {
+        minimumStakingWait = wait;
     }
 
     /**
