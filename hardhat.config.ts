@@ -1,6 +1,7 @@
 import "@typechain/hardhat";
 import "@nomiclabs/hardhat-waffle";
 import "@nomiclabs/hardhat-etherscan";
+import "@openzeppelin/hardhat-upgrades";
 import "hardhat-gas-reporter";
 import "hardhat-dependency-compiler";
 import "solidity-coverage";
@@ -70,8 +71,7 @@ function createHardhatConfig(): HardhatNetworkUserConfig {
     if (forkMainnet) {
         return Object.assign(config, {
             forking: {
-                url: `https://eth-mainnet.alchemyapi.io/v2/${alchemyApiKey}`,
-                blockNumber: 13837533,
+                url: `https://arb1.arbitrum.io/rpc`,
             },
         });
     }

@@ -1,13 +1,13 @@
-import { ethers, upgrades } from "hardhat";
+import { ethers } from "hardhat";
 
 import { SECTION_SEPARATOR } from "./constants";
 
-import type { AtlasMineStaker } from "../src/types/AtlasMineStaker";
+import type { AtlasMineStakerUpgradeable } from "../src/types/AtlasMineStakerUpgradeable";
 import type { ERC20 } from "../src/types/ERC20";
 
 export async function main(): Promise<void> {
-    // await deploy();
-    await approveMagic();
+    await deploy();
+    // await approveMagic();
 
     // Other possible actions:
     // Transfer ownership
@@ -27,11 +27,25 @@ export async function deploy(): Promise<void> {
     const lock = 0; // 2 weeks
 
     // Deploy the contracts
-    const factory = await ethers.getContractFactory("AtlasMineStaker");
-    const staker = await upgrades.deployProxy(factory, [MAGIC, MINE, lock]);
+    const factory = await ethers.getContractFactory("AtlasMineStakerUpgradeable");
+    const staker = <AtlasMineStakerUpgradeable>await factory.deploy();
     await staker.deployed();
 
-    console.log("Staker deployed to:", staker.address);
+    console.log("Staker implementation deployed to:", staker.address);
+
+    await staker.initialize(MAGIC, MINE, lock);
+
+    const proxyAdminFactory = await ethers.getContractFactory("ProxyAdmin");
+    const proxyAdmin = await proxyAdminFactory.deploy();
+    await proxyAdmin.deployed();
+
+    console.log("Proxy admin deployed to:", proxyAdmin.address);
+
+    const proxyFactory = await ethers.getContractFactory("TransparentUpgradeableProxy");
+    const proxy = await proxyFactory.deploy(staker.address, proxyAdmin.address, Buffer.from(""));
+    await proxy.deployed();
+
+    console.log("Proxy deployed to:", proxy.address);
 }
 
 async function approveMagic(): Promise<void> {
