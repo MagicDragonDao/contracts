@@ -1,17 +1,18 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.10;
 
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
-import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
-import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
-import "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol";
-import "@openzeppelin/contracts/utils/Address.sol";
-import "@openzeppelin/contracts/utils/math/SafeCast.sol";
-import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC1155/IERC1155Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC1155/utils/ERC1155HolderUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC721/utils/ERC721HolderUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/math/SafeCastUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/structs/EnumerableSetUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
 import "treasure-staking/contracts/AtlasMine.sol";
 import "./interfaces/IAtlasMineStaker.sol";
@@ -31,25 +32,36 @@ import "./interfaces/IAtlasMineStaker.sol";
  * Atlas Mine yield.
  *
  */
-contract AtlasMineStaker is IAtlasMineStaker, Ownable, ERC1155Holder, ERC721Holder, ReentrancyGuard {
-    using SafeERC20 for IERC20;
-    using Address for address;
-    using SafeCast for uint256;
-    using SafeCast for int256;
-    using EnumerableSet for EnumerableSet.UintSet;
+contract AtlasMineStaker is
+    IAtlasMineStaker,
+    Initializable,
+    OwnableUpgradeable,
+    ERC1155HolderUpgradeable,
+    ERC721HolderUpgradeable,
+    ReentrancyGuardUpgradeable
+{
+    using SafeERC20Upgradeable for IERC20Upgradeable;
+    using AddressUpgradeable for address;
+    using SafeCastUpgradeable for uint256;
+    using SafeCastUpgradeable for int256;
+    using EnumerableSetUpgradeable for EnumerableSetUpgradeable.UintSet;
 
     // ============================================ STATE ==============================================
 
     // ============= Global Immutable State ==============
 
     /// @notice MAGIC token
-    address public immutable magic;
+    /// @dev functionally immutable
+    IERC20Upgradeable public magic;
     /// @notice The AtlasMine
-    AtlasMine public immutable mine;
+    /// @dev functionally immutable
+    AtlasMine public mine;
     /// @notice The defined lock cycle for the contract
-    AtlasMine.Lock public immutable lock;
+    /// @dev functionally immutable
+    AtlasMine.Lock public lock;
     /// @notice The defined lock time for the contract
-    uint256 public immutable locktime;
+    /// @dev functionally immutable
+    uint256 public locktime;
 
     // ============= Global Staking State ==============
 
@@ -62,7 +74,7 @@ contract AtlasMineStaker is IAtlasMineStaker, Ownable, ERC1155Holder, ERC721Hold
     /// @notice Last time pending stakes were deposited
     uint256 public lastStakeTimestamp;
     /// @notice The minimum amount of time between atlas mine stakes
-    uint256 public minimumStakingWait = 12 hours;
+    uint256 public minimumStakingWait;
     /// @notice The total amount of staked token
     uint256 public totalStaked;
     /// @notice All stakes currently active
@@ -79,7 +91,7 @@ contract AtlasMineStaker is IAtlasMineStaker, Ownable, ERC1155Holder, ERC721Hold
     /// @notice Each user stake, keyed by user address => deposit ID
     mapping(address => mapping(uint256 => UserStake)) public userStake;
     /// @notice All deposit IDs fro a user, enumerated
-    mapping(address => EnumerableSet.UintSet) private allUserDepositIds;
+    mapping(address => EnumerableSetUpgradeable.UintSet) private allUserDepositIds;
     /// @notice The current ID of the user's last deposited stake
     mapping(address => uint256) public currentId;
 
@@ -103,18 +115,24 @@ contract AtlasMineStaker is IAtlasMineStaker, Ownable, ERC1155Holder, ERC721Hold
 
     uint256 public constant FEE_DENOMINATOR = 10000;
 
-    // ========================================== CONSTRUCTOR ===========================================
+    // ========================================== INITIALIZER ===========================================
 
     /**
+     * @param _magic                The MAGIC token address.
      * @param _mine                 The AtlasMine contract.
      * @param _lock                 The locking strategy of the staking pool.
      *                              Maps to a timelock for AtlasMine deposits.
      */
-    constructor(
-        address _magic,
+    function initialize(
+        IERC20Upgradeable _magic,
         AtlasMine _mine,
         AtlasMine.Lock _lock
-    ) {
+    ) external initializer {
+        __ERC1155Holder_init();
+        __ERC721Holder_init();
+        __Ownable_init();
+        __ReentrancyGuard_init();
+
         magic = _magic;
         mine = _mine;
 
@@ -125,9 +143,10 @@ contract AtlasMineStaker is IAtlasMineStaker, Ownable, ERC1155Holder, ERC721Hold
         locktime = _locktime;
 
         lastStakeTimestamp = block.timestamp;
+        minimumStakingWait = 12 hours;
 
         // Approve the mine
-        IERC20(magic).safeApprove(address(mine), 2**256 - 1);
+        magic.safeApprove(address(mine), 2**256 - 1);
         approveNFTs();
     }
 
@@ -162,7 +181,7 @@ contract AtlasMineStaker is IAtlasMineStaker, Ownable, ERC1155Holder, ERC721Hold
         pendingStakes[day] += _amount;
 
         // Collect tokens
-        IERC20(magic).safeTransferFrom(msg.sender, address(this), _amount);
+        magic.safeTransferFrom(msg.sender, address(this), _amount);
 
         // MAGIC tokens sit in contract. Added to pending stakes
         emit UserDeposit(msg.sender, _amount);
@@ -244,7 +263,7 @@ contract AtlasMineStaker is IAtlasMineStaker, Ownable, ERC1155Holder, ERC721Hold
             _unstakeToTarget(payout - _totalUsableMagic());
         }
 
-        IERC20(magic).safeTransfer(msg.sender, payout);
+        magic.safeTransfer(msg.sender, payout);
 
         emit UserWithdraw(msg.sender, depositId, _amount, reward);
     }
@@ -301,7 +320,7 @@ contract AtlasMineStaker is IAtlasMineStaker, Ownable, ERC1155Holder, ERC721Hold
 
         require(reward <= _totalUsableMagic(), "Not enough rewards to claim");
 
-        IERC20(magic).safeTransfer(msg.sender, reward);
+        magic.safeTransfer(msg.sender, reward);
 
         emit UserClaim(msg.sender, depositId, reward);
     }
@@ -330,7 +349,7 @@ contract AtlasMineStaker is IAtlasMineStaker, Ownable, ERC1155Holder, ERC721Hold
 
         totalStaked -= totalStake;
 
-        IERC20(magic).safeTransfer(msg.sender, totalStake);
+        magic.safeTransfer(msg.sender, totalStake);
 
         emit UserWithdraw(msg.sender, 0, totalStake, 0);
     }
@@ -376,12 +395,12 @@ contract AtlasMineStaker is IAtlasMineStaker, Ownable, ERC1155Holder, ERC721Hold
      */
     function stakeTreasure(uint256 _tokenId, uint256 _amount) external override onlyHoard nonReentrant {
         address treasureAddr = mine.treasure();
-        require(IERC1155(treasureAddr).balanceOf(msg.sender, _tokenId) >= _amount, "Not enough treasures");
+        require(IERC1155Upgradeable(treasureAddr).balanceOf(msg.sender, _tokenId) >= _amount, "Not enough treasures");
 
         treasuresStaked[_tokenId][msg.sender] += _amount;
 
         // First withdraw and approve
-        IERC1155(treasureAddr).safeTransferFrom(msg.sender, address(this), _tokenId, _amount, bytes(""));
+        IERC1155Upgradeable(treasureAddr).safeTransferFrom(msg.sender, address(this), _tokenId, _amount, bytes(""));
 
         mine.stakeTreasure(_tokenId, _amount);
         uint256 boost = mine.boosts(address(this));
@@ -404,7 +423,7 @@ contract AtlasMineStaker is IAtlasMineStaker, Ownable, ERC1155Holder, ERC721Hold
         mine.unstakeTreasure(_tokenId, _amount);
 
         // Distribute to hoard
-        IERC1155(treasureAddr).safeTransferFrom(address(this), msg.sender, _tokenId, _amount, bytes(""));
+        IERC1155Upgradeable(treasureAddr).safeTransferFrom(address(this), msg.sender, _tokenId, _amount, bytes(""));
 
         uint256 boost = mine.boosts(address(this));
 
@@ -420,11 +439,11 @@ contract AtlasMineStaker is IAtlasMineStaker, Ownable, ERC1155Holder, ERC721Hold
      */
     function stakeLegion(uint256 _tokenId) external override onlyHoard nonReentrant {
         address legionAddr = mine.legion();
-        require(IERC721(legionAddr).ownerOf(_tokenId) == msg.sender, "Not owner of legion");
+        require(IERC721Upgradeable(legionAddr).ownerOf(_tokenId) == msg.sender, "Not owner of legion");
 
         legionsStaked[_tokenId] = msg.sender;
 
-        IERC721(legionAddr).safeTransferFrom(msg.sender, address(this), _tokenId);
+        IERC721Upgradeable(legionAddr).safeTransferFrom(msg.sender, address(this), _tokenId);
 
         mine.stakeLegion(_tokenId);
 
@@ -447,7 +466,7 @@ contract AtlasMineStaker is IAtlasMineStaker, Ownable, ERC1155Holder, ERC721Hold
         mine.unstakeLegion(_tokenId);
 
         // Distribute to hoard
-        IERC721(legionAddr).safeTransferFrom(address(this), msg.sender, _tokenId);
+        IERC721Upgradeable(legionAddr).safeTransferFrom(address(this), msg.sender, _tokenId);
 
         uint256 boost = mine.boosts(address(this));
 
@@ -552,10 +571,10 @@ contract AtlasMineStaker is IAtlasMineStaker, Ownable, ERC1155Holder, ERC721Hold
      */
     function approveNFTs() public override onlyOwner {
         address treasureAddr = mine.treasure();
-        IERC1155(treasureAddr).setApprovalForAll(address(mine), true);
+        IERC1155Upgradeable(treasureAddr).setApprovalForAll(address(mine), true);
 
         address legionAddr = mine.legion();
-        IERC1155(legionAddr).setApprovalForAll(address(mine), true);
+        IERC1155Upgradeable(legionAddr).setApprovalForAll(address(mine), true);
     }
 
     /**
@@ -566,10 +585,10 @@ contract AtlasMineStaker is IAtlasMineStaker, Ownable, ERC1155Holder, ERC721Hold
      */
     function revokeNFTApprovals() public override onlyOwner {
         address treasureAddr = mine.treasure();
-        IERC1155(treasureAddr).setApprovalForAll(address(mine), false);
+        IERC1155Upgradeable(treasureAddr).setApprovalForAll(address(mine), false);
 
         address legionAddr = mine.legion();
-        IERC1155(legionAddr).setApprovalForAll(address(mine), false);
+        IERC1155Upgradeable(legionAddr).setApprovalForAll(address(mine), false);
     }
 
     /**
@@ -579,7 +598,7 @@ contract AtlasMineStaker is IAtlasMineStaker, Ownable, ERC1155Holder, ERC721Hold
         uint256 amount = feeReserve;
         feeReserve = 0;
 
-        IERC20(magic).safeTransfer(msg.sender, amount);
+        magic.safeTransfer(msg.sender, amount);
     }
 
     /**
@@ -790,10 +809,10 @@ contract AtlasMineStaker is IAtlasMineStaker, Ownable, ERC1155Holder, ERC721Hold
      * @return feeEearned           The amount of fees earned for the contract operator.
      */
     function _harvestMine() internal returns (uint256, uint256) {
-        uint256 preclaimBalance = IERC20(magic).balanceOf(address(this));
+        uint256 preclaimBalance = magic.balanceOf(address(this));
 
         try mine.harvestAll() {
-            uint256 postclaimBalance = IERC20(magic).balanceOf(address(this));
+            uint256 postclaimBalance = magic.balanceOf(address(this));
 
             uint256 earned = postclaimBalance - preclaimBalance;
 
@@ -882,7 +901,7 @@ contract AtlasMineStaker is IAtlasMineStaker, Ownable, ERC1155Holder, ERC721Hold
      */
     function _totalUsableMagic() internal view returns (uint256) {
         // Current magic held in contract
-        uint256 unstaked = IERC20(magic).balanceOf(address(this));
+        uint256 unstaked = magic.balanceOf(address(this));
 
         return unstaked - feeReserve;
     }
