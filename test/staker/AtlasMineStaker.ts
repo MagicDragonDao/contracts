@@ -1511,9 +1511,6 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
 
             await runScenario(ctx, actions);
 
-            // Send extra MAGIC to the contract to get around fee issues
-            // await magic.connect(admin).transfer(staker.address, ether("200"));
-
             // Now check all expected rewards and user balance
             // Shuffle to ensure that order doesn't matter
             const shuffledRewards = shuffle(rewards);
@@ -1542,7 +1539,7 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
         });
 
         it("scenario 2", async () => {
-            const { magic, admin, staker } = ctx;
+            const { magic, staker } = ctx;
             const { actions, rewards } = setupAdvancedScenario2(ctx);
 
             const preclaimBalances: { [user: string]: BigNumberish } = {};
@@ -1551,9 +1548,6 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
             }
 
             const claims = await runScenario(ctx, actions);
-
-            // Send extra MAGIC to the contract to get around fee issues
-            await magic.connect(admin).transfer(staker.address, ether("1200"));
 
             // Now check all expected rewards and user balance
             const shuffledRewards = shuffle(rewards);
@@ -1581,7 +1575,7 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
         });
 
         it("scenario 3", async () => {
-            const { magic, admin, staker } = ctx;
+            const { magic, staker } = ctx;
             const { actions, rewards } = setupAdvancedScenario3(ctx);
 
             const preclaimBalances: { [user: string]: BigNumberish } = {};
@@ -1590,9 +1584,6 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
             }
 
             const claims = await runScenario(ctx, actions);
-
-            // Send extra MAGIC to the contract to get around fee issues
-            await magic.connect(admin).transfer(staker.address, ether("1200"));
 
             // Now check all expected rewards and user balance
             const shuffledRewards = shuffle(rewards);
