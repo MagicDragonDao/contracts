@@ -110,8 +110,8 @@ contract AtlasMineStakerUpgradeable is
     uint256 public fee;
     /// @notice Amount of fees reserved for withdrawal by the operator.
     uint256 public feeReserve;
-    /// @notice Max fee the owner can ever take - 20%
-    uint256 public constant MAX_FEE = 2000;
+    /// @notice Max fee the owner can ever take - 30%
+    uint256 public constant MAX_FEE = 3000;
 
     uint256 public constant FEE_DENOMINATOR = 10000;
 
@@ -393,7 +393,7 @@ contract AtlasMineStakerUpgradeable is
      * @param _tokenId              The tokenId of the specified treasure.
      * @param _amount               The amount of treasures to stake.
      */
-    function stakeTreasure(uint256 _tokenId, uint256 _amount) external override onlyHoard nonReentrant {
+    function stakeTreasure(uint256 _tokenId, uint256 _amount) external override onlyHoard {
         address treasureAddr = mine.treasure();
         require(IERC1155Upgradeable(treasureAddr).balanceOf(msg.sender, _tokenId) >= _amount, "Not enough treasures");
 
@@ -414,7 +414,7 @@ contract AtlasMineStakerUpgradeable is
      * @param _tokenId              The tokenId of the specified treasure.
      * @param _amount               The amount of treasures to stake.
      */
-    function unstakeTreasure(uint256 _tokenId, uint256 _amount) external override onlyHoard nonReentrant {
+    function unstakeTreasure(uint256 _tokenId, uint256 _amount) external override onlyHoard {
         require(treasuresStaked[_tokenId][msg.sender] >= _amount, "Not enough treasures");
         treasuresStaked[_tokenId][msg.sender] -= _amount;
 
@@ -437,7 +437,7 @@ contract AtlasMineStakerUpgradeable is
      *
      * @param _tokenId              The tokenId of the specified legion.
      */
-    function stakeLegion(uint256 _tokenId) external override onlyHoard nonReentrant {
+    function stakeLegion(uint256 _tokenId) external override onlyHoard {
         address legionAddr = mine.legion();
         require(IERC721Upgradeable(legionAddr).ownerOf(_tokenId) == msg.sender, "Not owner of legion");
 
@@ -457,7 +457,7 @@ contract AtlasMineStakerUpgradeable is
      *
      * @param _tokenId              The tokenId of the specified legion.
      */
-    function unstakeLegion(uint256 _tokenId) external override onlyHoard nonReentrant {
+    function unstakeLegion(uint256 _tokenId) external override onlyHoard {
         require(legionsStaked[_tokenId] == msg.sender, "Not staker of legion");
         address legionAddr = mine.legion();
 

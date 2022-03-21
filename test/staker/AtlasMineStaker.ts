@@ -1039,7 +1039,7 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
             it("does not allow the owner to set a fee larger than the maximum", async () => {
                 const { admin, staker } = ctx;
 
-                await expect(staker.connect(admin).setFee(3000)).to.be.revertedWith("Invalid fee");
+                await expect(staker.connect(admin).setFee(7500)).to.be.revertedWith("Invalid fee");
             });
 
             it("collects the correct fee when rewards are claimed", async () => {
