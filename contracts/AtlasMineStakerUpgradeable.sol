@@ -70,6 +70,7 @@ contract AtlasMineStakerUpgradeable is
     /// @notice Whether new stakes will get staked on the contract as scheduled. For emergencies
     bool public schedulePaused;
     /// @notice Deposited, but unstaked tokens, keyed by the day number since epoch
+    /// @notice DEPRECATED ON UPGRADE
     mapping(uint256 => uint256) public pendingStakes;
     /// @notice Last time pending stakes were deposited
     uint256 public lastStakeTimestamp;
@@ -114,6 +115,13 @@ contract AtlasMineStakerUpgradeable is
     uint256 public constant MAX_FEE = 3000;
 
     uint256 public constant FEE_DENOMINATOR = 10000;
+
+    // ===========================================
+    // ============== Post Upgrade ===============
+    // ===========================================
+
+    /// @notice deposited but unstaked
+    uint256 public unstakedDeposits;
 
     // ========================================== INITIALIZER ===========================================
 
@@ -177,8 +185,7 @@ contract AtlasMineStakerUpgradeable is
 
         // Update global accounting
         totalStaked += _amount;
-        uint256 day = _getDay(block.timestamp);
-        pendingStakes[day] += _amount;
+        unstakedDeposits += _amount;
 
         // Collect tokens
         magic.safeTransferFrom(msg.sender, address(this), _amount);
@@ -364,20 +371,12 @@ contract AtlasMineStakerUpgradeable is
         require(!schedulePaused, "new staking paused");
         require(block.timestamp - lastStakeTimestamp >= minimumStakingWait, "not enough time since last stake");
 
-        uint256 currentDay = _getDay(block.timestamp);
-        uint256 lastDay = _getDay(lastStakeTimestamp);
         lastStakeTimestamp = block.timestamp;
 
         uint256 unlockAt = block.timestamp + locktime;
 
-        uint256 amountToStake = 0;
-
-        // Do not stake current day - only days in the past
-        for (uint256 i = lastDay; i < currentDay; i++) {
-            // Stake pending stake for that day and stop tracking it
-            amountToStake += pendingStakes[i];
-            delete pendingStakes[i];
-        }
+        uint256 amountToStake = unstakedDeposits;
+        unstakedDeposits = 0;
 
         _stakeInMine(amountToStake);
         emit MineStake(amountToStake, unlockAt);
@@ -644,18 +643,7 @@ contract AtlasMineStakerUpgradeable is
      * @return total               The total amount of MAGIC available to stake.
      */
     function totalPendingStake() external view override returns (uint256) {
-        uint256 pending = 0;
-
-        uint256 currentDay = _getDay(block.timestamp);
-        uint256 lastDay = _getDay(lastStakeTimestamp);
-
-        // Do not count current day - only days in the past
-        for (uint256 i = lastDay; i < currentDay; i++) {
-            // Stake pending stake for that day
-            pending += pendingStakes[i];
-        }
-
-        return pending;
+        return unstakedDeposits;
     }
 
     /**
@@ -941,15 +929,6 @@ contract AtlasMineStakerUpgradeable is
         delete stakes[stakes.length - 1];
 
         stakes.pop();
-    }
-
-    /**
-     * @dev Get day number of timestamp since unix epoch
-     *
-     * @return day                  The day number.
-     */
-    function _getDay(uint256 timestamp) internal pure returns (uint256) {
-        return timestamp / 86400;
     }
 
     /**
