@@ -909,9 +909,6 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 [user2, ether("55")],
             ]);
 
-            // Pending 0 since day hasn't rolled, so can't be deposited
-            expect(await staker.totalPendingStake()).to.eq(0);
-
             const ONE_DAY_SEC = 86400;
             const nextTimestamp = start + ONE_DAY_SEC;
             await rollTo(nextTimestamp);

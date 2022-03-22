@@ -33,19 +33,19 @@ export async function deploy(): Promise<void> {
 
     console.log("Staker implementation deployed to:", staker.address);
 
-    await staker.initialize(MAGIC, MINE, lock);
+    // await staker.initialize(MAGIC, MINE, lock);
 
-    const proxyAdminFactory = await ethers.getContractFactory("ProxyAdmin");
-    const proxyAdmin = await proxyAdminFactory.deploy();
-    await proxyAdmin.deployed();
+    // const proxyAdminFactory = await ethers.getContractFactory("ProxyAdmin");
+    // const proxyAdmin = await proxyAdminFactory.deploy();
+    // await proxyAdmin.deployed();
 
-    console.log("Proxy admin deployed to:", proxyAdmin.address);
+    // console.log("Proxy admin deployed to:", proxyAdmin.address);
 
-    const proxyFactory = await ethers.getContractFactory("TransparentUpgradeableProxy");
-    const proxy = await proxyFactory.deploy(staker.address, proxyAdmin.address, Buffer.from(""));
-    await proxy.deployed();
+    // const proxyFactory = await ethers.getContractFactory("TransparentUpgradeableProxy");
+    // const proxy = await proxyFactory.deploy(staker.address, proxyAdmin.address, Buffer.from(""));
+    // await proxy.deployed();
 
-    console.log("Proxy deployed to:", proxy.address);
+    // console.log("Proxy deployed to:", proxy.address);
 }
 
 async function approveMagic(): Promise<void> {
