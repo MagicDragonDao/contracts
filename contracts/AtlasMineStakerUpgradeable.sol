@@ -956,8 +956,8 @@ contract AtlasMineStakerUpgradeable is
      * @dev For methods that access the token buffer - make sure it is cleared.
      */
     modifier usesBuffer() {
-        require(tokenBuffer == 0, "Buffer not clear");
-
         _;
+
+        require(tokenBuffer == 0, "Buffer not clear");
     }
 }
