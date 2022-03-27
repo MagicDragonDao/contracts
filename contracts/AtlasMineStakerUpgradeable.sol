@@ -209,6 +209,9 @@ contract AtlasMineStakerUpgradeable is
         require(s.amount > 0, "No deposit");
         require(block.timestamp >= s.unlockAt, "Deposit locked");
 
+        // Distribute tokens
+        _updateRewards();
+
         _withdraw(s, depositId, _amount);
     }
 
@@ -219,6 +222,9 @@ contract AtlasMineStakerUpgradeable is
      *
      */
     function withdrawAll() public virtual nonReentrant {
+        // Distribute tokens
+        _updateRewards();
+
         uint256[] memory depositIds = allUserDepositIds[msg.sender].values();
         for (uint256 i = 0; i < depositIds.length; i++) {
             UserStake storage s = userStake[msg.sender][depositIds[i]];
@@ -249,9 +255,6 @@ contract AtlasMineStakerUpgradeable is
         if (_amount > s.amount) {
             _amount = s.amount;
         }
-
-        // Distribute tokens
-        _updateRewards();
 
         // Unstake if we need to to ensure we can withdraw
         int256 accumulatedRewards = ((s.amount * accRewardsPerShare) / ONE).toInt256();
@@ -284,6 +287,9 @@ contract AtlasMineStakerUpgradeable is
      *
      */
     function claim(uint256 depositId) public virtual override nonReentrant {
+        // Distribute tokens
+        _updateRewards();
+
         UserStake storage s = userStake[msg.sender][depositId];
 
         _claim(s, depositId);
@@ -295,6 +301,9 @@ contract AtlasMineStakerUpgradeable is
      *
      */
     function claimAll() public virtual nonReentrant {
+        // Distribute tokens
+        _updateRewards();
+
         uint256[] memory depositIds = allUserDepositIds[msg.sender].values();
         for (uint256 i = 0; i < depositIds.length; i++) {
             UserStake storage s = userStake[msg.sender][depositIds[i]];
@@ -311,9 +320,6 @@ contract AtlasMineStakerUpgradeable is
      * @param depositId             The ID of the deposit to claim from (for event).
      */
     function _claim(UserStake storage s, uint256 depositId) internal {
-        // Distribute tokens
-        _updateRewards();
-
         // Update accounting
         int256 accumulatedRewards = ((s.amount * accRewardsPerShare) / ONE).toInt256();
         uint256 reward = (accumulatedRewards - s.rewardDebt).toUint256();
