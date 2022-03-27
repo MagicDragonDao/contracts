@@ -122,6 +122,8 @@ contract AtlasMineStakerUpgradeable is
 
     /// @notice deposited but unstaked
     uint256 public unstakedDeposits;
+    /// @notice Intra-tx buffer for pending payouts
+    uint256 public tokenBuffer;
 
     // ========================================== INITIALIZER ===========================================
 
@@ -212,7 +214,7 @@ contract AtlasMineStakerUpgradeable is
         // Distribute tokens
         _updateRewards();
 
-        _withdraw(s, depositId, _amount);
+        magic.safeTransfer(msg.sender, _withdraw(s, depositId, _amount));
     }
 
     /**
@@ -221,7 +223,7 @@ contract AtlasMineStakerUpgradeable is
      *         distribute rewards for all stakes via 'withdraw'.
      *
      */
-    function withdrawAll() public virtual nonReentrant {
+    function withdrawAll() public virtual nonReentrant usesBuffer {
         // Distribute tokens
         _updateRewards();
 
@@ -230,9 +232,13 @@ contract AtlasMineStakerUpgradeable is
             UserStake storage s = userStake[msg.sender][depositIds[i]];
 
             if (s.amount > 0 && s.unlockAt > 0 && s.unlockAt <= block.timestamp) {
-                _withdraw(s, depositIds[i], type(uint256).max);
+                tokenBuffer += _withdraw(s, depositIds[i], type(uint256).max);
             }
         }
+
+        uint256 payout = tokenBuffer;
+        tokenBuffer = 0;
+        magic.safeTransfer(msg.sender, payout);
     }
 
     /**
@@ -251,7 +257,7 @@ contract AtlasMineStakerUpgradeable is
         UserStake storage s,
         uint256 depositId,
         uint256 _amount
-    ) internal {
+    ) internal returns (uint256 payout) {
         if (_amount > s.amount) {
             _amount = s.amount;
         }
@@ -259,7 +265,7 @@ contract AtlasMineStakerUpgradeable is
         // Unstake if we need to to ensure we can withdraw
         int256 accumulatedRewards = ((s.amount * accRewardsPerShare) / ONE).toInt256();
         uint256 reward = (accumulatedRewards - s.rewardDebt).toUint256();
-        uint256 payout = _amount + reward;
+        payout = _amount + reward;
 
         // Update user accounting
         s.amount -= _amount;
@@ -272,8 +278,6 @@ contract AtlasMineStakerUpgradeable is
         if (payout > _totalUsableMagic()) {
             _unstakeToTarget(payout - _totalUsableMagic());
         }
-
-        magic.safeTransfer(msg.sender, payout);
 
         emit UserWithdraw(msg.sender, depositId, _amount, reward);
     }
@@ -292,7 +296,7 @@ contract AtlasMineStakerUpgradeable is
 
         UserStake storage s = userStake[msg.sender][depositId];
 
-        _claim(s, depositId);
+        magic.safeTransfer(msg.sender, _claim(s, depositId));
     }
 
     /**
@@ -300,15 +304,19 @@ contract AtlasMineStakerUpgradeable is
      *         Will apply to both locked and unlocked deposits.
      *
      */
-    function claimAll() public virtual nonReentrant {
+    function claimAll() public virtual nonReentrant usesBuffer {
         // Distribute tokens
         _updateRewards();
 
         uint256[] memory depositIds = allUserDepositIds[msg.sender].values();
         for (uint256 i = 0; i < depositIds.length; i++) {
             UserStake storage s = userStake[msg.sender][depositIds[i]];
-            _claim(s, depositIds[i]);
+            tokenBuffer += _claim(s, depositIds[i]);
         }
+
+        uint256 reward = tokenBuffer;
+        tokenBuffer = 0;
+        magic.safeTransfer(msg.sender, reward);
     }
 
     /**
@@ -319,10 +327,10 @@ contract AtlasMineStakerUpgradeable is
      * @param s                     The UserStake struct to claim from.
      * @param depositId             The ID of the deposit to claim from (for event).
      */
-    function _claim(UserStake storage s, uint256 depositId) internal {
+    function _claim(UserStake storage s, uint256 depositId) internal returns (uint256 reward) {
         // Update accounting
         int256 accumulatedRewards = ((s.amount * accRewardsPerShare) / ONE).toInt256();
-        uint256 reward = (accumulatedRewards - s.rewardDebt).toUint256();
+        reward = (accumulatedRewards - s.rewardDebt).toUint256();
 
         s.rewardDebt = accumulatedRewards;
 
@@ -332,8 +340,6 @@ contract AtlasMineStakerUpgradeable is
         }
 
         require(reward <= _totalUsableMagic(), "Not enough rewards to claim");
-
-        magic.safeTransfer(msg.sender, reward);
 
         emit UserClaim(msg.sender, depositId, reward);
     }
@@ -897,7 +903,7 @@ contract AtlasMineStakerUpgradeable is
         // Current magic held in contract
         uint256 unstaked = magic.balanceOf(address(this));
 
-        return unstaked - feeReserve;
+        return unstaked - feeReserve - tokenBuffer;
     }
 
     /**
@@ -942,6 +948,15 @@ contract AtlasMineStakerUpgradeable is
      */
     modifier onlyHoard() {
         require(hoards[msg.sender], "Not hoard");
+
+        _;
+    }
+
+    /**
+     * @dev For methods that access the token buffer - make sure it is cleared.
+     */
+    modifier usesBuffer() {
+        require(tokenBuffer == 0, "Buffer not clear");
 
         _;
     }
