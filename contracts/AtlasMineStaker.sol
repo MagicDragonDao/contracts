@@ -78,7 +78,7 @@ contract AtlasMineStaker is IAtlasMineStaker, Ownable, ERC1155Holder, ERC721Hold
 
     /// @notice Each user stake, keyed by user address => deposit ID
     mapping(address => mapping(uint256 => UserStake)) public userStake;
-    /// @notice All deposit IDs fro a user, enumerated
+    /// @notice All deposit IDs for a user, enumerated
     mapping(address => EnumerableSet.UintSet) private allUserDepositIds;
     /// @notice The current ID of the user's last deposited stake
     mapping(address => uint256) public currentId;
@@ -555,7 +555,7 @@ contract AtlasMineStaker is IAtlasMineStaker, Ownable, ERC1155Holder, ERC721Hold
         IERC1155(treasureAddr).setApprovalForAll(address(mine), true);
 
         address legionAddr = mine.legion();
-        IERC1155(legionAddr).setApprovalForAll(address(mine), true);
+        IERC721(legionAddr).setApprovalForAll(address(mine), true);
     }
 
     /**
@@ -569,7 +569,7 @@ contract AtlasMineStaker is IAtlasMineStaker, Ownable, ERC1155Holder, ERC721Hold
         IERC1155(treasureAddr).setApprovalForAll(address(mine), false);
 
         address legionAddr = mine.legion();
-        IERC1155(legionAddr).setApprovalForAll(address(mine), false);
+        IERC721(legionAddr).setApprovalForAll(address(mine), false);
     }
 
     /**

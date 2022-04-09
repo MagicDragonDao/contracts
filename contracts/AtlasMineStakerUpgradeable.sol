@@ -91,7 +91,7 @@ contract AtlasMineStakerUpgradeable is
 
     /// @notice Each user stake, keyed by user address => deposit ID
     mapping(address => mapping(uint256 => UserStake)) public userStake;
-    /// @notice All deposit IDs fro a user, enumerated
+    /// @notice All deposit IDs for a user, enumerated
     mapping(address => EnumerableSetUpgradeable.UintSet) private allUserDepositIds;
     /// @notice The current ID of the user's last deposited stake
     mapping(address => uint256) public currentId;
