@@ -585,7 +585,7 @@ contract AtlasMineStakerUpgradeable is
         IERC1155Upgradeable(treasureAddr).setApprovalForAll(address(mine), true);
 
         address legionAddr = mine.legion();
-        IERC1155Upgradeable(legionAddr).setApprovalForAll(address(mine), true);
+        IERC721Upgradeable(legionAddr).setApprovalForAll(address(mine), true);
     }
 
     /**
@@ -599,7 +599,7 @@ contract AtlasMineStakerUpgradeable is
         IERC1155Upgradeable(treasureAddr).setApprovalForAll(address(mine), false);
 
         address legionAddr = mine.legion();
-        IERC1155Upgradeable(legionAddr).setApprovalForAll(address(mine), false);
+        IERC721Upgradeable(legionAddr).setApprovalForAll(address(mine), false);
     }
 
     /**
