@@ -355,6 +355,27 @@ contract AtlasMineStakerUpgradeable is
     }
 
     /**
+     * @notice Claim all possible rewards from the staker contract
+     *         on behalf of any user's address.
+     *
+     * @param user                  The user address to claim rewards for.
+     */
+    function claimAllFor(address user) public virtual nonReentrant usesBuffer {
+        // Distribute tokens
+        _updateRewards();
+
+        uint256[] memory depositIds = allUserDepositIds[user].values();
+        for (uint256 i = 0; i < depositIds.length; i++) {
+            UserStake storage s = userStake[user][depositIds[i]];
+            tokenBuffer += _claim(s, depositIds[i]);
+        }
+
+        uint256 reward = tokenBuffer;
+        tokenBuffer = 0;
+        magic.safeTransfer(user, reward);
+    }
+
+    /**
      * @dev Logic for claiming rewards on a deposit. Calculates pro rata share of
      *      accumulated MAGIC and distributed any earned rewards in addition
      *      to original deposit.
