@@ -541,8 +541,6 @@ contract AtlasMineStakerUpgradeable is
         // Unstake everything eligible
         mine.withdrawAll();
         _removeZeroStakes();
-
-        require(stakes.length == 0, "Still active stakes");
     }
 
     /**
