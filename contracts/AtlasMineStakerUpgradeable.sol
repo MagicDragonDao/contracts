@@ -623,6 +623,8 @@ contract AtlasMineStakerUpgradeable is
      */
     function setMinimumStakingWait(uint256 wait) external override onlyOwner {
         minimumStakingWait = wait;
+
+        emit SetMinimumStakingWait(wait);
     }
 
     /**

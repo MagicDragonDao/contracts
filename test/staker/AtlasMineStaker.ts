@@ -1187,7 +1187,10 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
 
                 await expect(staker.stakeScheduled()).to.be.revertedWith("not enough time since last stake");
 
-                await expect(staker.connect(admin).setMinimumStakingWait(3600)).to.not.be.reverted;
+                await expect(staker.connect(admin).setMinimumStakingWait(3600))
+                    .to.emit(staker, "SetMinimumStakingWait")
+                    .withArgs(3600);
+
                 await increaseTime(3600);
                 await expect(staker.stakeScheduled()).to.not.be.reverted;
             });

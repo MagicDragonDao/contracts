@@ -13,6 +13,7 @@ interface IAtlasMineStaker {
     event UnstakeNFT(address indexed user, address indexed nft, uint256 tokenId, uint256 amount, uint256 currentBoost);
     event SetFee(uint256 fee);
     event StakingPauseToggle(bool paused);
+    event SetMinimumStakingWait(uint256 wait);
 
     // ================= Data Types ==================
 
