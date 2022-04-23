@@ -324,7 +324,7 @@ contract AtlasMineStakerUpgradeable is
 
     /**
      * @dev Logic for claiming rewards on a deposit. Calculates pro rata share of
-     *      accumulated MAGIC and dsitributed any earned rewards in addition
+     *      accumulated MAGIC and distributed any earned rewards in addition
      *      to original deposit.
      *
      * @param s                     The UserStake struct to claim from.
