@@ -138,6 +138,9 @@ contract AtlasMineStakerUpgradeable is
         AtlasMine _mine,
         AtlasMine.Lock _lock
     ) external initializer {
+        require(address(_magic) != address(0), "Invalid magic token address");
+        require(address(_mine) != address(0), "Invalid mine contract address");
+
         __ERC1155Holder_init();
         __ERC721Holder_init();
         __Ownable_init();

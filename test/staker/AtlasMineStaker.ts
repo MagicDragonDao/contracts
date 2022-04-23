@@ -8,6 +8,7 @@ const { loadFixture } = waffle;
 
 import { deploy, deployUpgradeable, increaseTime } from "../utils";
 import type { AtlasMineStaker } from "../../src/types/AtlasMineStaker";
+import type { AtlasMineStakerUpgradeable } from "../../src/types/AtlasMineStakerUpgradeable";
 import type { MasterOfCoin } from "../../src/types/MasterOfCoin";
 import type { MockLegionMetadataStore } from "../../src/types/MockLegionMetadataStore";
 import type { AtlasMine } from "../../src/types/AtlasMine";
@@ -116,6 +117,50 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
 
     beforeEach(async () => {
         ctx = await loadFixture(fixture);
+    });
+
+    describe("Initialization", () => {
+        const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
+
+        it("reverts if the MAGIC token address is initialized to 0", async () => {
+            const { admin, mine } = ctx;
+
+            const impl = await deploy("AtlasMineStakerUpgradeable", admin, []);
+
+            // Deploy proxy
+            const proxyAdminFactory = await ethers.getContractFactory("ProxyAdmin");
+            const proxyAdmin = await proxyAdminFactory.deploy();
+
+            const proxyFactory = await ethers.getContractFactory("TransparentUpgradeableProxy");
+            const proxy = await proxyFactory.deploy(impl.address, proxyAdmin.address, Buffer.from(""));
+            const staker = <AtlasMineStakerUpgradeable>(
+                await ethers.getContractAt("AtlasMineStakerUpgradeable", proxy.address)
+            );
+
+            await expect(staker.initialize(ZERO_ADDRESS, mine.address, 0)).to.be.revertedWith(
+                "Invalid magic token address",
+            );
+        });
+
+        it("reverts if the atlas mine address is initialized to 0", async () => {
+            const { admin, magic } = ctx;
+
+            const impl = await deploy("AtlasMineStakerUpgradeable", admin, []);
+
+            // Deploy proxy
+            const proxyAdminFactory = await ethers.getContractFactory("ProxyAdmin");
+            const proxyAdmin = await proxyAdminFactory.deploy();
+
+            const proxyFactory = await ethers.getContractFactory("TransparentUpgradeableProxy");
+            const proxy = await proxyFactory.deploy(impl.address, proxyAdmin.address, Buffer.from(""));
+            const staker = <AtlasMineStakerUpgradeable>(
+                await ethers.getContractAt("AtlasMineStakerUpgradeable", proxy.address)
+            );
+
+            await expect(staker.initialize(magic.address, ZERO_ADDRESS, 0)).to.be.revertedWith(
+                "Invalid mine contract address",
+            );
+        });
     });
 
     describe("Staking", () => {
