@@ -286,9 +286,8 @@ contract AtlasMineStakerUpgradeable is
     }
 
     /**
-     * @notice Claim rewards without unstaking. Will fail if there
+     * @notice Claim rewards, unstaking if necessary. Will fail if there
      *         are not enough tokens in the contract to claim rewards.
-     *         Does not attempt to unstake.
      *
      * @param depositId             The ID of the deposit to claim rewards from.
      *
