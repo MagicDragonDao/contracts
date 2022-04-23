@@ -435,11 +435,10 @@ contract AtlasMineStakerUpgradeable is
         address treasureAddr = mine.treasure();
 
         mine.unstakeTreasure(_tokenId, _amount);
+        uint256 boost = mine.boosts(address(this));
 
         // Distribute to hoard
         IERC1155Upgradeable(treasureAddr).safeTransferFrom(address(this), msg.sender, _tokenId, _amount, bytes(""));
-
-        uint256 boost = mine.boosts(address(this));
 
         emit UnstakeNFT(msg.sender, treasureAddr, _tokenId, _amount, boost);
     }
@@ -478,11 +477,10 @@ contract AtlasMineStakerUpgradeable is
         delete legionsStaked[_tokenId];
 
         mine.unstakeLegion(_tokenId);
+        uint256 boost = mine.boosts(address(this));
 
         // Distribute to hoard
         IERC721Upgradeable(legionAddr).safeTransferFrom(address(this), msg.sender, _tokenId);
-
-        uint256 boost = mine.boosts(address(this));
 
         emit UnstakeNFT(msg.sender, legionAddr, _tokenId, 1, boost);
     }
