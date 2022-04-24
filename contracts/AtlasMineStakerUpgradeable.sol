@@ -161,7 +161,7 @@ contract AtlasMineStakerUpgradeable is
         minimumStakingWait = 12 hours;
 
         // Approve the mine
-        magic.safeApprove(address(mine), type(uint256).max);
+        magic.approve(address(mine), type(uint256).max);
         _approveNFTs();
     }
 
