@@ -339,8 +339,9 @@ contract AtlasMineStakerUpgradeable is
         s.rewardDebt = accumulatedRewards;
 
         // Unstake if we need to to ensure we can withdraw
-        if (reward > _totalUsableMagic()) {
-            _unstakeToTarget(reward - _totalUsableMagic());
+        uint256 totalUsableMagic = _totalUsableMagic();
+        if (reward > totalUsableMagic) {
+            _unstakeToTarget(reward - totalUsableMagic);
         }
 
         require(reward <= _totalUsableMagic(), "Not enough rewards to claim");
