@@ -366,9 +366,9 @@ contract AtlasMineStakerUpgradeable is
 
             totalStake += s.amount;
             s.amount = 0;
-
-            require(totalStake <= _totalUsableMagic(), "Not enough unstaked");
         }
+
+        require(totalStake <= _totalUsableMagic(), "Not enough unstaked");
 
         totalStaked -= totalStake;
 
