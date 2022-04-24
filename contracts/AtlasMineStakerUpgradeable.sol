@@ -112,7 +112,7 @@ contract AtlasMineStakerUpgradeable is
     /// @notice Amount of fees reserved for withdrawal by the operator.
     uint256 public feeReserve;
     /// @notice Max fee the owner can ever take - 30%
-    uint256 public constant MAX_FEE = 3000;
+    uint256 public constant MAX_FEE = 30_00;
 
     uint256 public constant FEE_DENOMINATOR = 10000;
 
