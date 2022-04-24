@@ -714,7 +714,8 @@ contract AtlasMineStakerUpgradeable is
         }
 
         uint256 vestedPrincipal;
-        for (uint256 i = 0; i < stakes.length; i++) {
+        uint256 totalStakes = stakes.length;
+        for (uint256 i = 0; i < totalStakes; i++) {
             vestedPrincipal += mine.calcualteVestedPrincipal(address(this), stakes[i].depositId);
         }
 
@@ -817,7 +818,8 @@ contract AtlasMineStakerUpgradeable is
     function _unstakeToTarget(uint256 target) internal {
         uint256 unstaked = 0;
 
-        for (uint256 i = 0; i < stakes.length; i++) {
+        uint256 totalStakes = stakes.length;
+        for (uint256 i = 0; i < totalStakes; i++) {
             Stake memory s = stakes[i];
 
             if (s.unlockAt > block.timestamp && !mine.unlockAll()) {
@@ -967,7 +969,8 @@ contract AtlasMineStakerUpgradeable is
         // Current magic staked in mine
         uint256 staked = 0;
 
-        for (uint256 i = 0; i < stakes.length; i++) {
+        uint256 totalStakes = stakes.length;
+        for (uint256 i = 0; i < totalStakes; i++) {
             staked += stakes[i].amount;
         }
 
