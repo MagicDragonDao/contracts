@@ -160,7 +160,7 @@ contract AtlasMineStakerUpgradeable is
 
         // Approve the mine
         magic.safeApprove(address(mine), type(uint256).max);
-        approveNFTs();
+        _approveNFTs();
     }
 
     // ======================================== USER OPERATIONS ========================================
@@ -583,11 +583,7 @@ contract AtlasMineStakerUpgradeable is
      *
      */
     function approveNFTs() public override onlyOwner {
-        address treasureAddr = mine.treasure();
-        IERC1155Upgradeable(treasureAddr).setApprovalForAll(address(mine), true);
-
-        address legionAddr = mine.legion();
-        IERC721Upgradeable(legionAddr).setApprovalForAll(address(mine), true);
+        _approveNFTs();
     }
 
     /**
@@ -745,6 +741,17 @@ contract AtlasMineStakerUpgradeable is
     }
 
     // ============================================ HELPERS ============================================
+
+    /**
+     * @dev Approve treasures and legions for withdrawal from the atlas mine.
+     */
+    function _approveNFTs() internal {
+        address treasureAddr = mine.treasure();
+        IERC1155Upgradeable(treasureAddr).setApprovalForAll(address(mine), true);
+
+        address legionAddr = mine.legion();
+        IERC721Upgradeable(legionAddr).setApprovalForAll(address(mine), true);
+    }
 
     /**
      * @dev Stake tokens held by staker in the Atlas Mine, according to
