@@ -204,6 +204,26 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 await expect(withdrawExactDeposit(staker, user2, lastDepositId)).to.be.revertedWith("No deposit");
             });
 
+            it("does not allow a user to withdraw if the amount specified is 0", async () => {
+                const {
+                    users: [user1],
+                    staker,
+                } = ctx;
+
+                // Stake more than rewards to force a withdraw
+                // With 2 stakers, each will earn 7000 MAGIC over lock period
+                await stakeSingle(staker, user1, ether("10"));
+                await rollSchedule(staker);
+
+                // Fast-forward through stake
+                await rollLock();
+
+                const lastDepositId = await staker.currentId(user1.address);
+                await expect(
+                    withdrawExactDeposit(staker, user1, lastDepositId, ethers.BigNumber.from(0)),
+                ).to.be.revertedWith("Withdraw amount 0");
+            });
+
             it("does not allow a user to withdraw if their last deposit is more recent than the lock time", async () => {
                 const {
                     users: [user],

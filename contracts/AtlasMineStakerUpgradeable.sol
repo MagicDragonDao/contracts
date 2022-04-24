@@ -261,6 +261,8 @@ contract AtlasMineStakerUpgradeable is
         uint256 depositId,
         uint256 _amount
     ) internal returns (uint256 payout) {
+        require(_amount > 0, "Withdraw amount 0");
+
         if (_amount > s.amount) {
             _amount = s.amount;
         }

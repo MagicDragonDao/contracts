@@ -102,8 +102,9 @@ export const withdrawExactDeposit = async (
     staker: AtlasMineStaker,
     user: SignerWithAddress,
     depositId: BigNumberish,
+    amount = TOTAL_REWARDS,
 ): Promise<ContractTransaction> => {
-    return staker.connect(user).withdraw(depositId, TOTAL_REWARDS);
+    return staker.connect(user).withdraw(depositId, amount);
 };
 
 export const withdrawWithRoundedRewardCheck = async (
