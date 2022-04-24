@@ -501,7 +501,8 @@ contract AtlasMineStakerUpgradeable is
         // Unstake everything eligible
         _updateRewards();
 
-        for (uint256 i = 0; i < stakes.length; i++) {
+        uint256 totalStakes = stakes.length;
+        for (uint256 i = 0; i < totalStakes; i++) {
             Stake memory s = stakes[i];
 
             if (s.unlockAt > block.timestamp) {
