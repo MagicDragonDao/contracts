@@ -508,6 +508,46 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
 
                 await expect(staker.stakeScheduled()).to.be.revertedWith("not enough time since last stake");
             });
+
+            it("is able to correctly stake scheduled after a withdraw from the holding pool", async () => {
+                const {
+                    users: [user1, user2],
+                    staker,
+                    start,
+                } = ctx;
+
+                // Stake, and roll the schedule
+                const firstStakeTs = await rollTo(start + ONE_DAY_SEC);
+                await stakeSingle(staker, user1, ether("1000"));
+
+                expect(await staker.totalPendingStake()).to.equal(ether("1000"));
+
+                await rollSchedule(staker, firstStakeTs);
+
+                expect(await staker.totalPendingStake()).to.equal(0);
+
+                const nextStakeTs = await rollLock(firstStakeTs);
+
+                // Make some new deposits > original stake, without rolling schedule
+                await stakeMultiple(staker, [
+                    [user1, ether("1500")],
+                    [user2, ether("1500")],
+                ]);
+
+                expect(await staker.totalPendingStake()).to.equal(ether("3000"));
+
+                // Should be 3000 pending, withdraw 1000
+                // Have first staker withdraw
+                await staker.connect(user1).withdraw(1, ether("1000"));
+
+                // Now 2000 pending
+                expect(await staker.totalPendingStake()).to.equal(ether("2000"));
+
+                // Roll the schedule and stake
+                await rollSchedule(staker, nextStakeTs);
+
+                expect(await staker.totalPendingStake()).to.equal(0);
+            });
         });
     });
 

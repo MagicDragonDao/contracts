@@ -1002,6 +1002,7 @@ __metadata:
     ethers: ^5.5.1
     fs-extra: ^10.0.0
     hardhat: ^2.7.0
+    hardhat-contract-sizer: ^2.5.1
     hardhat-dependency-compiler: ^1.1.2
     hardhat-gas-reporter: ^1.0.4
     husky: ^7.0.4
@@ -4037,6 +4038,19 @@ __metadata:
     colors:
       optional: true
   checksum: 3ff8c821440a2a0e655a01f04e5b54a0365b3814676cd93cec2b2b0b9952a08311797ad242a181733fcff714fa7d776f8bb45ad812f296390bfa5ef584fb231d
+  languageName: node
+  linkType: hard
+
+"cli-table3@npm:^0.6.0":
+  version: 0.6.1
+  resolution: "cli-table3@npm:0.6.1"
+  dependencies:
+    colors: 1.4.0
+    string-width: ^4.2.0
+  dependenciesMeta:
+    colors:
+      optional: true
+  checksum: 956e175f8eb019c26465b9f1e51121c08d8978e2aab04be7f8520ea8a4e67906fcbd8516dfb77e386ae3730ef0281aa21a65613dffbfa3d62969263252bd25a9
   languageName: node
   linkType: hard
 
@@ -7529,6 +7543,18 @@ __metadata:
   version: 2.1.0
   resolution: "hard-rejection@npm:2.1.0"
   checksum: 7baaf80a0c7fff4ca79687b4060113f1529589852152fa935e6787a2bc96211e784ad4588fb3048136ff8ffc9dfcf3ae385314a5b24db32de20bea0d1597f9dc
+  languageName: node
+  linkType: hard
+
+"hardhat-contract-sizer@npm:^2.5.1":
+  version: 2.5.1
+  resolution: "hardhat-contract-sizer@npm:2.5.1"
+  dependencies:
+    chalk: ^4.0.0
+    cli-table3: ^0.6.0
+  peerDependencies:
+    hardhat: ^2.0.0
+  checksum: 498895dccc6c95a29049f5864db27c2d2db2de31cc7f5fab2d22d65eed4f449ffc6537bb3b174a914f347259df1825c56b1d29a1963b88686b5d2b8c7850c492
   languageName: node
   linkType: hard
 

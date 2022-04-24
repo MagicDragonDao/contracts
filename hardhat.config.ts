@@ -4,6 +4,7 @@ import "@nomiclabs/hardhat-etherscan";
 import "@openzeppelin/hardhat-upgrades";
 import "hardhat-gas-reporter";
 import "hardhat-dependency-compiler";
+import "hardhat-contract-sizer";
 import "solidity-coverage";
 
 import "./tasks/accounts";
@@ -101,7 +102,7 @@ const compilerSettings = {
     // https://hardhat.org/hardhat-network/#solidity-optimizer-support
     optimizer: {
         enabled: optimizerEnabled,
-        runs: 999999,
+        runs: 1000,
     },
 };
 

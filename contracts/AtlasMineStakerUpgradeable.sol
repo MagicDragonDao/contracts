@@ -124,6 +124,8 @@ contract AtlasMineStakerUpgradeable is
     uint256 public unstakedDeposits;
     /// @notice Intra-tx buffer for pending payouts
     uint256 public tokenBuffer;
+    /// @notice Whether the deposit accounting reset has been called (upgrade #2)
+    bool private _resetCalled;
 
     // ========================================== INITIALIZER ===========================================
 
@@ -282,6 +284,14 @@ contract AtlasMineStakerUpgradeable is
         // If we need to unstake, unstake until we have enough
         if (payout > _totalUsableMagic()) {
             _unstakeToTarget(payout - _totalUsableMagic());
+        }
+
+        // Decrement unstakedDeposits based on how much we are withdrawing
+        // If we are withdrawing more than is currently unstaked, set it to 0
+        if (_amount >= unstakedDeposits) {
+            unstakedDeposits = 0;
+        } else {
+            unstakedDeposits -= _amount;
         }
 
         emit UserWithdraw(msg.sender, depositId, _amount, reward);
@@ -597,6 +607,7 @@ contract AtlasMineStakerUpgradeable is
         IERC1155Upgradeable(treasureAddr).setApprovalForAll(address(mine), false);
 
         address legionAddr = mine.legion();
+
         IERC721Upgradeable(legionAddr).setApprovalForAll(address(mine), false);
     }
 
@@ -636,6 +647,25 @@ contract AtlasMineStakerUpgradeable is
         schedulePaused = paused;
 
         emit StakingPauseToggle(paused);
+    }
+
+    /**
+     * @notice Must be used when migrating to a new contract that changes the accounting
+     *         logic of unstaked deposits. Can be used to reset value to one that would
+     *         be in place in the cast that newly-introduced logic was always in place.
+     *
+     * @dev    Cannot be used in normal operation, will only be called once as part of
+     *         an "upgradeAndCall" contract upgrade.
+     *
+     * @param _unstakedDeposits    The new value of unstakedDeposits to set.
+     */
+    function resetUnstakedAndStake(uint256 _unstakedDeposits) external {
+        require(!_resetCalled, "reset already called");
+        _resetCalled = true;
+
+        unstakedDeposits = _unstakedDeposits;
+
+        stakeScheduled();
     }
 
     // ======================================== VIEW FUNCTIONS =========================================

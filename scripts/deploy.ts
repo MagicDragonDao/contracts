@@ -5,6 +5,8 @@ import { SECTION_SEPARATOR } from "./constants";
 import type { AtlasMineStakerUpgradeable } from "../src/types/AtlasMineStakerUpgradeable";
 import type { ERC20 } from "../src/types/ERC20";
 
+import AMAbi from "../artifacts/contracts/AtlasMineStakerUpgradeable.sol/AtlasMineStakerUpgradeable.json";
+
 export async function main(): Promise<void> {
     await deploy();
     // await approveMagic();
@@ -28,12 +30,19 @@ export async function deploy(): Promise<void> {
 
     // Deploy the contracts
     const factory = await ethers.getContractFactory("AtlasMineStakerUpgradeable");
-    const staker = <AtlasMineStakerUpgradeable>await factory.deploy();
+    const staker = <AtlasMineStakerUpgradeable>await factory.deploy({ gasLimit: 10000000 });
     await staker.deployed();
 
     console.log("Staker implementation deployed to:", staker.address);
 
-    // await staker.initialize(MAGIC, MINE, lock);
+    await staker.initialize(MAGIC, MINE, lock);
+
+    const iface = new ethers.utils.Interface(AMAbi.abi);
+
+    const data = iface.encodeFunctionData("resetUnstakedAndStake", ["551932342000000000000000"]);
+
+    console.log("Upgrade and call data:");
+    console.log(data);
 
     // const proxyAdminFactory = await ethers.getContractFactory("ProxyAdmin");
     // const proxyAdmin = await proxyAdminFactory.deploy();
