@@ -130,6 +130,13 @@ contract AtlasMineStakerUpgradeable is
     // ========================================== INITIALIZER ===========================================
 
     /**
+     * @dev Prevents malicious initializations of base implementation by
+     *      setting contract to initialized on deployment.
+     */
+    /// @custom:oz-upgrades-unsafe-allow constructor
+    constructor() initializer {}
+
+    /**
      * @param _magic                The MAGIC token address.
      * @param _mine                 The AtlasMine contract.
      * @param _lock                 The locking strategy of the staking pool.
