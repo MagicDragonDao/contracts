@@ -1193,6 +1193,14 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 );
             });
 
+            it("does not allow a non-owner to change the staking wait to less than 3 hours", async () => {
+                const { admin, staker } = ctx;
+
+                await expect(staker.connect(admin).setMinimumStakingWait(3600)).to.be.revertedWith(
+                    "Minimum interval 3 hours",
+                );
+            });
+
             it("allows an owner to change the staking wait", async () => {
                 const {
                     admin,
@@ -1207,11 +1215,11 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
 
                 await expect(staker.stakeScheduled()).to.be.revertedWith("not enough time since last stake");
 
-                await expect(staker.connect(admin).setMinimumStakingWait(3600))
+                await expect(staker.connect(admin).setMinimumStakingWait(14400))
                     .to.emit(staker, "SetMinimumStakingWait")
-                    .withArgs(3600);
+                    .withArgs(14400);
 
-                await increaseTime(3600);
+                await increaseTime(14400);
                 await expect(staker.stakeScheduled()).to.not.be.reverted;
             });
         });
