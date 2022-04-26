@@ -13,7 +13,6 @@ import type { AtlasMine } from "../../src/types/AtlasMine";
 import type { TestERC20 } from "../../src/types/TestERC20";
 import type { TestERC1155 } from "../../src/types/TestERC1155";
 import type { TestERC721 } from "../../src/types/TestERC721";
-import { MAX_UINT64 } from "ethereumjs-util";
 
 chai.use(solidity);
 
@@ -48,7 +47,8 @@ export interface Action {
 export interface ActionInfo {
     signer: SignerWithAddress;
     amount: BigNumberish;
-    action: "deposit" | "withdraw" | "claim";
+    depositId?: BigNumberish;
+    action: "deposit" | "withdraw" | "withdrawPartial" | "claim";
     staker?: AtlasMineStaker;
 }
 
@@ -1008,6 +1008,140 @@ export const setupAdvancedScenario5 = (ctx: TestContext, stakers: [AtlasMineStak
     };
 };
 
+export const setupAdvancedScenario6 = (ctx: TestContext): ScenarioInfo => {
+    // Advanced Scenario 6:
+    // (Different stake times, prestaking and unstaking, partial withdrawals)
+    //
+    // Staker 1 Deposits N at -1000
+    // Staker 1 Withdraws N at -500
+    // Staker 2 Deposits 3N at 0
+    // Staker 3 Deposits N at 0
+    // Staker 4 Deposits 9N at 0.25
+    // Staker 2 Deposits 2N at 0.25
+    // Staker 2 Withdraws 1N at 0.5
+    // Staker 1 Deposits 2N At 0.5
+    // Staker 2 Deposits 3N at 0.75
+    //
+    //            Staker 1 %        Staker 2 %      Staker 3 %     Staker 4 %
+    // At T = -1000: 100                0               0               0
+    // At T = -500:    0                0               0               0
+    // At T = 0:       0               75              25               0
+    // At T = 0.25:    0            33.33            6.67              60
+    // At T = 0.5:  12.5               25            6.25           56.25
+    // At T = 0.75:10.52            36.84            5.26           47.37
+    // Totals:      5.75            42.54            10.8           40.91
+
+    const {
+        users: [user1, user2, user3, user4],
+        start,
+        end,
+    } = ctx;
+
+    const baseAmount = ether("100");
+    const totalTime = end - start;
+    const totalRewardsBase = TOTAL_REWARDS.div(10000);
+
+    const actions: Action[] = [
+        {
+            timestamp: start - ONE_DAY_SEC - 5_000_000,
+            actions: [
+                {
+                    signer: user1,
+                    amount: baseAmount,
+                    action: "deposit",
+                },
+            ],
+        },
+        {
+            timestamp: start - ONE_DAY_SEC - 100_000,
+            actions: [
+                {
+                    signer: user1,
+                    amount: 0,
+                    action: "withdraw",
+                },
+            ],
+        },
+        {
+            timestamp: start - ONE_DAY_SEC - 100,
+            actions: [
+                {
+                    signer: user2,
+                    amount: baseAmount.mul(3),
+                    action: "deposit",
+                },
+                {
+                    signer: user3,
+                    amount: baseAmount,
+                    action: "deposit",
+                },
+            ],
+        },
+        {
+            timestamp: start + totalTime * 0.25,
+            actions: [
+                {
+                    signer: user4,
+                    amount: baseAmount.mul(9),
+                    action: "deposit",
+                },
+                {
+                    signer: user2,
+                    amount: baseAmount.mul(2),
+                    action: "deposit",
+                },
+            ],
+        },
+        {
+            timestamp: start + totalTime * 0.5,
+            actions: [
+                {
+                    signer: user1,
+                    amount: baseAmount.mul(2),
+                    action: "deposit",
+                },
+                {
+                    signer: user2,
+                    amount: baseAmount,
+                    action: "withdrawPartial",
+                    depositId: 1,
+                },
+            ],
+        },
+        {
+            timestamp: start + totalTime * 0.75,
+            actions: [
+                {
+                    signer: user2,
+                    amount: baseAmount.mul(3),
+                    action: "deposit",
+                },
+            ],
+        },
+    ];
+
+    const rewards: RewardInfo[] = [
+        {
+            signer: user1,
+            expectedReward: totalRewardsBase.mul(575),
+        },
+        {
+            signer: user2,
+            expectedReward: totalRewardsBase.mul(4254),
+        },
+        {
+            signer: user3,
+            expectedReward: totalRewardsBase.mul(1080),
+        },
+        {
+            signer: user4,
+            expectedReward: totalRewardsBase.mul(4091),
+        },
+    ];
+
+    return { actions, rewards };
+};
+
 export const runScenario = async (
     ctx: TestContext,
     actions: Action[],
@@ -1053,6 +1187,26 @@ export const runScenario = async (
             } else if (action === "withdraw") {
                 // No need to roll, just claim - keep track of amount rewarded
                 tx = await staker.connect(signer).withdrawAll();
+                const receipt = await tx.wait();
+
+                const withdrawEvents = receipt.events?.filter(e => e.event === "UserWithdraw");
+
+                let reward = ethers.BigNumber.from(0);
+                for (const event of withdrawEvents!) {
+                    expect(event).to.not.be.undefined;
+                    expect(event?.args?.[0]).to.eq(signer.address);
+
+                    reward = reward.add(event?.args?.[3]);
+                }
+
+                if (claims[signer.address]) {
+                    claims[signer.address] = ethers.BigNumber.from(claims[signer.address]).add(reward);
+                } else {
+                    claims[signer.address] = reward;
+                }
+            } else if (action === "withdrawPartial") {
+                // No need to roll, just claim - keep track of amount rewarded
+                tx = await staker.connect(signer).withdraw(a.depositId!, a.amount);
                 const receipt = await tx.wait();
 
                 const withdrawEvents = receipt.events?.filter(e => e.event === "UserWithdraw");

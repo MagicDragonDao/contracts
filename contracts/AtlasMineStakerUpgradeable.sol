@@ -257,7 +257,7 @@ contract AtlasMineStakerUpgradeable is
 
     /**
      * @dev Logic for withdrawing a deposit. Calculates pro rata share of
-     *      accumulated MAGIC and dsitributed any earned rewards in addition
+     *      accumulated MAGIC and distributes any earned rewards in addition
      *      to original deposit.
      *
      * @dev An _amount argument larger than the total deposit amount will
@@ -278,14 +278,12 @@ contract AtlasMineStakerUpgradeable is
             _amount = s.amount;
         }
 
-        // Unstake if we need to to ensure we can withdraw
-        int256 accumulatedRewards = ((s.amount * accRewardsPerShare) / ONE).toInt256();
-        uint256 reward = (accumulatedRewards - s.rewardDebt).toUint256();
+        // Update user accounting
+        uint256 reward = _claim(s, depositId);
         payout = _amount + reward;
 
-        // Update user accounting
         s.amount -= _amount;
-        s.rewardDebt = 0;
+        s.rewardDebt -= ((_amount * accRewardsPerShare) / ONE).toInt256();
 
         // Update global accounting
         totalStaked -= _amount;
@@ -309,6 +307,9 @@ contract AtlasMineStakerUpgradeable is
     /**
      * @notice Claim rewards, unstaking if necessary. Will fail if there
      *         are not enough tokens in the contract to claim rewards.
+     * @dev    Reverts if deposit amount is 0, since rewards are auto-harvested
+     *         on withdrawal, there should be no unclaimed rewards on fully
+     *         withdrawn deposits.
      *
      * @param depositId             The ID of the deposit to claim rewards from.
      *
@@ -318,6 +319,8 @@ contract AtlasMineStakerUpgradeable is
         _updateRewards();
 
         UserStake storage s = userStake[msg.sender][depositId];
+
+        require(s.amount > 0, "No deposit");
 
         magic.safeTransfer(msg.sender, _claim(s, depositId));
     }
@@ -334,7 +337,10 @@ contract AtlasMineStakerUpgradeable is
         uint256[] memory depositIds = allUserDepositIds[msg.sender].values();
         for (uint256 i = 0; i < depositIds.length; i++) {
             UserStake storage s = userStake[msg.sender][depositIds[i]];
-            tokenBuffer += _claim(s, depositIds[i]);
+
+            if (s.amount > 0) {
+                tokenBuffer += _claim(s, depositIds[i]);
+            }
         }
 
         uint256 reward = tokenBuffer;
@@ -353,7 +359,10 @@ contract AtlasMineStakerUpgradeable is
     function _claim(UserStake storage s, uint256 depositId) internal returns (uint256 reward) {
         // Update accounting
         int256 accumulatedRewards = ((s.amount * accRewardsPerShare) / ONE).toInt256();
-        reward = (accumulatedRewards - s.rewardDebt).toUint256();
+
+        if (s.rewardDebt < accumulatedRewards) {
+            reward = (accumulatedRewards - s.rewardDebt).toUint256();
+        }
 
         s.rewardDebt = accumulatedRewards;
 
