@@ -126,6 +126,8 @@ contract AtlasMineStakerUpgradeable is
     uint256 public tokenBuffer;
     /// @notice Whether the deposit accounting reset has been called (upgrade #2)
     bool private _resetCalled;
+    /// @notice The next stake index with an active deposit
+    uint256 public nextActiveStake;
 
     // ========================================== INITIALIZER ===========================================
 
@@ -520,7 +522,7 @@ contract AtlasMineStakerUpgradeable is
         _updateRewards();
 
         uint256 totalStakes = stakes.length;
-        for (uint256 i = 0; i < totalStakes; i++) {
+        for (uint256 i = nextActiveStake; i < totalStakes; i++) {
             Stake memory s = stakes[i];
 
             if (s.unlockAt > block.timestamp) {
@@ -715,7 +717,7 @@ contract AtlasMineStakerUpgradeable is
 
         uint256 vestedPrincipal;
         uint256 totalStakes = stakes.length;
-        for (uint256 i = 0; i < totalStakes; i++) {
+        for (uint256 i = nextActiveStake; i < totalStakes; i++) {
             vestedPrincipal += mine.calcualteVestedPrincipal(address(this), stakes[i].depositId);
         }
 
@@ -819,7 +821,7 @@ contract AtlasMineStakerUpgradeable is
         uint256 unstaked = 0;
 
         uint256 totalStakes = stakes.length;
-        for (uint256 i = 0; i < totalStakes; i++) {
+        for (uint256 i = nextActiveStake; i < totalStakes; i++) {
             Stake memory s = stakes[i];
 
             if (s.unlockAt > block.timestamp && !mine.unlockAll()) {
@@ -913,34 +915,21 @@ contract AtlasMineStakerUpgradeable is
 
     /**
      * @dev Find stakes with zero deposit amount and remove them from tracking.
-     *      Uses recursion to stop from mutating an array we are currently looping over.
-     *      If a zero stake is found, it is removed, and the function is restarted,
-     *      such that it is always working from a 'clean' array.
+     *      Starts from the last fully withdrawn stake, and keeps counting until
+     *      we find a non-zero stake.
      *
      */
     function _removeZeroStakes() internal {
-        bool shouldRecurse = stakes.length > 0;
-
-        for (uint256 i = 0; i < stakes.length; i++) {
+        for (uint256 i = nextActiveStake; i < stakes.length; i++) {
             _updateStakeDepositAmount(i);
 
-            Stake storage s = stakes[i];
+            Stake memory s = stakes[i];
 
-            if (s.amount == 0) {
-                _removeStake(i);
-                // Stop looping and start again - we will skip
-                // out of the look and recurse
+            if (s.amount != 0) {
+                // No more zero stakes - can break
+                nextActiveStake = i;
                 break;
             }
-
-            if (i == stakes.length - 1) {
-                // We didn't remove anything, so stop recursing
-                shouldRecurse = false;
-            }
-        }
-
-        if (shouldRecurse) {
-            _removeZeroStakes();
         }
     }
 
@@ -970,30 +959,11 @@ contract AtlasMineStakerUpgradeable is
         uint256 staked = 0;
 
         uint256 totalStakes = stakes.length;
-        for (uint256 i = 0; i < totalStakes; i++) {
+        for (uint256 i = nextActiveStake; i < totalStakes; i++) {
             staked += stakes[i].amount;
         }
 
         return staked + _totalUsableMagic();
-    }
-
-    /**
-     * @dev Remove a tracked stake from any position in the stakes array.
-     *      Used when a stake is no longer relevant i.e. fully withdrawn.
-     *      Mutates the Stakes array in storage.
-     *
-     * @param index                 The index of the stake to remove.
-     */
-    function _removeStake(uint256 index) internal {
-        if (index >= stakes.length) return;
-
-        for (uint256 i = index; i < stakes.length - 1; i++) {
-            stakes[i] = stakes[i + 1];
-        }
-
-        delete stakes[stakes.length - 1];
-
-        stakes.pop();
     }
 
     /**
