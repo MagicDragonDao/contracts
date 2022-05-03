@@ -114,7 +114,7 @@ contract AtlasMineStakerUpgradeable is
     /// @notice Max fee the owner can ever take - 30%
     uint256 public constant MAX_FEE = 30_00;
 
-    uint256 public constant FEE_DENOMINATOR = 10000;
+    uint256 public constant FEE_DENOMINATOR = 10_000;
 
     // ===========================================
     // ============== Post Upgrade ===============
@@ -295,8 +295,9 @@ contract AtlasMineStakerUpgradeable is
         totalStaked -= _amount;
 
         // If we need to unstake, unstake until we have enough
-        if (payout > _totalUsableMagic()) {
-            _unstakeToTarget(payout - _totalUsableMagic());
+        uint256 totalUsableMagic = _totalUsableMagic();
+        if (payout > totalUsableMagic) {
+            _unstakeToTarget(payout - totalUsableMagic);
         }
 
         // Decrement unstakedDeposits based on how much we are withdrawing
@@ -935,7 +936,8 @@ contract AtlasMineStakerUpgradeable is
      *
      */
     function _removeZeroStakes() internal {
-        for (uint256 i = nextActiveStake; i < stakes.length; i++) {
+        uint256 totalStakes = stakes.length;
+        for (uint256 i = nextActiveStake; i < totalStakes; i++) {
             _updateStakeDepositAmount(i);
 
             Stake memory s = stakes[i];
