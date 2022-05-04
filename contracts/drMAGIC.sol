@@ -1,18 +1,9 @@
 // SPDX-License-Identifier: MIT
-
 pragma solidity ^0.8.11;
 
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 
-/**
- * @dev Extension of the ERC20 interface for a mintable and burnable token.
- */
-interface IERC20Mintable is IERC20 {
-    function mint(address _to, uint256 _amount) external;
-
-    function burn(address _to, uint256 _amount) external;
-}
+import "./interfaces/IERC20Mintable.sol";
 
 /**
  * @title drMAGIC
