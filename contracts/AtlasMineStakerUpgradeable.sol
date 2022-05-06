@@ -185,6 +185,27 @@ contract AtlasMineStakerUpgradeable is
      * @param _amount               The amount of tokens to deposit.
      */
     function deposit(uint256 _amount) public virtual override nonReentrant {
+        _deposit(_amount);
+    }
+
+    /**
+     * @notice Like depoit, but stakes entire balance.
+     * @dev    Entire balance must be approved by the caller.
+     *
+     */
+    function depositAll() public virtual override nonReentrant {
+        uint256 userBalance = magic.balanceOf(msg.sender);
+        _deposit(userBalance);
+    }
+
+    /**
+     * @dev Internal logic for processing a deposit. The staker will collect
+     *         the tokens, to be later staked in atlas mine by the owner,
+     *         according to the stake/unlock schedule.
+     *
+     * @param _amount               The amount of tokens to deposit.
+     */
+    function _deposit(uint256 _amount) internal {
         require(!schedulePaused, "new staking paused");
         require(_amount > 0, "Deposit amount 0");
 

@@ -184,6 +184,23 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 expect(await staker.userTotalStake(user.address)).to.eq(amount);
                 expect(await magic.balanceOf(user.address)).to.eq(ether("99990"));
             });
+
+            it("stakes a user's entire balance", async () => {
+                const {
+                    users: [user],
+                    staker,
+                    magic,
+                } = ctx;
+
+                const balance = await magic.balanceOf(user.address);
+
+                await expect(staker.connect(user).depositAll())
+                    .to.emit(staker, "UserDeposit")
+                    .withArgs(user.address, balance);
+
+                expect(await staker.userTotalStake(user.address)).to.eq(balance);
+                expect(await magic.balanceOf(user.address)).to.eq(0);
+            });
         });
 
         describe("withdraw", () => {
