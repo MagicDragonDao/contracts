@@ -2,12 +2,11 @@
 import { ethers, waffle } from "hardhat";
 import { BigNumberish } from "ethers";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { expect, should } from "chai";
+import { expect } from "chai";
 
 const { loadFixture } = waffle;
 
 import { deploy, deployUpgradeable, increaseTime } from "../utils";
-import type { AtlasMineStaker } from "../../src/types/AtlasMineStaker";
 import type { AtlasMineStakerUpgradeable } from "../../src/types/AtlasMineStakerUpgradeable";
 import type { MasterOfCoin } from "../../src/types/MasterOfCoin";
 import type { MockLegionMetadataStore } from "../../src/types/MockLegionMetadataStore";
@@ -70,17 +69,11 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
         await mine.setLegionMetadataStore(metadataStore.address);
         await mine.setUtilizationOverride(ether("1"));
 
-        const staker = <AtlasMineStaker>await deployUpgradeable("AtlasMineStakerUpgradeable", admin, [
+        const staker = <AtlasMineStakerUpgradeable>await deployUpgradeable("AtlasMineStakerUpgradeable", admin, [
             magic.address,
             mine.address,
             0, // 0 == AtlasMine.Lock.twoWeeks
         ]);
-
-        // const staker = <AtlasMineStaker>await deploy("AtlasMineStaker", admin, [
-        //     magic.address,
-        //     mine.address,
-        //     0, // 0 == AtlasMine.Lock.twoWeeks
-        // ]);
 
         // Distribute coins and set up staking program
         await magic.mint(admin.address, ether("10000"));
@@ -493,6 +486,95 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 // Claim again, get very small rewards - 1 second passed
                 await claimWithRoundedRewardCheck(staker, user, 0);
             });
+
+            it("claims rewards for all deposits", async () => {
+                const {
+                    users: [user1],
+                    staker,
+                    magic,
+                    start,
+                } = ctx;
+
+                const amount = ether("20000");
+                await stakeMultiple(staker, [
+                    [user1, amount],
+                    [user1, amount],
+                ]);
+
+                // Go to start of rewards program
+                await rollTo(start);
+
+                // Make a tx to deposit
+                const tx = await staker.stakeScheduled();
+                await tx.wait();
+
+                await rollLock(start);
+
+                // Fast-forward in scenarios - 1.3mm seconds should pass,
+                // so 13k MAGIC to pool. Cliam all should get all
+                const claimTx = await staker.connect(user1).claimAll();
+                const receipt = await claimTx.wait();
+
+                const claimEvents = receipt.events?.filter(e => e.event === "UserClaim");
+                expect(claimEvents?.length).to.eq(2);
+
+                for (const i in claimEvents!) {
+                    const claimEvent = claimEvents[i];
+
+                    expect(claimEvent).to.not.be.undefined;
+                    expect(claimEvent?.args?.[0]).to.eq(user1.address);
+                    expect(claimEvent?.args?.[1]).to.eq(+i + 1);
+                    expectRoundedEqual(claimEvent?.args?.[2], ether("6500"));
+                }
+
+                // User returned a single stake + reward
+                expectRoundedEqual(await magic.balanceOf(user1.address), ether("73000"));
+            });
+
+            it("claims on behalf of another user", async () => {
+                const {
+                    users: [user1, user2],
+                    staker,
+                    magic,
+                    start,
+                } = ctx;
+
+                const amount = ether("20000");
+                await stakeMultiple(staker, [
+                    [user1, amount],
+                    [user1, amount],
+                ]);
+
+                // Go to start of rewards program
+                await rollTo(start);
+
+                // Make a tx to deposit
+                const tx = await staker.stakeScheduled();
+                await tx.wait();
+
+                await rollLock(start);
+
+                // Fast-forward in scenarios - 1.3mm seconds should pass,
+                // so 13k MAGIC to pool. Cliam all should get all
+                // User 1 stakes, but user2 claims
+                const claimTx = await staker.connect(user2).claimAllFor(user1.address);
+                const receipt = await claimTx.wait();
+
+                const claimEvents = receipt.events?.filter(e => e.event === "UserClaim");
+                expect(claimEvents?.length).to.eq(2);
+
+                for (const i in claimEvents!) {
+                    const claimEvent = claimEvents[i];
+
+                    expect(claimEvent).to.not.be.undefined;
+                    expect(claimEvent?.args?.[0]).to.eq(user1.address);
+                    expect(claimEvent?.args?.[1]).to.eq(+i + 1);
+                    expectRoundedEqual(claimEvent?.args?.[2], ether("6500"));
+                }
+
+                // User returned a single stake + reward
+                expectRoundedEqual(await magic.balanceOf(user1.address), ether("73000"));
+            });
         });
 
         describe("stakeScheduled", async () => {
@@ -676,7 +758,7 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
             expect(await mine.boosts(staker.address)).to.eq(ether("13.16"));
 
             // Set up another staker and stake without boosts
-            const staker2 = <AtlasMineStaker>await deploy("AtlasMineStaker", admin, [
+            const staker2 = <AtlasMineStakerUpgradeable>await deployUpgradeable("AtlasMineStakerUpgradeable", admin, [
                 magic.address,
                 mine.address,
                 0, // 0 == AtlasMine.Lock.twoWeeks
@@ -1768,7 +1850,7 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
             const { magic, admin, staker, mine, users, legions } = ctx;
 
             // Set up another staker and stake without boosts
-            const staker2 = <AtlasMineStaker>await deploy("AtlasMineStaker", admin, [
+            const staker2 = <AtlasMineStakerUpgradeable>await deployUpgradeable("AtlasMineStakerUpgradeable", admin, [
                 magic.address,
                 mine.address,
                 0, // 0 == AtlasMine.Lock.twoWeeks
@@ -1816,7 +1898,7 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 }
 
                 const postclaimBalance = await magic.balanceOf(signer.address);
-                expectRoundedEqual(postclaimBalance.sub(preclaimBalance), expectedReward, 5);
+                expectRoundedEqual(postclaimBalance.sub(preclaimBalance), expectedReward, 10);
 
                 // Withdraw funds to make sure we can
                 if ((await staker.userTotalStake(signer.address)).gt(0)) {

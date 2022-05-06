@@ -59,6 +59,8 @@ interface IAtlasMineStaker {
 
     function claimAll() external;
 
+    function claimAllFor(address user) external;
+
     function withdrawEmergency() external;
 
     function stakeScheduled() external;

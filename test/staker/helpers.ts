@@ -6,7 +6,7 @@ import { BigNumberish, ContractTransaction } from "ethers";
 import { setNextBlockTimestamp } from "../utils";
 
 import type { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
-import type { AtlasMineStaker } from "../../src/types/AtlasMineStaker";
+import type { AtlasMineStakerUpgradeable } from "../../src/types/AtlasMineStakerUpgradeable";
 import type { MasterOfCoin } from "../../src/types/MasterOfCoin";
 import type { MockLegionMetadataStore } from "../../src/types/MockLegionMetadataStore";
 import type { AtlasMine } from "../../src/types/AtlasMine";
@@ -28,7 +28,7 @@ export interface TestContext {
     signers: SignerWithAddress[];
     admin: SignerWithAddress;
     users: SignerWithAddress[];
-    staker: AtlasMineStaker;
+    staker: AtlasMineStakerUpgradeable;
     masterOfCoin: MasterOfCoin;
     metadataStore: MockLegionMetadataStore;
     mine: AtlasMine;
@@ -49,7 +49,7 @@ export interface ActionInfo {
     amount: BigNumberish;
     depositId?: BigNumberish;
     action: "deposit" | "withdraw" | "withdrawPartial" | "claim";
-    staker?: AtlasMineStaker;
+    staker?: AtlasMineStakerUpgradeable;
 }
 
 export interface RewardInfo {
@@ -68,19 +68,25 @@ export interface ScenarioInfo {
 export type StakeParams = [SignerWithAddress, BigNumberish];
 
 export const stakeSingle = async (
-    staker: AtlasMineStaker,
+    staker: AtlasMineStakerUpgradeable,
     user: SignerWithAddress,
     amount: BigNumberish,
 ): Promise<ContractTransaction> => {
     return staker.connect(user).deposit(amount);
 };
 
-export const stakeMultiple = async (staker: AtlasMineStaker, stakes: StakeParams[]): Promise<ContractTransaction[]> => {
+export const stakeMultiple = async (
+    staker: AtlasMineStakerUpgradeable,
+    stakes: StakeParams[],
+): Promise<ContractTransaction[]> => {
     const promises = stakes.map(s => stakeSingle(staker, ...s));
     return Promise.all(promises);
 };
 
-export const stakeSequence = async (staker: AtlasMineStaker, stakes: StakeParams[]): Promise<ContractTransaction> => {
+export const stakeSequence = async (
+    staker: AtlasMineStakerUpgradeable,
+    stakes: StakeParams[],
+): Promise<ContractTransaction> => {
     // Only returns final transaction
     let tx: ContractTransaction;
     for (const s of stakes) {
@@ -92,14 +98,14 @@ export const stakeSequence = async (staker: AtlasMineStaker, stakes: StakeParams
 };
 
 export const withdrawSingle = async (
-    staker: AtlasMineStaker,
+    staker: AtlasMineStakerUpgradeable,
     user: SignerWithAddress,
 ): Promise<ContractTransaction> => {
     return staker.connect(user).withdrawAll();
 };
 
 export const withdrawExactDeposit = async (
-    staker: AtlasMineStaker,
+    staker: AtlasMineStakerUpgradeable,
     user: SignerWithAddress,
     depositId: BigNumberish,
     amount = TOTAL_REWARDS,
@@ -108,7 +114,7 @@ export const withdrawExactDeposit = async (
 };
 
 export const withdrawWithRoundedRewardCheck = async (
-    staker: AtlasMineStaker,
+    staker: AtlasMineStakerUpgradeable,
     user: SignerWithAddress,
     stakeAmount: BigNumberish,
     expectedReward: BigNumberish,
@@ -136,7 +142,7 @@ export const withdrawWithRoundedRewardCheck = async (
 };
 
 export const claimWithRoundedRewardCheck = async (
-    staker: AtlasMineStaker,
+    staker: AtlasMineStakerUpgradeable,
     user: SignerWithAddress,
     expectedReward: BigNumberish,
 ): Promise<ContractTransaction> => {
@@ -159,7 +165,10 @@ export const claimWithRoundedRewardCheck = async (
     return claimTx;
 };
 
-export const claimSingle = async (staker: AtlasMineStaker, user: SignerWithAddress): Promise<ContractTransaction> => {
+export const claimSingle = async (
+    staker: AtlasMineStakerUpgradeable,
+    user: SignerWithAddress,
+): Promise<ContractTransaction> => {
     return staker.connect(user).claimAll();
 };
 
@@ -168,7 +177,7 @@ export const claimSingle = async (staker: AtlasMineStaker, user: SignerWithAddre
 /////////////////////////////////////////////////////////////////////////////////
 
 export const rollSchedule = async (
-    staker: AtlasMineStaker,
+    staker: AtlasMineStakerUpgradeable,
     start = Math.floor(Date.now() / 1000),
 ): Promise<ContractTransaction> => {
     const nextTimestamp = start + ONE_DAY_SEC;
@@ -797,7 +806,10 @@ export const setupAdvancedScenario4 = (ctx: TestContext): ScenarioInfo => {
     return { actions, rewards };
 };
 
-export const setupAdvancedScenario5 = (ctx: TestContext, stakers: [AtlasMineStaker, AtlasMineStaker]): ScenarioInfo => {
+export const setupAdvancedScenario5 = (
+    ctx: TestContext,
+    stakers: [AtlasMineStakerUpgradeable, AtlasMineStakerUpgradeable],
+): ScenarioInfo => {
     // Advanced Scenario 5:
     // (Multiple deposits for same user, midstream claims, 2 stakers, one NFT boosted)
     //
@@ -1237,7 +1249,7 @@ export const runScenario = async (
 
             if (depositAction.staker) {
                 // Find other stakers
-                const stakers: Set<AtlasMineStaker> = new Set();
+                const stakers: Set<AtlasMineStakerUpgradeable> = new Set();
                 batchActions.forEach(a => {
                     if (a.action === "deposit" && a.staker) {
                         stakers.add(a.staker);
