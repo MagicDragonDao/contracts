@@ -194,8 +194,7 @@ contract AtlasMineStakerUpgradeable is
      *
      */
     function depositAll() public virtual override nonReentrant {
-        uint256 userBalance = magic.balanceOf(msg.sender);
-        _deposit(userBalance);
+        _deposit(magic.balanceOf(msg.sender));
     }
 
     /**
