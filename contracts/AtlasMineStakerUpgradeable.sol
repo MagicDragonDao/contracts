@@ -279,11 +279,17 @@ contract AtlasMineStakerUpgradeable is
         }
 
         // Update user accounting
-        uint256 reward = _claim(s, depositId);
+        int256 accumulatedRewards = ((s.amount * accRewardsPerShare) / ONE).toInt256();
+        uint256 reward;
+
+        if (s.rewardDebt < accumulatedRewards) {
+            reward = (accumulatedRewards - s.rewardDebt).toUint256();
+        }
+
         payout = _amount + reward;
 
         s.amount -= _amount;
-        s.rewardDebt -= ((_amount * accRewardsPerShare) / ONE).toInt256();
+        s.rewardDebt = ((s.amount * accRewardsPerShare) / ONE).toInt256();
 
         // Update global accounting
         totalStaked -= _amount;
