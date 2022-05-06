@@ -189,7 +189,7 @@ contract AtlasMineStakerUpgradeable is
     }
 
     /**
-     * @notice Like depoit, but stakes entire balance.
+     * @notice Like deposit, but stakes entire balance.
      * @dev    Entire balance must be approved by the caller.
      *
      */
