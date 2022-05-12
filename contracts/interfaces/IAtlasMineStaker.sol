@@ -51,6 +51,8 @@ interface IAtlasMineStaker {
 
     function deposit(uint256 _amount) external;
 
+    function depositAll() external;
+
     function withdraw(uint256 depositId, uint256 amount) external;
 
     function withdrawAll() external;
@@ -58,6 +60,8 @@ interface IAtlasMineStaker {
     function claim(uint256 depositId) external;
 
     function claimAll() external;
+
+    function claimAllFor(address user) external;
 
     function withdrawEmergency() external;
 

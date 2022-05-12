@@ -185,6 +185,26 @@ contract AtlasMineStakerUpgradeable is
      * @param _amount               The amount of tokens to deposit.
      */
     function deposit(uint256 _amount) public virtual override nonReentrant {
+        _deposit(_amount);
+    }
+
+    /**
+     * @notice Like deposit, but stakes entire balance.
+     * @dev    Entire balance must be approved by the caller.
+     *
+     */
+    function depositAll() public virtual override nonReentrant {
+        _deposit(magic.balanceOf(msg.sender));
+    }
+
+    /**
+     * @dev Internal logic for processing a deposit. The staker will collect
+     *         the tokens, to be later staked in atlas mine by the owner,
+     *         according to the stake/unlock schedule.
+     *
+     * @param _amount               The amount of tokens to deposit.
+     */
+    function _deposit(uint256 _amount) internal {
         require(!schedulePaused, "new staking paused");
         require(_amount > 0, "Deposit amount 0");
 
@@ -326,10 +346,9 @@ contract AtlasMineStakerUpgradeable is
         _updateRewards();
 
         UserStake storage s = userStake[msg.sender][depositId];
-
         require(s.amount > 0, "No deposit");
 
-        magic.safeTransfer(msg.sender, _claim(s, depositId));
+        magic.safeTransfer(msg.sender, _claim(msg.sender, depositId));
     }
 
     /**
@@ -337,22 +356,38 @@ contract AtlasMineStakerUpgradeable is
      *         Will apply to both locked and unlocked deposits.
      *
      */
-    function claimAll() public virtual nonReentrant usesBuffer {
+    function claimAll() public virtual override nonReentrant usesBuffer {
+        _claimAllFor(msg.sender);
+    }
+
+    /**
+     * @notice Claim all possible rewards from the staker contract
+     *         on behalf of any user's address.
+     *
+     * @param user                  The user address to claim rewards for.
+     */
+    function claimAllFor(address user) public virtual override nonReentrant usesBuffer {
+        _claimAllFor(user);
+    }
+
+    /**
+     * @dev Logic for iterating through user deposits and claiming rewards.
+     *      Used for both first and third-party claims (claimAll and claimAllFor).
+     *
+     * @param user                  The user address to claim rewards for.
+     */
+    function _claimAllFor(address user) internal {
         // Distribute tokens
         _updateRewards();
 
-        uint256[] memory depositIds = allUserDepositIds[msg.sender].values();
+        uint256[] memory depositIds = allUserDepositIds[user].values();
         for (uint256 i = 0; i < depositIds.length; i++) {
-            UserStake storage s = userStake[msg.sender][depositIds[i]];
-
-            if (s.amount > 0) {
-                tokenBuffer += _claim(s, depositIds[i]);
-            }
+            tokenBuffer += _claim(user, depositIds[i]);
         }
 
         uint256 reward = tokenBuffer;
         tokenBuffer = 0;
-        magic.safeTransfer(msg.sender, reward);
+        magic.safeTransfer(user, reward);
     }
 
     /**
@@ -360,10 +395,12 @@ contract AtlasMineStakerUpgradeable is
      *      accumulated MAGIC and distributed any earned rewards in addition
      *      to original deposit.
      *
-     * @param s                     The UserStake struct to claim from.
+     * @param user                  The user to process a claim for.
      * @param depositId             The ID of the deposit to claim from (for event).
      */
-    function _claim(UserStake storage s, uint256 depositId) internal returns (uint256 reward) {
+    function _claim(address user, uint256 depositId) internal returns (uint256 reward) {
+        UserStake storage s = userStake[user][depositId];
+
         // Update accounting
         int256 accumulatedRewards = ((s.amount * accRewardsPerShare) / ONE).toInt256();
 
@@ -381,7 +418,7 @@ contract AtlasMineStakerUpgradeable is
 
         require(reward <= _totalUsableMagic(), "Not enough rewards to claim");
 
-        emit UserClaim(msg.sender, depositId, reward);
+        emit UserClaim(user, depositId, reward);
     }
 
     /**
