@@ -702,7 +702,7 @@ contract AtlasMineStakerUpgradeable is
      * @return total               The total amount of MAGIC in the staker.
      */
     function totalMagic() external view override returns (uint256) {
-        return _totalControlledMagic() + mine.pendingRewardsAll(address(this));
+        return _totalControlledMagic() + _pendingRewardsAll();
     }
 
     /**
@@ -722,14 +722,7 @@ contract AtlasMineStakerUpgradeable is
      * @return total               The total amount of MAGIC that can be withdrawn.
      */
     function totalWithdrawableMagic() external view override returns (uint256) {
-        uint256 totalPendingRewards;
-
-        // AtlasMine attempts to divide by 0 if there are no deposits
-        try mine.pendingRewardsAll(address(this)) returns (uint256 _pending) {
-            totalPendingRewards = _pending;
-        } catch Panic(uint256) {
-            totalPendingRewards = 0;
-        }
+        uint256 totalPendingRewards = _pendingRewardsAll();
 
         uint256 vestedPrincipal;
         uint256 totalStakes = stakes.length;
@@ -881,21 +874,50 @@ contract AtlasMineStakerUpgradeable is
     function _harvestMine() internal returns (uint256, uint256) {
         uint256 preclaimBalance = magic.balanceOf(address(this));
 
-        try mine.harvestAll() {
-            uint256 postclaimBalance = magic.balanceOf(address(this));
+        _harvestAll();
 
-            uint256 earned = postclaimBalance - preclaimBalance;
+        uint256 postclaimBalance = magic.balanceOf(address(this));
 
-            // Reserve the 'fee' amount of what is earned
-            uint256 feeEarned = (earned * fee) / FEE_DENOMINATOR;
-            feeReserve += feeEarned;
+        uint256 earned = postclaimBalance - preclaimBalance;
 
-            emit MineHarvest(earned - feeEarned, feeEarned);
+        // Reserve the 'fee' amount of what is earned
+        uint256 feeEarned = (earned * fee) / FEE_DENOMINATOR;
+        feeReserve += feeEarned;
 
-            return (earned - feeEarned, feeEarned);
-        } catch {
-            // Failed because of reward debt calculation - should be 0
-            return (0, 0);
+        emit MineHarvest(earned - feeEarned, feeEarned);
+
+        return (earned - feeEarned, feeEarned);
+    }
+
+    /**
+     * @dev Re-implementation of AtlasMine harvestAll that skips
+     *      any deposits with rounding errors.
+     */
+    function _harvestAll() internal {
+        uint256[] memory depositIds = mine.getAllUserDepositIds(address(this));
+
+        for (uint256 i = 0; i < depositIds.length; i++) {
+            // Might fail because of reward debt calculation
+            try mine.harvestPosition(depositIds[i]) {} catch {
+                // overflow error
+            }
+        }
+    }
+
+    /**
+     * @dev Re-implementation of AtlasMine pendingRewardsAll that skips
+     *      any deposits with rounding errors.
+     */
+    function _pendingRewardsAll() internal view returns (uint256 pending) {
+        uint256[] memory depositIds = mine.getAllUserDepositIds(address(this));
+
+        for (uint256 i = 0; i < depositIds.length; i++) {
+            // Might fail because of reward debt calculation
+            try mine.pendingRewardsPosition(address(this), depositIds[i]) returns (uint256 pendingForPosition) {
+                pending += pendingForPosition;
+            } catch {
+                // overflow error
+            }
         }
     }
 
