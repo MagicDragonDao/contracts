@@ -899,7 +899,7 @@ contract AtlasMineStakerUpgradeable is
         for (uint256 i = 0; i < depositIds.length; i++) {
             // Might fail because of reward debt calculation
             try mine.harvestPosition(depositIds[i]) {} catch {
-                // overflow error
+                // SafeCast error
             }
         }
     }
@@ -916,7 +916,7 @@ contract AtlasMineStakerUpgradeable is
             try mine.pendingRewardsPosition(address(this), depositIds[i]) returns (uint256 pendingForPosition) {
                 pending += pendingForPosition;
             } catch {
-                // overflow error
+                // SafeCast error
             }
         }
     }
