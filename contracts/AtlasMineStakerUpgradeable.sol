@@ -128,6 +128,12 @@ contract AtlasMineStakerUpgradeable is
     bool private _resetCalled;
     /// @notice The next stake index with an active deposit
     uint256 public nextActiveStake;
+    /// @notice The defined accrual windows in terms of UTC hours.
+    ///         Must be an even-length array of increasing order
+    uint256[] public accrualWindows;
+    /// @notice Tracker for the next deposit to accrue. Resets to 0
+    ///         when accrual window is over
+    uint256 public nextDepositIdxToAccrue;
 
     // ========================================== INITIALIZER ===========================================
 
@@ -184,11 +190,9 @@ contract AtlasMineStakerUpgradeable is
      *
      * @param _amount               The amount of tokens to deposit.
      */
-    function deposit(uint256 _amount) public virtual override nonReentrant {
+    function deposit(uint256 _amount) public virtual override nonReentrant whenNotAccruing {
         require(!schedulePaused, "new staking paused");
         require(_amount > 0, "Deposit amount 0");
-
-        _updateRewards();
 
         // Add user stake
         uint256 newDepositId = ++currentId[msg.sender];
@@ -220,13 +224,10 @@ contract AtlasMineStakerUpgradeable is
      * @param _amount               The amount to withdraw.
      *
      */
-    function withdraw(uint256 depositId, uint256 _amount) public virtual override nonReentrant {
+    function withdraw(uint256 depositId, uint256 _amount) public virtual override whenNotAccruing {
         UserStake storage s = userStake[msg.sender][depositId];
         require(s.amount > 0, "No deposit");
         require(block.timestamp >= s.unlockAt, "Deposit locked");
-
-        // Distribute tokens
-        _updateRewards();
 
         magic.safeTransfer(msg.sender, _withdraw(s, depositId, _amount));
     }
@@ -237,10 +238,7 @@ contract AtlasMineStakerUpgradeable is
      *         distribute rewards for all stakes via 'withdraw'.
      *
      */
-    function withdrawAll() public virtual nonReentrant usesBuffer {
-        // Distribute tokens
-        _updateRewards();
-
+    function withdrawAll() public virtual nonReentrant whenNotAccruing usesBuffer {
         uint256[] memory depositIds = allUserDepositIds[msg.sender].values();
         for (uint256 i = 0; i < depositIds.length; i++) {
             UserStake storage s = userStake[msg.sender][depositIds[i]];
@@ -322,9 +320,6 @@ contract AtlasMineStakerUpgradeable is
      *
      */
     function claim(uint256 depositId) public virtual override nonReentrant {
-        // Distribute tokens
-        _updateRewards();
-
         UserStake storage s = userStake[msg.sender][depositId];
 
         require(s.amount > 0, "No deposit");
@@ -338,9 +333,6 @@ contract AtlasMineStakerUpgradeable is
      *
      */
     function claimAll() public virtual nonReentrant usesBuffer {
-        // Distribute tokens
-        _updateRewards();
-
         uint256[] memory depositIds = allUserDepositIds[msg.sender].values();
         for (uint256 i = 0; i < depositIds.length; i++) {
             UserStake storage s = userStake[msg.sender][depositIds[i]];
@@ -432,6 +424,33 @@ contract AtlasMineStakerUpgradeable is
 
         _stakeInMine(amountToStake);
         emit MineStake(amountToStake, unlockAt);
+    }
+
+    /**
+     * @notice Harvest rewards for a subset of deposit IDs, and accrue harvested
+     *         rewards to users. The contract keeps track of the offset to ensure
+     *         that only chunk size needs to be specified and rewards are not redundantly
+     *         harvested during the same accrual period.
+     *
+     * @param numDeposits          The number of deposits to harvest rewards from.
+     */
+    function accrue(uint256 numDeposits) public virtual override whenAccruing {
+        require(numDeposits != 0, "must accrue nonzero deposits");
+
+        uint256[] memory depositIds = mine.getAllUserDepositIds(address(this));
+
+        uint256 lastDeposit = nextDepositIdxToAccrue + numDeposits;
+        require(lastDeposit < depositIds.length, "numDeposits overflow");
+
+        uint256[] memory depositIdsToAccrue = new uint256[](numDeposits);
+
+        for (uint256 i = 0; i <= numDeposits; i++) {
+            depositIdsToAccrue[i] = depositIds[nextDepositIdxToAccrue + i];
+        }
+
+        _updateRewards(depositIdsToAccrue);
+
+        nextDepositIdxToAccrue = lastDeposit + 1;
     }
 
     // ======================================= HOARD OPERATIONS ========================================
@@ -534,9 +553,6 @@ contract AtlasMineStakerUpgradeable is
      *         all stake.
      */
     function unstakeAllFromMine() external override onlyOwner {
-        // Unstake everything eligible
-        _updateRewards();
-
         uint256 totalStakes = stakes.length;
         for (uint256 i = nextActiveStake; i < totalStakes; i++) {
             Stake memory s = stakes[i];
@@ -561,7 +577,6 @@ contract AtlasMineStakerUpgradeable is
      * @param target                The amount of tokens to reclaim from the mine.
      */
     function unstakeToTarget(uint256 target) external override onlyOwner {
-        _updateRewards();
         _unstakeToTarget(target);
     }
 
@@ -691,6 +706,34 @@ contract AtlasMineStakerUpgradeable is
         unstakedDeposits = _unstakedDeposits;
 
         stakeScheduled();
+    }
+
+    /**
+     * @notice Used to set windows during which accrual happens, and new deposits/withdrawls
+     *         are paused.
+     *
+     * @param windows               The list of hourly windows in pairs of tuples, e.g. [0, 1, 12, 13]
+     */
+    function setAccrualWindows(uint256[] calldata windows) external onlyOwner {
+        require(windows.length % 2 == 0, "Invalid window length");
+
+        for (uint256 i = 0; i < windows.length; i++) {
+            // Must be 0-23, and monotonically increasing
+            if (i < windows.length - 1) {
+                require(windows[i] < 24, "Invalid window value");
+            } else {
+                // Allow 24 as an ending value
+                require(windows[i] < 25, "Invalid window value");
+            }
+
+            if (i > 0) {
+                require(windows[i] > windows[i - 1], "Invalid window ordering");
+            }
+        }
+
+        accrualWindows = windows;
+
+        emit SetAccrualWindows(windows);
     }
 
     // ======================================== VIEW FUNCTIONS =========================================
@@ -873,40 +916,47 @@ contract AtlasMineStakerUpgradeable is
 
     /**
      * @dev Harvest rewards from the AtlasMine and send them back to
-     *      this contract.
+     *      this contract. Cannot harvest entire set of positions due to
+     *      gas limits, so positions need to be specified.
+     *
+     * @param depositIds            The deposits to harvest rewards for.
      *
      * @return earned               The amount of rewards earned for depositors, minus the fee.
      * @return feeEearned           The amount of fees earned for the contract operator.
      */
-    function _harvestMine() internal returns (uint256, uint256) {
+    function _harvestMine(uint256[] memory depositIds) internal returns (uint256, uint256) {
         uint256 preclaimBalance = magic.balanceOf(address(this));
 
-        try mine.harvestAll() {
-            uint256 postclaimBalance = magic.balanceOf(address(this));
-
-            uint256 earned = postclaimBalance - preclaimBalance;
-
-            // Reserve the 'fee' amount of what is earned
-            uint256 feeEarned = (earned * fee) / FEE_DENOMINATOR;
-            feeReserve += feeEarned;
-
-            emit MineHarvest(earned - feeEarned, feeEarned);
-
-            return (earned - feeEarned, feeEarned);
-        } catch {
-            // Failed because of reward debt calculation - should be 0
-            return (0, 0);
+        for (uint256 i = 0; i < depositIds.length; i++) {
+            // Might fail because of reward debt calculation
+            try mine.harvestPosition(depositIds[i]) {} catch {
+                // SafeCast error
+            }
         }
+
+        uint256 postclaimBalance = magic.balanceOf(address(this));
+
+        uint256 earned = postclaimBalance - preclaimBalance;
+
+        // Reserve the 'fee' amount of what is earned
+        uint256 feeEarned = (earned * fee) / FEE_DENOMINATOR;
+        feeReserve += feeEarned;
+
+        emit MineHarvest(earned - feeEarned, feeEarned);
+
+        return (earned - feeEarned, feeEarned);
     }
 
     /**
      * @dev Harvest rewards from the mine so that stakers can claim.
      *      Recalculate how many rewards are distributed to each share.
+     *
+     * @param depositIds            The deposits to harvest rewards for.
      */
-    function _updateRewards() internal {
+    function _updateRewards(uint256[] memory depositIds) internal {
         if (totalStaked == 0) return;
 
-        (uint256 newRewards, ) = _harvestMine();
+        (uint256 newRewards, ) = _harvestMine(depositIds);
         totalRewardsEarned += newRewards;
 
         accRewardsPerShare += (newRewards * ONE) / totalStaked;
@@ -984,6 +1034,30 @@ contract AtlasMineStakerUpgradeable is
     }
 
     /**
+     * @dev Determine if the current block timestamp falls in an accrual window.
+     *      During accrual windows deposits/withdraws/claims are enabled, and reward
+     *      updating is enabled.
+     *
+     * @return inWindow             Whether the current time falls in an accrual window.
+     */
+    function _isAccrualWindow() internal returns (bool inWindow) {
+        /// time elapsed in day / hours
+        uint256 currentHour = (block.timestamp % 86_400) / 3_600;
+
+        for (uint256 i = 0; i < accrualWindows.length - 1; i += 2) {
+            if (currentHour >= accrualWindows[i] && currentHour < accrualWindows[i + 1]) {
+                inWindow = true;
+                break;
+            }
+        }
+
+        // If not in window and last index is non-zero, reset it
+        if (!inWindow && nextDepositIdxToAccrue != 0) {
+            nextDepositIdxToAccrue = 0;
+        }
+    }
+
+    /**
      * @dev For methods only callable by the hoard - Treasure staking/unstaking.
      */
     modifier onlyHoard() {
@@ -999,5 +1073,23 @@ contract AtlasMineStakerUpgradeable is
         _;
 
         require(tokenBuffer == 0, "Buffer not clear");
+    }
+
+    /**
+     * @dev For methods that affect staking, when an accrual window is not active.
+     */
+    modifier whenNotAccruing() {
+        require(!_isAccrualWindow(), "In accrual window");
+
+        _;
+    }
+
+    /**
+     * @dev For methods accrue rewards, when staking is not active.
+     */
+    modifier whenAccruing() {
+        require(!_isAccrualWindow(), "Not accruing");
+
+        _;
     }
 }

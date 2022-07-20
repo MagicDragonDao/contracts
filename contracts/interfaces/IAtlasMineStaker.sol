@@ -14,6 +14,7 @@ interface IAtlasMineStaker {
     event SetFee(uint256 fee);
     event StakingPauseToggle(bool paused);
     event SetMinimumStakingWait(uint256 wait);
+    event SetAccrualWindows(uint256[] windows);
 
     // ================= Data Types ==================
 
@@ -62,6 +63,8 @@ interface IAtlasMineStaker {
     function withdrawEmergency() external;
 
     function stakeScheduled() external;
+
+    function accrue(uint256 numDeposits) external;
 
     // ============= Hoard Operations ==============
 

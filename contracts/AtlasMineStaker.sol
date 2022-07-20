@@ -31,7 +31,7 @@ import "./interfaces/IAtlasMineStaker.sol";
  * Atlas Mine yield.
  *
  */
-contract AtlasMineStaker is IAtlasMineStaker, Ownable, ERC1155Holder, ERC721Holder, ReentrancyGuard {
+abstract contract AtlasMineStaker is IAtlasMineStaker, Ownable, ERC1155Holder, ERC721Holder, ReentrancyGuard {
     using SafeERC20 for IERC20;
     using Address for address;
     using SafeCast for uint256;
