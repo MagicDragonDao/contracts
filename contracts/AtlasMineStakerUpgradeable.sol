@@ -1088,7 +1088,7 @@ contract AtlasMineStakerUpgradeable is
      * @dev For methods accrue rewards, when staking is not active.
      */
     modifier whenAccruing() {
-        require(!_isAccrualWindow(), "Not accruing");
+        require(_isAccrualWindow(), "Not accruing");
 
         _;
     }
