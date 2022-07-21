@@ -714,7 +714,7 @@ contract AtlasMineStakerUpgradeable is
      *
      * @param windows               The list of hourly windows in pairs of tuples, e.g. [0, 1, 12, 13]
      */
-    function setAccrualWindows(uint256[] calldata windows) external onlyOwner {
+    function setAccrualWindows(uint256[] calldata windows) external override onlyOwner {
         require(windows.length % 2 == 0, "Invalid window length");
 
         for (uint256 i = 0; i < windows.length; i++) {

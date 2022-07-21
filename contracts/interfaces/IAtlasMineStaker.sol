@@ -97,4 +97,6 @@ interface IAtlasMineStaker {
     function toggleSchedulePause(bool paused) external;
 
     function withdrawFees() external;
+
+    function setAccrualWindows(uint256[] calldata windows) external;
 }

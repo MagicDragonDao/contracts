@@ -76,6 +76,9 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
             0, // 0 == AtlasMine.Lock.twoWeeks
         ]);
 
+        // Devote second half of day to accruing
+        await staker.setAccrualWindows([0, 12]);
+
         // const staker = <AtlasMineStaker>await deploy("AtlasMineStaker", admin, [
         //     magic.address,
         //     mine.address,
@@ -164,7 +167,7 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
         });
     });
 
-    describe("Staking", () => {
+    describe.only("Staking", () => {
         describe("stake", () => {
             it("does not allow a user to stake if their specified amount is 0", async () => {
                 const {
