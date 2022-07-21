@@ -185,10 +185,9 @@ contract AtlasMineStakerUpgradeable is
      * @param _amount               The amount of tokens to deposit.
      */
     function deposit(uint256 _amount) public virtual override nonReentrant {
+        require(false, "deposits currently paused");
         require(!schedulePaused, "new staking paused");
         require(_amount > 0, "Deposit amount 0");
-
-        _updateRewards();
 
         // Add user stake
         uint256 newDepositId = ++currentId[msg.sender];
@@ -225,9 +224,6 @@ contract AtlasMineStakerUpgradeable is
         require(s.amount > 0, "No deposit");
         require(block.timestamp >= s.unlockAt, "Deposit locked");
 
-        // Distribute tokens
-        _updateRewards();
-
         magic.safeTransfer(msg.sender, _withdraw(s, depositId, _amount));
     }
 
@@ -238,9 +234,6 @@ contract AtlasMineStakerUpgradeable is
      *
      */
     function withdrawAll() public virtual nonReentrant usesBuffer {
-        // Distribute tokens
-        _updateRewards();
-
         uint256[] memory depositIds = allUserDepositIds[msg.sender].values();
         for (uint256 i = 0; i < depositIds.length; i++) {
             UserStake storage s = userStake[msg.sender][depositIds[i]];
@@ -322,9 +315,6 @@ contract AtlasMineStakerUpgradeable is
      *
      */
     function claim(uint256 depositId) public virtual override nonReentrant {
-        // Distribute tokens
-        _updateRewards();
-
         UserStake storage s = userStake[msg.sender][depositId];
 
         require(s.amount > 0, "No deposit");
@@ -338,9 +328,6 @@ contract AtlasMineStakerUpgradeable is
      *
      */
     function claimAll() public virtual nonReentrant usesBuffer {
-        // Distribute tokens
-        _updateRewards();
-
         uint256[] memory depositIds = allUserDepositIds[msg.sender].values();
         for (uint256 i = 0; i < depositIds.length; i++) {
             UserStake storage s = userStake[msg.sender][depositIds[i]];
@@ -534,9 +521,6 @@ contract AtlasMineStakerUpgradeable is
      *         all stake.
      */
     function unstakeAllFromMine() external override onlyOwner {
-        // Unstake everything eligible
-        _updateRewards();
-
         uint256 totalStakes = stakes.length;
         for (uint256 i = nextActiveStake; i < totalStakes; i++) {
             Stake memory s = stakes[i];
@@ -561,7 +545,6 @@ contract AtlasMineStakerUpgradeable is
      * @param target                The amount of tokens to reclaim from the mine.
      */
     function unstakeToTarget(uint256 target) external override onlyOwner {
-        _updateRewards();
         _unstakeToTarget(target);
     }
 
