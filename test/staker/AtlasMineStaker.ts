@@ -164,7 +164,7 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
         });
     });
 
-    describe.only("Staking", () => {
+    describe("Staking", () => {
         describe("stake", () => {
             it("does not allow a user to stake if their specified amount is 0", async () => {
                 const {
@@ -271,7 +271,7 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
 
                 // Fast-forward and try to withdraw - other 10 should stay
                 await rollLock();
-                await accrue(staker, mine);
+                await accrue(staker);
                 await rollToDepositWindow();
 
                 // No rewards because program hasn't started yet
@@ -295,6 +295,7 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                     staker,
                     magic,
                     start,
+                    mine,
                 } = ctx;
 
                 const amount = ether("20000");
@@ -311,6 +312,8 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 await tx.wait();
 
                 await rollLock(start);
+                await accrue(staker);
+                await rollToDepositWindow();
 
                 // Fast-forward in scenarios - 1.3mm seconds should pass,
                 // so 13k MAGIC to pool. First user stake should get half
@@ -351,6 +354,8 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 await tx.wait();
 
                 await rollLock(start);
+                await accrue(staker);
+                await rollToDepositWindow();
 
                 // Fast-forward in scenarios - 1.3mm seconds should pass,
                 // so 13k MAGIC to pool. First user stake should get half
@@ -431,6 +436,8 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 await tx.wait();
 
                 await rollLock(start);
+                await accrue(staker);
+                await rollToDepositWindow();
 
                 // Fast-forward in scenarios - 1.3mm seconds should pass,
                 // so 13k MAGIC to pool. First user stake should get half

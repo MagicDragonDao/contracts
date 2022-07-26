@@ -164,11 +164,11 @@ export const claimSingle = async (staker: AtlasMineStaker, user: SignerWithAddre
     return staker.connect(user).claimAll();
 };
 
-export const accrue = async (
-    staker: AtlasMineStaker,
-    mine: AtlasMine,
-    numDeposits?: number,
-): Promise<ContractTransaction> => {
+export const accrue = async (staker: AtlasMineStaker, numDeposits?: number): Promise<ContractTransaction> => {
+    const mineAddr = await staker.mine();
+    const mineFactory = await ethers.getContractFactory("AtlasMine");
+    const mine = await mineFactory.attach(mineAddr);
+
     let tx: ContractTransaction;
 
     if (!numDeposits) {
@@ -176,7 +176,7 @@ export const accrue = async (
     }
 
     try {
-        tx = await staker.accrue(numDeposits);
+        tx = await staker.accrue(numDeposits!);
     } catch (e: unknown) {
         if ((<Error>e).message.includes("Not accruing")) {
             // Roll the window
@@ -192,7 +192,7 @@ export const accrue = async (
             if (nextWindow < currentTime) nextWindow += 86_400;
 
             await setNextBlockTimestamp(nextWindow);
-            tx = await staker.accrue(numDeposits);
+            tx = await staker.accrue(numDeposits!);
         } else {
             throw e;
         }
@@ -315,7 +315,10 @@ export const setup5050Scenario = async (ctx: TestContext, rollUntil?: number) =>
     const tx = await staker.stakeScheduled();
     await tx.wait();
 
+    // Roll to lock, accrue rewards, and move past accrual window for tests
     const timestamp = await rollLock(end);
+    await accrue(staker);
+    await rollToDepositWindow();
 
     // We now have unlocked coins among two stakers who deposited equal
     // amounts at the same time
@@ -352,6 +355,8 @@ export const setup7525Scenario = async (ctx: TestContext) => {
     // Fast-forward to halfway through the lock time and have other
     // user also make a deposit
     const ts = await rollToPartialWindow(start, end, 0.5);
+    await accrue(staker);
+    await rollToDepositWindow();
 
     tx = await stakeSingle(staker, user2, amount);
     await tx.wait();
@@ -362,6 +367,8 @@ export const setup7525Scenario = async (ctx: TestContext) => {
     // User1 should have 75% of rewards
     // User2 should have 25%
     await rollTo(end);
+    await accrue(staker);
+    await rollToDepositWindow();
 
     // We now have unlocked coins among two stakers who deposited equal
     // amounts at the same time
