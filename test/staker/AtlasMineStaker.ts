@@ -23,9 +23,11 @@ import {
     withdrawSingle,
     withdrawExactDeposit,
     claimSingle,
+    accrue,
     rollSchedule,
     rollLock,
     rollTo,
+    rollToDepositWindow,
     expectRoundedEqual,
     setup5050Scenario,
     setup7525Scenario,
@@ -40,6 +42,7 @@ import {
     claimWithRoundedRewardCheck,
     rollToPartialWindow,
     TOTAL_REWARDS,
+    ACCRUAL_WINDOWS,
     shuffle,
     ONE_DAY_SEC,
 } from "./helpers";
@@ -76,14 +79,8 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
             0, // 0 == AtlasMine.Lock.twoWeeks
         ]);
 
-        // Devote second half of day to accruing
-        await staker.setAccrualWindows([0, 12]);
-
-        // const staker = <AtlasMineStaker>await deploy("AtlasMineStaker", admin, [
-        //     magic.address,
-        //     mine.address,
-        //     0, // 0 == AtlasMine.Lock.twoWeeks
-        // ]);
+        // Devote first half of day to accruing
+        await staker.setAccrualWindows(ACCRUAL_WINDOWS);
 
         // Distribute coins and set up staking program
         await magic.mint(admin.address, ether("10000"));
@@ -274,6 +271,8 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
 
                 // Fast-forward and try to withdraw - other 10 should stay
                 await rollLock();
+                await accrue(staker, mine);
+                await rollToDepositWindow();
 
                 // No rewards because program hasn't started yet
                 await expect(withdrawSingle(staker, user1))

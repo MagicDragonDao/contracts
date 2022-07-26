@@ -18,6 +18,7 @@ chai.use(solidity);
 
 export const ether = ethers.utils.parseEther;
 export const TOTAL_REWARDS = ether("172800");
+export const ACCRUAL_WINDOWS = [0, 12];
 export const ONE_DAY_SEC = 86400;
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -163,6 +164,43 @@ export const claimSingle = async (staker: AtlasMineStaker, user: SignerWithAddre
     return staker.connect(user).claimAll();
 };
 
+export const accrue = async (
+    staker: AtlasMineStaker,
+    mine: AtlasMine,
+    numDeposits?: number,
+): Promise<ContractTransaction> => {
+    let tx: ContractTransaction;
+
+    if (!numDeposits) {
+        numDeposits = (await mine.getAllUserDepositIds(staker.address)).length;
+    }
+
+    try {
+        tx = await staker.accrue(numDeposits);
+    } catch (e: unknown) {
+        if ((<Error>e).message.includes("Not accruing")) {
+            // Roll the window
+            const currentTime = (await ethers.provider.getBlock("latest")).timestamp;
+            const currentDaySecs = currentTime % 86_400;
+            const accrualWindowStart = ACCRUAL_WINDOWS[0];
+
+            const startOfDay = currentTime - currentDaySecs;
+            const timeUntilWindowStart = accrualWindowStart * 3_600 + 1;
+            let nextWindow = startOfDay + timeUntilWindowStart;
+
+            // If past window, need to go to next day
+            if (nextWindow < currentTime) nextWindow += 86_400;
+
+            await setNextBlockTimestamp(nextWindow);
+            tx = await staker.accrue(numDeposits);
+        } else {
+            throw e;
+        }
+    }
+
+    return tx;
+};
+
 /////////////////////////////////////////////////////////////////////////////////
 ///                                  TIME                                     ///
 /////////////////////////////////////////////////////////////////////////////////
@@ -183,6 +221,8 @@ export const rollLock = async (start = Math.floor(Date.now() / 1000)): Promise<n
     const nextTimestamp = start + 1_300_000;
     await setNextBlockTimestamp(nextTimestamp);
 
+    // if accruing, round to next
+
     return nextTimestamp;
 };
 
@@ -198,6 +238,23 @@ export const rollTo = async (time: number): Promise<number> => {
     await setNextBlockTimestamp(time);
 
     return time;
+};
+
+export const rollToDepositWindow = async (): Promise<number> => {
+    const currentTime = (await ethers.provider.getBlock("latest")).timestamp;
+    const currentDaySecs = currentTime % 86_400;
+    const accrualWindowEnd = ACCRUAL_WINDOWS[1];
+
+    const startOfDay = currentTime - currentDaySecs;
+    const timeUntilWindowEnd = accrualWindowEnd * 3_600 + 1;
+    let nextWindowEnd = startOfDay + timeUntilWindowEnd;
+
+    // If past window, need to go to next day
+    if (nextWindowEnd < currentTime) nextWindowEnd += 86_400;
+
+    await setNextBlockTimestamp(nextWindowEnd);
+
+    return nextWindowEnd;
 };
 
 /////////////////////////////////////////////////////////////////////////////////

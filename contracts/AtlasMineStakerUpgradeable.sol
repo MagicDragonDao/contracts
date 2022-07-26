@@ -17,6 +17,8 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "treasure-staking/contracts/AtlasMine.sol";
 import "./interfaces/IAtlasMineStaker.sol";
 
+import "hardhat/console.sol";
+
 /**
  * @title AtlasMineStaker
  * @author kvk0x
@@ -439,12 +441,12 @@ contract AtlasMineStakerUpgradeable is
 
         uint256[] memory depositIds = mine.getAllUserDepositIds(address(this));
 
-        uint256 lastDeposit = nextDepositIdxToAccrue + numDeposits;
+        uint256 lastDeposit = nextDepositIdxToAccrue + numDeposits - 1;
         require(lastDeposit < depositIds.length, "numDeposits overflow");
 
         uint256[] memory depositIdsToAccrue = new uint256[](numDeposits);
 
-        for (uint256 i = 0; i <= numDeposits; i++) {
+        for (uint256 i = 0; i < numDeposits; i++) {
             depositIdsToAccrue[i] = depositIds[nextDepositIdxToAccrue + i];
         }
 
