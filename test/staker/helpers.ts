@@ -1290,7 +1290,8 @@ export const runScenario = async (
 
         let tx: ContractTransaction;
 
-        for (const a of batchActions) {
+        // Shuffle actions to ensure rewards not time-based per batch
+        for (const a of shuffle(batchActions)) {
             const { signer, amount, action } = a;
             const staker = a.staker ?? globalStaker;
 
@@ -1418,7 +1419,7 @@ export const runScenario = async (
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const shuffle = (array: any[]) => {
+export const shuffle = function shuffle<T>(array: T[]): T[] {
     let currentIndex = array.length,
         randomIndex;
 
