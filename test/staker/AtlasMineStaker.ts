@@ -1644,7 +1644,7 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
         });
     });
 
-    describe.skip("Advanced Rewards Calculation", () => {
+    describe.only("Advanced Rewards Calculation", () => {
         /**
          * Different advanced scenarios:
          * different deposits at different times
