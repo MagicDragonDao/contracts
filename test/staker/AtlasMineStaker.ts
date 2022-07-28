@@ -1658,7 +1658,6 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
         it("scenario 1", async () => {
             const { magic, staker } = ctx;
             const { actions, rewards } = setupAdvancedScenario1(ctx);
-            // const { actions, rewards } = setupAdvancedScenario4(ctx);
 
             await runScenario(ctx, actions);
 
@@ -1811,6 +1810,8 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 0, // 0 == AtlasMine.Lock.twoWeeks
             ]);
 
+            await staker2.setAccrualWindows(ACCRUAL_WINDOWS);
+
             const stakerApprove = users.map(u => magic.connect(u).approve(staker2.address, ether("100000")));
             await Promise.all(stakerApprove);
 
@@ -1837,6 +1838,7 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
             const shuffledRewards = shuffle(rewards);
             for (const reward of shuffledRewards) {
                 const { signer, expectedReward } = reward;
+
                 const preclaimBalance = preclaimBalances[signer.address];
 
                 // Claim from both stakers
@@ -1853,7 +1855,7 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 }
 
                 const postclaimBalance = await magic.balanceOf(signer.address);
-                expectRoundedEqual(postclaimBalance.sub(preclaimBalance), expectedReward, 5);
+                expectRoundedEqual(postclaimBalance.sub(preclaimBalance), expectedReward, 8);
 
                 // Withdraw funds to make sure we can
                 if ((await staker.userTotalStake(signer.address)).gt(0)) {

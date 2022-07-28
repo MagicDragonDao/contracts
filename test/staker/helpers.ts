@@ -281,7 +281,7 @@ export const rollToNearestAccrual = async (time: number): Promise<number> => {
 
     if (targetTimeHr >= accrualWindowStart && targetTimeHr <= accrualWindowEnd) {
         // Already in window
-        return time;
+        adjustedTime = time;
     }
 
     let hrsToNextWindow = accrualWindowStart - targetTimeHr;
@@ -298,7 +298,7 @@ export const rollToNearestAccrual = async (time: number): Promise<number> => {
         adjustedTime = time - hrsFromLastWindow * 3_600 - 1;
     }
 
-    return adjustedTime;
+    return rollTo(adjustedTime);
 };
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -1259,6 +1259,8 @@ export const runScenario = async (
     const { staker: globalStaker, end } = ctx;
     const claims: { [user: string]: BigNumberish } = {};
 
+    const allStakers = { [globalStaker.address]: globalStaker };
+
     // Run through scenario from beginning of program until end
     for (const batch of actions) {
         const { timestamp, actions: batchActions } = batch;
@@ -1277,6 +1279,8 @@ export const runScenario = async (
             },
             { [globalStaker.address]: globalStaker },
         );
+
+        Object.assign(allStakers, actionStakers);
 
         const accruals = Object.values(actionStakers).map(staker => accrue(staker));
         await Promise.all(accruals);
@@ -1402,7 +1406,13 @@ export const runScenario = async (
     }
 
     // Now roll to end - all staking should be processed
-    await rollTo(end);
+    await rollToNearestAccrual(end);
+
+    // Accrue last time and then re-enable deposits
+    const accruals = Object.values(allStakers).map(staker => accrue(staker));
+    await Promise.all(accruals);
+
+    await rollToDepositWindow();
 
     return claims;
 };
