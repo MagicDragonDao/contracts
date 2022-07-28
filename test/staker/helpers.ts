@@ -6,7 +6,7 @@ import { BigNumberish, ContractTransaction } from "ethers";
 import { setNextBlockTimestamp } from "../utils";
 
 import type { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
-import type { AtlasMineStaker } from "../../src/types/AtlasMineStaker";
+import type { AtlasMineStakerUpgradeable as AtlasMineStaker } from "../../src/types/AtlasMineStakerUpgradeable";
 import type { MasterOfCoin } from "../../src/types/MasterOfCoin";
 import type { MockLegionMetadataStore } from "../../src/types/MockLegionMetadataStore";
 import type { AtlasMine } from "../../src/types/AtlasMine";
@@ -164,19 +164,26 @@ export const claimSingle = async (staker: AtlasMineStaker, user: SignerWithAddre
     return staker.connect(user).claimAll();
 };
 
-export const accrue = async (staker: AtlasMineStaker, numDeposits?: number): Promise<ContractTransaction> => {
+export const accrue = async (
+    staker: AtlasMineStaker,
+    depositIds?: BigNumberish[],
+): Promise<ContractTransaction | null> => {
     const mineAddr = await staker.mine();
     const mineFactory = await ethers.getContractFactory("AtlasMine");
     const mine = await mineFactory.attach(mineAddr);
 
     let tx: ContractTransaction;
 
-    if (!numDeposits) {
-        numDeposits = (await mine.getAllUserDepositIds(staker.address)).length;
+    if (!depositIds) {
+        depositIds = await mine.getAllUserDepositIds(staker.address);
+    }
+
+    if (depositIds?.length == 0) {
+        return null;
     }
 
     try {
-        tx = await staker.accrue(numDeposits!);
+        tx = await staker.accrue(depositIds!);
     } catch (e: unknown) {
         if ((<Error>e).message.includes("Not accruing")) {
             // Roll the window
@@ -192,7 +199,8 @@ export const accrue = async (staker: AtlasMineStaker, numDeposits?: number): Pro
             if (nextWindow < currentTime) nextWindow += 86_400;
 
             await setNextBlockTimestamp(nextWindow);
-            tx = await staker.accrue(numDeposits!);
+
+            tx = await staker.accrue(depositIds!);
         } else {
             throw e;
         }
@@ -221,8 +229,6 @@ export const rollLock = async (start = Math.floor(Date.now() / 1000)): Promise<n
     const nextTimestamp = start + 1_300_000;
     await setNextBlockTimestamp(nextTimestamp);
 
-    // if accruing, round to next
-
     return nextTimestamp;
 };
 
@@ -243,30 +249,69 @@ export const rollTo = async (time: number): Promise<number> => {
 export const rollToDepositWindow = async (): Promise<number> => {
     const currentTime = (await ethers.provider.getBlock("latest")).timestamp;
     const currentDaySecs = currentTime % 86_400;
-    const accrualWindowEnd = ACCRUAL_WINDOWS[1];
+    const currentDayHrs = currentDaySecs / 3_600;
+    const [accrualWindowStart, accrualWindowEnd] = ACCRUAL_WINDOWS;
+
+    if (currentDayHrs < accrualWindowStart && currentDayHrs >= accrualWindowEnd) {
+        // Already in deposit window
+        await setNextBlockTimestamp(currentTime + 1);
+        return currentTime + 1;
+    }
 
     const startOfDay = currentTime - currentDaySecs;
     const timeUntilWindowEnd = accrualWindowEnd * 3_600 + 1;
     let nextWindowEnd = startOfDay + timeUntilWindowEnd;
 
     // If past window, need to go to next day
-    if (nextWindowEnd < currentTime) nextWindowEnd += 86_400;
+    if (nextWindowEnd < currentTime) nextWindowEnd += 86_401;
 
     await setNextBlockTimestamp(nextWindowEnd);
 
     return nextWindowEnd;
 };
 
+export const rollToNearestAccrual = async (time: number): Promise<number> => {
+    // Like rollTo, but adjusts so that we are in the closest accrual window
+    // to the target time.
+    let adjustedTime: number;
+
+    const targetTimeDaySecs = time % 86_400;
+    const targetTimeHr = targetTimeDaySecs / 3_600;
+    const [accrualWindowStart, accrualWindowEnd] = ACCRUAL_WINDOWS;
+
+    if (targetTimeHr >= accrualWindowStart && targetTimeHr <= accrualWindowEnd) {
+        // Already in window
+        return time;
+    }
+
+    let hrsToNextWindow = accrualWindowStart - targetTimeHr;
+    if (hrsToNextWindow < 0) hrsToNextWindow += 24;
+
+    let hrsFromLastWindow = targetTimeHr - accrualWindowEnd;
+    if (hrsFromLastWindow < 0) hrsFromLastWindow += 24;
+
+    if (hrsToNextWindow >= hrsFromLastWindow) {
+        // add time
+        adjustedTime = time + hrsToNextWindow * 3_600 + 1;
+    } else {
+        // remove time
+        adjustedTime = time - hrsFromLastWindow * 3_600 - 1;
+    }
+
+    return adjustedTime;
+};
+
 /////////////////////////////////////////////////////////////////////////////////
 ///                                MATCHERS                                   ///
 /////////////////////////////////////////////////////////////////////////////////
 
-export const expectRoundedEqual = (num: BigNumberish, target: BigNumberish, pctWithin = 2): void => {
+export const expectRoundedEqual = (num: BigNumberish, target: BigNumberish, pctWithin = 3): void => {
     num = ethers.BigNumber.from(num);
     target = ethers.BigNumber.from(target);
 
     // Tolerable precision is 0.1%. Precision is lost in the magic mine in both
-    // calculating NFT reward boosts and timing per second
+    // calculating NFT reward boosts, timing per second, and needing to go through
+    // accrual windows
     const precision = 100;
     const denom = ether("1").div(precision);
 
@@ -1219,7 +1264,26 @@ export const runScenario = async (
         const { timestamp, actions: batchActions } = batch;
 
         // Make deposit, then roll to stake
-        await rollTo(timestamp);
+        await rollToNearestAccrual(timestamp);
+
+        // Make sure any accrual happens for previous time
+        const actionStakers = batchActions.reduce(
+            (stakers, a) => {
+                if (a.staker && !stakers[a.staker.address]) {
+                    stakers[a.staker.address] = a.staker;
+                }
+
+                return stakers;
+            },
+            { [globalStaker.address]: globalStaker },
+        );
+
+        const accruals = Object.values(actionStakers).map(staker => accrue(staker));
+        await Promise.all(accruals);
+
+        // After accruing, go to deposit window
+        await rollToDepositWindow();
+
         let tx: ContractTransaction;
 
         for (const a of batchActions) {

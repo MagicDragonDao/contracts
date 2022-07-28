@@ -8,7 +8,7 @@ interface IAtlasMineStaker {
     event UserWithdraw(address indexed user, uint256 indexed depositId, uint256 amount, uint256 reward);
     event UserClaim(address indexed user, uint256 indexed depositId, uint256 reward);
     event MineStake(uint256 currentDepositId, uint256 unlockTime);
-    event MineHarvest(uint256 earned, uint256 feeEarned);
+    event MineHarvest(uint256 earned, uint256 feeEarned, uint256[] depositIds);
     event StakeNFT(address indexed user, address indexed nft, uint256 tokenId, uint256 amount, uint256 currentBoost);
     event UnstakeNFT(address indexed user, address indexed nft, uint256 tokenId, uint256 amount, uint256 currentBoost);
     event SetFee(uint256 fee);
@@ -64,7 +64,7 @@ interface IAtlasMineStaker {
 
     function stakeScheduled() external;
 
-    function accrue(uint256 numDeposits) external;
+    function accrue(uint256[] calldata depositIds) external;
 
     // ============= Hoard Operations ==============
 

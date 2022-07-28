@@ -133,9 +133,6 @@ contract AtlasMineStakerUpgradeable is
     /// @notice The defined accrual windows in terms of UTC hours.
     ///         Must be an even-length array of increasing order
     uint256[] public accrualWindows;
-    /// @notice Tracker for the next deposit to accrue. Resets to 0
-    ///         when accrual window is over
-    uint256 public nextDepositIdxToAccrue;
 
     // ========================================== INITIALIZER ===========================================
 
@@ -434,25 +431,12 @@ contract AtlasMineStakerUpgradeable is
      *         that only chunk size needs to be specified and rewards are not redundantly
      *         harvested during the same accrual period.
      *
-     * @param numDeposits          The number of deposits to harvest rewards from.
+     * @param depositIds           The deposit IDs to harvest rewards from.
      */
-    function accrue(uint256 numDeposits) public virtual override whenAccruing {
-        require(numDeposits != 0, "must accrue nonzero deposits");
+    function accrue(uint256[] calldata depositIds) public virtual override whenAccruing {
+        require(depositIds.length != 0, "must accrue nonzero deposits");
 
-        uint256[] memory depositIds = mine.getAllUserDepositIds(address(this));
-
-        uint256 lastDeposit = nextDepositIdxToAccrue + numDeposits - 1;
-        require(lastDeposit < depositIds.length, "numDeposits overflow");
-
-        uint256[] memory depositIdsToAccrue = new uint256[](numDeposits);
-
-        for (uint256 i = 0; i < numDeposits; i++) {
-            depositIdsToAccrue[i] = depositIds[nextDepositIdxToAccrue + i];
-        }
-
-        _updateRewards(depositIdsToAccrue);
-
-        nextDepositIdxToAccrue = lastDeposit + 1;
+        _updateRewards(depositIds);
     }
 
     // ======================================= HOARD OPERATIONS ========================================
@@ -944,7 +928,7 @@ contract AtlasMineStakerUpgradeable is
         uint256 feeEarned = (earned * fee) / FEE_DENOMINATOR;
         feeReserve += feeEarned;
 
-        emit MineHarvest(earned - feeEarned, feeEarned);
+        emit MineHarvest(earned - feeEarned, feeEarned, depositIds);
 
         return (earned - feeEarned, feeEarned);
     }
@@ -1042,7 +1026,8 @@ contract AtlasMineStakerUpgradeable is
      *
      * @return inWindow             Whether the current time falls in an accrual window.
      */
-    function _isAccrualWindow() internal returns (bool inWindow) {
+    function _isAccrualWindow() internal view returns (bool inWindow) {
+        require(accrualWindows.length > 0, "Accrual windows not set");
         /// time elapsed in day / hours
         uint256 currentHour = (block.timestamp % 86_400) / 3_600;
 
@@ -1051,11 +1036,6 @@ contract AtlasMineStakerUpgradeable is
                 inWindow = true;
                 break;
             }
-        }
-
-        // If not in window and last index is non-zero, reset it
-        if (!inWindow && nextDepositIdxToAccrue != 0) {
-            nextDepositIdxToAccrue = 0;
         }
     }
 
