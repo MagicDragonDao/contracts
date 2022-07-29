@@ -200,7 +200,7 @@ contract AtlasMineStakerUpgradeable is
 
         s.amount = _amount;
         s.unlockAt = block.timestamp + locktime + 1 days;
-        s.rewardDebt = ((_amount * accRewardsPerShare) / ONE).toInt256();
+        s.rewardDebt = _accumulatedRewards(s.amount);
 
         // Update global accounting
         totalStaked += _amount;
@@ -276,17 +276,18 @@ contract AtlasMineStakerUpgradeable is
         }
 
         // Update user accounting
-        int256 accumulatedRewards = ((s.amount * accRewardsPerShare) / ONE).toInt256();
+        int256 accumulatedRewards = _accumulatedRewards(s.amount);
         uint256 reward;
 
         if (s.rewardDebt < accumulatedRewards) {
-            reward = (accumulatedRewards - s.rewardDebt).toUint256();
+            // Reduce by 1 wei to work around off-by-one error in atlas mine
+            reward = (accumulatedRewards - s.rewardDebt - 1).toUint256();
         }
 
         payout = _amount + reward;
 
         s.amount -= _amount;
-        s.rewardDebt = ((s.amount * accRewardsPerShare) / ONE).toInt256();
+        s.rewardDebt = _accumulatedRewards(s.amount);
 
         // Update global accounting
         totalStaked -= _amount;
@@ -356,10 +357,11 @@ contract AtlasMineStakerUpgradeable is
      */
     function _claim(UserStake storage s, uint256 depositId) internal returns (uint256 reward) {
         // Update accounting
-        int256 accumulatedRewards = ((s.amount * accRewardsPerShare) / ONE).toInt256();
+        int256 accumulatedRewards = _accumulatedRewards(s.amount);
 
         if (s.rewardDebt < accumulatedRewards) {
-            reward = (accumulatedRewards - s.rewardDebt).toUint256();
+            // Reduce by 1 wei to work around off-by-one error in atlas mine
+            reward = (accumulatedRewards - s.rewardDebt - 1).toUint256();
         }
 
         s.rewardDebt = accumulatedRewards;
@@ -785,8 +787,10 @@ contract AtlasMineStakerUpgradeable is
     function pendingRewards(address user, uint256 depositId) public view override returns (uint256 reward) {
         UserStake storage s = userStake[user][depositId];
 
-        int256 accumulatedRewards = ((s.amount * accRewardsPerShare) / ONE).toInt256();
-        reward = (accumulatedRewards - s.rewardDebt).toUint256();
+        int256 accumulatedRewards = _accumulatedRewards(s.amount);
+
+        // Reduce by 1 wei to work around off-by-one error in atlas mine
+        reward = (accumulatedRewards - s.rewardDebt - 1).toUint256();
     }
 
     /**
@@ -876,7 +880,7 @@ contract AtlasMineStakerUpgradeable is
 
         if (unstaked < target) {
             console.log("In situation");
-            console.log(target, unstaked);
+            console.log(target, unstaked, _totalUsableMagic());
         }
 
         require(unstaked >= target, "Cannot unstake enough");
@@ -1023,6 +1027,16 @@ contract AtlasMineStakerUpgradeable is
                 break;
             }
         }
+    }
+
+    /**
+     * @dev Calculate the current accumulated rewards for a given amount of stake.
+     *      Reduces the awards by 1 wei due to an off-by-one issue in the atlas mine.
+     *
+     * @param stakeAmount           The amount of stake to accumulate rewards for.
+     */
+    function _accumulatedRewards(uint256 stakeAmount) internal view returns (int256) {
+        return ((stakeAmount * accRewardsPerShare) / ONE).toInt256();
     }
 
     /**
