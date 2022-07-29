@@ -522,6 +522,9 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 } = ctx;
 
                 const firstStakeTs = await rollTo(start + ONE_DAY_SEC);
+                await ethers.provider.send("evm_mine", []);
+                await rollToDepositWindow();
+
                 await stakeSingle(staker, user, ether("10"));
                 await rollSchedule(staker, firstStakeTs);
 
@@ -537,6 +540,9 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
 
                 // Stake, and roll the schedule
                 const firstStakeTs = await rollTo(start + ONE_DAY_SEC);
+                await ethers.provider.send("evm_mine", []);
+                await rollToDepositWindow();
+
                 await stakeSingle(staker, user1, ether("1000"));
 
                 expect(await staker.totalPendingStake()).to.equal(ether("1000"));
@@ -546,6 +552,8 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 expect(await staker.totalPendingStake()).to.equal(0);
 
                 const nextStakeTs = await rollLock(firstStakeTs);
+                await ethers.provider.send("evm_mine", []);
+                await rollToDepositWindow();
 
                 // Make some new deposits > original stake, without rolling schedule
                 await stakeMultiple(staker, [
@@ -1271,6 +1279,9 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 } = ctx;
 
                 const firstStakeTs = await rollTo(start + ONE_DAY_SEC);
+                await ethers.provider.send("evm_mine", []);
+                await rollToDepositWindow();
+
                 await stakeSingle(staker, user, ether("10"));
                 await rollSchedule(staker, firstStakeTs);
 
@@ -1709,7 +1720,8 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 // Adjust if midstream claims/withdraws have been made
                 const adjustedExpectedReward = ethers.BigNumber.from(expectedReward).sub(claims[signer.address] || 0);
 
-                await claimWithRoundedRewardCheck(staker, signer, adjustedExpectedReward);
+                // Increased tolerance here, but not in final adjusted reward
+                await claimWithRoundedRewardCheck(staker, signer, adjustedExpectedReward, 8);
                 const postclaimBalance = await magic.balanceOf(signer.address);
 
                 expectRoundedEqual(postclaimBalance.sub(preclaimBalance), expectedReward);
@@ -1746,7 +1758,8 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 // Adjust if midstream claims/withdraws have been made
                 const adjustedExpectedReward = ethers.BigNumber.from(expectedReward).sub(claims[signer.address] || 0);
 
-                await claimWithRoundedRewardCheck(staker, signer, adjustedExpectedReward);
+                // Increased tolerance here, but not in final adjusted reward
+                await claimWithRoundedRewardCheck(staker, signer, adjustedExpectedReward, 8);
                 const postclaimBalance = await magic.balanceOf(signer.address);
 
                 expectRoundedEqual(postclaimBalance.sub(preclaimBalance), expectedReward);
@@ -1776,6 +1789,12 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
 
             const claims = await runScenario(ctx, actions);
 
+            // for (const r of rewards) {
+            //     console.log("Signer", r.signer.address, r.expectedReward);
+            // }
+
+            // console.log();
+
             // Now check all expected rewards and user balance
             const shuffledRewards = shuffle(rewards);
             for (const reward of shuffledRewards) {
@@ -1785,7 +1804,10 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 // Adjust if midstream claims/withdraws have been made
                 const adjustedExpectedReward = ethers.BigNumber.from(expectedReward).sub(claims[signer.address] || 0);
 
-                await claimWithRoundedRewardCheck(staker, signer, adjustedExpectedReward);
+                // console.log("Checking", signer.address, expectedReward, adjustedExpectedReward);
+
+                // Increased tolerance here, but not in final adjusted reward
+                await claimWithRoundedRewardCheck(staker, signer, adjustedExpectedReward, 8);
 
                 const postclaimBalance = await magic.balanceOf(signer.address);
 

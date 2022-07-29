@@ -676,25 +676,6 @@ contract AtlasMineStakerUpgradeable is
     }
 
     /**
-     * @notice Must be used when migrating to a new contract that changes the accounting
-     *         logic of unstaked deposits. Can be used to reset value to one that would
-     *         be in place in the cast that newly-introduced logic was always in place.
-     *
-     * @dev    Cannot be used in normal operation, will only be called once as part of
-     *         an "upgradeAndCall" contract upgrade.
-     *
-     * @param _unstakedDeposits    The new value of unstakedDeposits to set.
-     */
-    function resetUnstakedAndStake(uint256 _unstakedDeposits) external {
-        require(!_resetCalled, "reset already called");
-        _resetCalled = true;
-
-        unstakedDeposits = _unstakedDeposits;
-
-        stakeScheduled();
-    }
-
-    /**
      * @notice Used to set windows during which accrual happens, and new deposits/withdrawls
      *         are paused.
      *

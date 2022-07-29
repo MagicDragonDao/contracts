@@ -140,6 +140,7 @@ export const claimWithRoundedRewardCheck = async (
     staker: AtlasMineStaker,
     user: SignerWithAddress,
     expectedReward: BigNumberish,
+    pctWithin?: number,
 ): Promise<ContractTransaction> => {
     const claimTx = await claimSingle(staker, user);
     const receipt = await claimTx.wait();
@@ -155,7 +156,7 @@ export const claimWithRoundedRewardCheck = async (
         reward = reward.add(event?.args?.[2]);
     }
 
-    expectRoundedEqual(reward, expectedReward);
+    expectRoundedEqual(reward, expectedReward, pctWithin);
 
     return claimTx;
 };
