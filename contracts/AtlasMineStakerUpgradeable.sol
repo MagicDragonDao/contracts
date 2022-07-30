@@ -878,11 +878,6 @@ contract AtlasMineStakerUpgradeable is
             }
         }
 
-        if (unstaked < target) {
-            console.log("In situation");
-            console.log(target, unstaked, _totalUsableMagic());
-        }
-
         require(unstaked >= target, "Cannot unstake enough");
         require(_totalUsableMagic() >= target, "Not enough in contract after unstaking");
 

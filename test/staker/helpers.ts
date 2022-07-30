@@ -255,6 +255,7 @@ export const rollToDepositWindow = async (): Promise<number> => {
 
     if (currentDayHrs < accrualWindowStart && currentDayHrs >= accrualWindowEnd) {
         // Already in deposit window
+        console.log("IN HERE");
         await setNextBlockTimestamp(currentTime + 1);
         return currentTime + 1;
     }
@@ -264,7 +265,7 @@ export const rollToDepositWindow = async (): Promise<number> => {
     let nextWindowEnd = startOfDay + timeUntilWindowEnd;
 
     // If past window, need to go to next day
-    if (nextWindowEnd < currentTime) nextWindowEnd += 86_401;
+    if (nextWindowEnd <= currentTime) nextWindowEnd += 86_401;
 
     await setNextBlockTimestamp(nextWindowEnd);
 
