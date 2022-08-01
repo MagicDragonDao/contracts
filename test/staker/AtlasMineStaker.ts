@@ -44,6 +44,7 @@ import {
     ACCRUAL_WINDOWS,
     shuffle,
     ONE_DAY_SEC,
+    PROGRAM_DAYS,
     rollToNearestAccrual,
 } from "./helpers";
 
@@ -84,15 +85,14 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
 
         // Distribute coins and set up staking program
         await magic.mint(admin.address, ether("10000"));
-        await magic.mint(masterOfCoin.address, ether("200000"));
+        await magic.mint(masterOfCoin.address, TOTAL_REWARDS.mul(2));
 
         const DAY_SEC = 86400;
         // Put start time in the future - we will fast-forward
         const start = Math.floor(Date.now() / 1000) + 10_000_000;
-        const end = start + 200 * DAY_SEC;
+        const end = start + PROGRAM_DAYS * DAY_SEC;
 
         // 0.01 MAGIC per second, 864 per day
-        // 200 day staking period == 172800 total MAGIC rewards
         await masterOfCoin.addStream(mine.address, TOTAL_REWARDS, start, end, false);
 
         // Give 100000 MAGIC to each user and approve the staker contract
@@ -605,6 +605,7 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
 
                 await stakeSingle(staker, user, ether("10"));
                 await rollSchedule(staker, firstStakeTs);
+                await rollToDepositWindow();
 
                 const depositIds = await mine.getAllUserDepositIds(staker.address);
                 expect(depositIds.length).to.be.gt(0);
@@ -692,7 +693,7 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
 
                 const harvestEvent = receipt.events?.find(e => e.event === "MineHarvest");
                 expect(harvestEvent).to.not.be.undefined;
-                expectRoundedEqual(harvestEvent?.args?.[0], ether("13000"));
+                expectRoundedEqual(harvestEvent?.args?.[0], ether("13000"), 5);
                 expect(harvestEvent?.args?.[1]).to.eq(0);
                 expect(harvestEvent?.args?.[2]).to.deep.eq(depositIds);
 

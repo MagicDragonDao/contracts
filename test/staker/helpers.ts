@@ -17,9 +17,11 @@ import type { TestERC721 } from "../../src/types/TestERC721";
 chai.use(solidity);
 
 export const ether = ethers.utils.parseEther;
-export const TOTAL_REWARDS = ether("172800");
+export const TOTAL_REWARDS_PER_DAY = ether("864");
 export const ACCRUAL_WINDOWS = [0, 12];
 export const ONE_DAY_SEC = 86400;
+export const PROGRAM_DAYS = 1000;
+export const TOTAL_REWARDS = TOTAL_REWARDS_PER_DAY.mul(PROGRAM_DAYS);
 
 /////////////////////////////////////////////////////////////////////////////////
 ///                                  TYPES                                    ///
