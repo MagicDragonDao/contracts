@@ -17,8 +17,6 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "treasure-staking/contracts/AtlasMine.sol";
 import "./interfaces/IAtlasMineStaker.sol";
 
-import "hardhat/console.sol";
-
 /**
  * @title AtlasMineStaker
  * @author kvk0x

@@ -170,6 +170,7 @@ export const claimSingle = async (staker: AtlasMineStaker, user: SignerWithAddre
 export const accrue = async (
     staker: AtlasMineStaker,
     depositIds?: BigNumberish[],
+    windows = ACCRUAL_WINDOWS,
 ): Promise<ContractTransaction | null> => {
     const mineAddr = await staker.mine();
     const mineFactory = await ethers.getContractFactory("AtlasMine");
@@ -192,7 +193,7 @@ export const accrue = async (
             // Roll the window
             const currentTime = (await ethers.provider.getBlock("latest")).timestamp;
             const currentDaySecs = currentTime % 86_400;
-            const accrualWindowStart = ACCRUAL_WINDOWS[0];
+            const accrualWindowStart = windows[0];
 
             const startOfDay = currentTime - currentDaySecs;
             const timeUntilWindowStart = accrualWindowStart * 3_600 + 1;
@@ -228,7 +229,9 @@ export const rollSchedule = async (
 
 // TODO: Assumes 2-week lock. Make flexible if we test different locks
 // Move forward 1.3mm seconds, or approximately 15 days
-export const rollLock = async (start = Math.floor(Date.now() / 1000)): Promise<number> => {
+export const rollLock = async (start?: number): Promise<number> => {
+    start = start || (await ethers.provider.getBlock("latest")).timestamp;
+
     const nextTimestamp = start + 1_300_000;
     await setNextBlockTimestamp(nextTimestamp);
 
@@ -249,15 +252,15 @@ export const rollTo = async (time: number): Promise<number> => {
     return time;
 };
 
-export const rollToDepositWindow = async (): Promise<number> => {
+export const rollToDepositWindow = async (windows = ACCRUAL_WINDOWS): Promise<number> => {
     const currentTime = (await ethers.provider.getBlock("latest")).timestamp;
     const currentDaySecs = currentTime % 86_400;
     const currentDayHrs = currentDaySecs / 3_600;
-    const [accrualWindowStart, accrualWindowEnd] = ACCRUAL_WINDOWS;
+    const [accrualWindowStart, accrualWindowEnd] = windows;
 
     if (currentDayHrs < accrualWindowStart && currentDayHrs >= accrualWindowEnd) {
+        console.log("In here");
         // Already in deposit window
-        console.log("IN HERE");
         await setNextBlockTimestamp(currentTime + 1);
         return currentTime + 1;
     }
@@ -274,14 +277,14 @@ export const rollToDepositWindow = async (): Promise<number> => {
     return nextWindowEnd;
 };
 
-export const rollToNearestAccrual = async (time: number): Promise<number> => {
+export const rollToNearestAccrual = async (time: number, windows = ACCRUAL_WINDOWS): Promise<number> => {
     // Like rollTo, but adjusts so that we are in the closest accrual window
     // to the target time.
     let adjustedTime: number;
 
     const targetTimeDaySecs = time % 86_400;
     const targetTimeHr = targetTimeDaySecs / 3_600;
-    const [accrualWindowStart, accrualWindowEnd] = ACCRUAL_WINDOWS;
+    const [accrualWindowStart, accrualWindowEnd] = windows;
 
     if (targetTimeHr >= accrualWindowStart && targetTimeHr <= accrualWindowEnd) {
         // Already in window

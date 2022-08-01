@@ -47,6 +47,7 @@ import {
     PROGRAM_DAYS,
     rollToNearestAccrual,
 } from "./helpers";
+import { time } from "console";
 
 const ether = ethers.utils.parseEther;
 
@@ -1567,24 +1568,136 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 await expect(staker.stakeScheduled()).to.not.be.reverted;
             });
 
-            it("does not allow a non-owner to set accrual windows", async () => {
-                const {
-                    users: [user],
-                    staker,
-                } = ctx;
+            describe("setAccrualWindows", () => {
+                it("does not allow a non-owner to set accrual windows", async () => {
+                    const {
+                        users: [user],
+                        staker,
+                    } = ctx;
 
-                await expect(staker.connect(user).setAccrualWindows([0, 1])).to.be.revertedWith(
-                    "Ownable: caller is not the owner",
-                );
+                    await expect(staker.connect(user).setAccrualWindows([0, 1])).to.be.revertedWith(
+                        "Ownable: caller is not the owner",
+                    );
+                });
+
+                it("does not allow an owner to set invalid accrual windows (wrong length)", async () => {
+                    const { admin, staker } = ctx;
+
+                    await expect(staker.connect(admin).setAccrualWindows([0, 1, 12])).to.be.revertedWith(
+                        "Invalid window length",
+                    );
+                });
+
+                it("does not allow an owner to set invalid accrual windows (wrong values)", async () => {
+                    const { admin, staker } = ctx;
+
+                    await expect(staker.connect(admin).setAccrualWindows([0, 25])).to.be.revertedWith(
+                        "Invalid window value",
+                    );
+
+                    await expect(staker.connect(admin).setAccrualWindows([18, 26])).to.be.revertedWith(
+                        "Invalid window value",
+                    );
+
+                    await expect(staker.connect(admin).setAccrualWindows([24, 3])).to.be.revertedWith(
+                        "Invalid window value",
+                    );
+                });
+
+                it("does not allow an owner to set invalid accrual windows (wrong order)", async () => {
+                    const { admin, staker } = ctx;
+
+                    await expect(staker.connect(admin).setAccrualWindows([12, 9])).to.be.revertedWith(
+                        "Invalid window ordering",
+                    );
+
+                    await expect(staker.connect(admin).setAccrualWindows([0, 10, 6, 12])).to.be.revertedWith(
+                        "Invalid window ordering",
+                    );
+
+                    await expect(staker.connect(admin).setAccrualWindows([0, 8, 20, 8])).to.be.revertedWith(
+                        "Invalid window ordering",
+                    );
+                });
+
+                it("allows an owner to set accrual windows", async () => {
+                    const {
+                        users: [user],
+                        admin,
+                        staker,
+                    } = ctx;
+
+                    const WINDOW_START = 12;
+                    const window = [WINDOW_START, WINDOW_START + 1];
+
+                    await expect(staker.connect(admin).setAccrualWindows(window))
+                        .to.emit(staker, "SetAccrualWindows")
+                        .withArgs(window);
+
+                    // Try to deposit
+                    await rollToDepositWindow(window);
+
+                    await expect(staker.connect(user).deposit(ether("1"))).to.not.be.reverted;
+
+                    let timestamp = (await ethers.provider.getBlock("latest")).timestamp;
+                    let currentHour = Math.floor((timestamp % 86_400) / 3_600);
+
+                    expect(currentHour).to.not.eq(WINDOW_START);
+
+                    // Move to accrual window
+                    await rollSchedule(staker, timestamp);
+
+                    const tx = await accrue(staker, undefined, window);
+                    await tx?.wait();
+
+                    timestamp = (await ethers.provider.getBlock("latest")).timestamp;
+                    currentHour = Math.floor((timestamp % 86_400) / 3_600);
+
+                    expect(currentHour).to.eq(WINDOW_START);
+
+                    // Deposit should fail
+                    await expect(staker.connect(user).deposit(ether("1"))).to.be.revertedWith("In accrual window");
+                });
+
+                it("allows an owner to use 24 as an ending accrual window", async () => {
+                    const {
+                        users: [user],
+                        admin,
+                        staker,
+                    } = ctx;
+
+                    const WINDOW_START = 23;
+                    const window = [WINDOW_START, WINDOW_START + 1];
+
+                    await expect(staker.connect(admin).setAccrualWindows(window))
+                        .to.emit(staker, "SetAccrualWindows")
+                        .withArgs(window);
+
+                    // Try to deposit
+                    await rollToDepositWindow(window);
+
+                    await expect(staker.connect(user).deposit(ether("1"))).to.not.be.reverted;
+
+                    let timestamp = (await ethers.provider.getBlock("latest")).timestamp;
+                    let currentHour = Math.floor((timestamp % 86_400) / 3_600);
+
+                    expect(currentHour).to.not.eq(WINDOW_START);
+
+                    // Move to accrual window
+                    await rollSchedule(staker, timestamp);
+
+                    const tx = await accrue(staker, undefined, window);
+                    await tx?.wait();
+
+                    timestamp = (await ethers.provider.getBlock("latest")).timestamp;
+                    currentHour = Math.floor((timestamp % 86_400) / 3_600);
+
+                    expect(currentHour).to.eq(WINDOW_START);
+
+                    // Deposit should fail
+                    await expect(staker.connect(user).deposit(ether("1"))).to.be.revertedWith("In accrual window");
+                });
             });
-
-            it("does not allow an owner to set invalid accrual windows (wrong length)");
-            it("does not allow an owner to set invalid accrual windows (wrong order)");
-            it("does not allow an owner to set invalid accrual windows (wrong order across windows)");
-            it("does not allow an owner to set invalid accrual windows (overlapping windows)");
-
-            it("allows an owner to set accrual windows");
-            it("allows an owner to use 0 and 24 as accrual windows");
         });
 
         describe("Stake Management", () => {
