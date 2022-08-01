@@ -161,7 +161,7 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
         });
     });
 
-    describe.only("Staking", () => {
+    describe("Staking", () => {
         beforeEach(async () => {
             await rollToDepositWindow();
         });
@@ -1450,10 +1450,10 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
 
                 await staker.connect(admin).setFee(200);
                 await rollToDepositWindow();
-                await setup5050Scenario(ctx);
+                const { stakes } = await setup5050Scenario(ctx);
 
-                // Expected rewards
-                const rewardAfterFee = ether("6500")
+                // Expected rewards - half of total pot minus fee
+                const rewardAfterFee = TOTAL_REWARDS.div(2)
                     .div(10_000)
                     .mul(10_000 - 200);
 
@@ -1461,7 +1461,10 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
 
                 // User returned all funds + reward
                 // Here, they should only get 98% of rewards
-                expectRoundedEqual(await magic.balanceOf(user.address), ether("80000").add(rewardAfterFee));
+                expectRoundedEqual(
+                    await magic.balanceOf(user.address),
+                    USER_INITIAL_BALANCE.sub(stakes[user.address]).add(rewardAfterFee),
+                );
             });
 
             it("does not allow a non-owner to withdraw collected fees", async () => {
@@ -1488,10 +1491,10 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 await setup5050Scenario(ctx);
 
                 // Expected rewards
-                const rewardAfterFee = ether("6500")
+                const rewardAfterFee = TOTAL_REWARDS.div(2)
                     .div(10_000)
                     .mul(10_000 - 200);
-                const fee = ether("6500").div(10_000).mul(200);
+                const fee = TOTAL_REWARDS.div(10_000).mul(200);
 
                 await claimWithRoundedRewardCheck(staker, user, rewardAfterFee);
 
@@ -1500,7 +1503,7 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 const preclaimBalance = await magic.balanceOf(admin.address);
                 await staker.connect(admin).withdrawFees();
                 const postclaimBalance = await magic.balanceOf(admin.address);
-                expectRoundedEqual(postclaimBalance.sub(preclaimBalance), fee.mul(2));
+                expectRoundedEqual(postclaimBalance.sub(preclaimBalance), fee);
             });
 
             it("does not allow a non-owner to add a hoard address", async () => {
