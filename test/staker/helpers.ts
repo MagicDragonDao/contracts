@@ -309,7 +309,7 @@ export const rollToNearestAccrual = async (time: number): Promise<number> => {
 ///                                MATCHERS                                   ///
 /////////////////////////////////////////////////////////////////////////////////
 
-export const expectRoundedEqual = (num: BigNumberish, target: BigNumberish, pctWithin = 3): void => {
+export const expectRoundedEqual = (num: BigNumberish, target: BigNumberish, pctWithin = 5): void => {
     num = ethers.BigNumber.from(num);
     target = ethers.BigNumber.from(target);
 
@@ -342,6 +342,7 @@ export const setup5050Scenario = async (ctx: TestContext, rollUntil?: number) =>
         users: [user1, user2],
         staker,
         start,
+        end: programEnd,
     } = ctx;
 
     const end = rollUntil || start;
@@ -365,9 +366,9 @@ export const setup5050Scenario = async (ctx: TestContext, rollUntil?: number) =>
     await tx.wait();
 
     // Roll to lock, accrue rewards, and move past accrual window for tests
-    const timestamp = await rollLock(end);
+    await rollTo(programEnd);
     await accrue(staker);
-    await rollToDepositWindow();
+    const timestamp = await rollToDepositWindow();
 
     // We now have unlocked coins among two stakers who deposited equal
     // amounts at the same time

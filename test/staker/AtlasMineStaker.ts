@@ -52,6 +52,7 @@ const ether = ethers.utils.parseEther;
 
 describe("Atlas Mine Staking (Pepe Pool)", () => {
     let ctx: TestContext;
+    let USER_INITIAL_BALANCE = ether("100000");
 
     const fixture = async (): Promise<TestContext> => {
         const signers = await ethers.getSigners();
@@ -96,8 +97,8 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
         await masterOfCoin.addStream(mine.address, TOTAL_REWARDS, start, end, false);
 
         // Give 100000 MAGIC to each user and approve the staker contract
-        const stakerFunding = users.map(u => magic.mint(u.address, ether("100000")));
-        const stakerApprove = users.map(u => magic.connect(u).approve(staker.address, ether("100000")));
+        const stakerFunding = users.map(u => magic.mint(u.address, USER_INITIAL_BALANCE));
+        const stakerApprove = users.map(u => magic.connect(u).approve(staker.address, USER_INITIAL_BALANCE));
         await Promise.all(stakerFunding.concat(stakerApprove));
 
         return {
@@ -160,7 +161,7 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
         });
     });
 
-    describe("Staking", () => {
+    describe.only("Staking", () => {
         beforeEach(async () => {
             await rollToDepositWindow();
         });
@@ -289,7 +290,7 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                     .withArgs(user1.address, 1, amount, 0);
 
                 // User returned all funds
-                expect(await magic.balanceOf(user1.address)).to.eq(ether("100000"));
+                expect(await magic.balanceOf(user1.address)).to.eq(USER_INITIAL_BALANCE);
 
                 // Check that rest of stake is still in AtlasMine, not staker
                 const depositId = await mine.currentId(staker.address);
@@ -304,6 +305,7 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                     staker,
                     magic,
                     start,
+                    end,
                 } = ctx;
 
                 const amount = ether("20000");
@@ -319,13 +321,13 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 const tx = await staker.stakeScheduled();
                 await tx.wait();
 
-                await rollLock(start);
+                await rollToPartialWindow(start, end, 0.5);
                 await accrue(staker);
                 await rollToDepositWindow();
 
-                // Fast-forward in scenarios - 1.3mm seconds should pass,
-                // so 13k MAGIC to pool. First user stake should get half
+                // Fast-forwarded halfway through program
                 const depositId = 1;
+                const expectedReward = TOTAL_REWARDS.div(4);
                 const withdrawTx = <ContractTransaction>await staker.connect(user1).withdraw(depositId, amount);
                 const receipt = await withdrawTx.wait();
 
@@ -334,10 +336,14 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 expect(withdrawEvent?.args?.[0]).to.eq(user1.address);
                 expect(withdrawEvent?.args?.[1]).to.eq(depositId);
                 expect(withdrawEvent?.args?.[2]).to.eq(amount);
-                expectRoundedEqual(withdrawEvent?.args?.[3], ether("6500"));
+                // Should get 1/4 of rewards for a single stake over half the reward lifetime
+                expectRoundedEqual(withdrawEvent?.args?.[3], expectedReward);
 
                 // User returned a single stake + reward
-                expectRoundedEqual(await magic.balanceOf(user1.address), ether("86500"));
+                expectRoundedEqual(
+                    await magic.balanceOf(user1.address),
+                    USER_INITIAL_BALANCE.sub(amount).add(expectedReward),
+                );
             });
 
             it("withdraws the entire deposit if the specified amount is larger than the deposit amount", async () => {
@@ -346,6 +352,7 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                     staker,
                     magic,
                     start,
+                    end,
                 } = ctx;
 
                 const amount = ether("20000");
@@ -361,13 +368,14 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 const tx = await staker.stakeScheduled();
                 await tx.wait();
 
-                await rollLock(start);
+                await rollToPartialWindow(start, end, 0.5);
                 await accrue(staker);
                 await rollToDepositWindow();
 
                 // Fast-forward in scenarios - 1.3mm seconds should pass,
                 // so 13k MAGIC to pool. First user stake should get half
                 const depositId = 1;
+                const expectedReward = TOTAL_REWARDS.div(4);
 
                 // Same as last test, but 100x the amount
                 const withdrawTx = <ContractTransaction>(
@@ -380,10 +388,13 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 expect(withdrawEvent?.args?.[0]).to.eq(user1.address);
                 expect(withdrawEvent?.args?.[1]).to.eq(depositId);
                 expect(withdrawEvent?.args?.[2]).to.eq(amount);
-                expectRoundedEqual(withdrawEvent?.args?.[3], ether("6500"));
+                expectRoundedEqual(withdrawEvent?.args?.[3], expectedReward);
 
                 // User returned a single stake + reward
-                expectRoundedEqual(await magic.balanceOf(user1.address), ether("86500"));
+                expectRoundedEqual(
+                    await magic.balanceOf(user1.address),
+                    USER_INITIAL_BALANCE.sub(amount).add(expectedReward),
+                );
             });
 
             it("withdrawal distributes the correct amount of pro rata rewards", async () => {
@@ -395,13 +406,11 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
 
                 const { stakes } = await setup5050Scenario(ctx);
 
-                // Fast-forward in scenarios - 1.3mm seconds should pass,
-                // so 13k MAGIC to pool. User 1 deposited half
-
-                await withdrawWithRoundedRewardCheck(staker, user1, stakes[user1.address], ether("6500"));
+                const expectedReward = TOTAL_REWARDS.div(2);
+                await withdrawWithRoundedRewardCheck(staker, user1, stakes[user1.address], expectedReward);
 
                 // User returned all funds + reward
-                expectRoundedEqual(await magic.balanceOf(user1.address), ether("106500"));
+                expectRoundedEqual(await magic.balanceOf(user1.address), USER_INITIAL_BALANCE.add(expectedReward));
             });
 
             it("withdrawal distributes the correct amount of pro rata rewards (multiple deposit times)", async () => {
@@ -413,13 +422,15 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
 
                 const { stakes } = await setup7525Scenario(ctx);
 
-                await withdrawWithRoundedRewardCheck(staker, user1, stakes[user1.address], TOTAL_REWARDS.div(4).mul(3));
+                const user1ExpectedReward = TOTAL_REWARDS.div(4).mul(3);
+                const user2ExpectedReward = TOTAL_REWARDS.div(4);
 
-                await withdrawWithRoundedRewardCheck(staker, user2, stakes[user2.address], TOTAL_REWARDS.div(4));
+                await withdrawWithRoundedRewardCheck(staker, user1, stakes[user1.address], user1ExpectedReward);
+                await withdrawWithRoundedRewardCheck(staker, user2, stakes[user2.address], user2ExpectedReward);
 
                 // User returned all funds + reward
-                expectRoundedEqual(await magic.balanceOf(user1.address), ether("229600"));
-                expectRoundedEqual(await magic.balanceOf(user2.address), ether("143200"));
+                expectRoundedEqual(await magic.balanceOf(user1.address), USER_INITIAL_BALANCE.add(user1ExpectedReward));
+                expectRoundedEqual(await magic.balanceOf(user2.address), USER_INITIAL_BALANCE.add(user2ExpectedReward));
             });
         });
 
@@ -472,12 +483,16 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                     magic,
                 } = ctx;
 
-                await setup5050Scenario(ctx);
+                const { stakes } = await setup5050Scenario(ctx);
 
-                await claimWithRoundedRewardCheck(staker, user, ether("6500"));
+                const expectedReward = TOTAL_REWARDS.div(2);
+                await claimWithRoundedRewardCheck(staker, user, expectedReward);
 
                 // User returned all funds + reward
-                expectRoundedEqual(await magic.balanceOf(user.address), ether("86500"));
+                expectRoundedEqual(
+                    await magic.balanceOf(user.address),
+                    USER_INITIAL_BALANCE.sub(stakes[user.address]).add(expectedReward),
+                );
             });
 
             it("distributes the correct amount of pro rata rewards (multiple deposit times)", async () => {
@@ -487,17 +502,23 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                     magic,
                 } = ctx;
 
-                await setup7525Scenario(ctx);
+                const { stakes } = await setup7525Scenario(ctx);
 
-                const totalRewards = TOTAL_REWARDS;
+                const user1ExpectedReward = TOTAL_REWARDS.div(4).mul(3);
+                const user2ExpectedReward = TOTAL_REWARDS.div(4);
 
-                await claimWithRoundedRewardCheck(staker, user1, totalRewards.div(4).mul(3));
-
-                await claimWithRoundedRewardCheck(staker, user2, totalRewards.div(4));
+                await claimWithRoundedRewardCheck(staker, user1, user1ExpectedReward);
+                await claimWithRoundedRewardCheck(staker, user2, user2ExpectedReward);
 
                 // Reward distribued to user
-                expectRoundedEqual(await magic.balanceOf(user1.address), ether("209600"));
-                expectRoundedEqual(await magic.balanceOf(user2.address), ether("123200"));
+                expectRoundedEqual(
+                    await magic.balanceOf(user1.address),
+                    USER_INITIAL_BALANCE.sub(stakes[user1.address]).add(user1ExpectedReward),
+                );
+                expectRoundedEqual(
+                    await magic.balanceOf(user2.address),
+                    USER_INITIAL_BALANCE.sub(stakes[user2.address]).add(user2ExpectedReward),
+                );
             });
 
             it("should not allow a user to claim twice", async () => {
@@ -508,7 +529,8 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
 
                 await setup5050Scenario(ctx);
 
-                await claimWithRoundedRewardCheck(staker, user, ether("6500"));
+                const expectedReward = TOTAL_REWARDS.div(2);
+                await claimWithRoundedRewardCheck(staker, user, expectedReward);
                 // Claim again, get very small rewards - 1 second passed
                 await claimWithRoundedRewardCheck(staker, user, 0);
             });
