@@ -259,7 +259,6 @@ export const rollToDepositWindow = async (windows = ACCRUAL_WINDOWS): Promise<nu
     const [accrualWindowStart, accrualWindowEnd] = windows;
 
     if (currentDayHrs < accrualWindowStart && currentDayHrs >= accrualWindowEnd) {
-        console.log("In here");
         // Already in deposit window
         await setNextBlockTimestamp(currentTime + 1);
         return currentTime + 1;

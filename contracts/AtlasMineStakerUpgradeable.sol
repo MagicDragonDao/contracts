@@ -434,7 +434,7 @@ contract AtlasMineStakerUpgradeable is
      * @param depositIds           The deposit IDs to harvest rewards from.
      */
     function accrue(uint256[] calldata depositIds) public virtual override whenAccruing {
-        require(depositIds.length != 0, "must accrue nonzero deposits");
+        require(depositIds.length != 0, "Must accrue nonzero deposits");
 
         _updateRewards(depositIds);
     }

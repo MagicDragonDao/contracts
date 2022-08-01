@@ -663,7 +663,6 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 const {
                     users: [user],
                     staker,
-                    mine,
                     start,
                 } = ctx;
 
@@ -674,12 +673,10 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 await stakeSingle(staker, user, ether("10"));
                 await rollSchedule(staker, firstStakeTs);
 
-                const depositIds = await mine.getAllUserDepositIds(staker.address);
-                expect(depositIds.length).to.be.gt(0);
+                const currentTime = (await ethers.provider.getBlock("latest")).timestamp;
+                await rollToNearestAccrual(currentTime + ONE_DAY_SEC);
 
-                await staker.setAccrualWindows([]);
-
-                await expect(staker.accrue(depositIds)).to.be.revertedWith("Accrual windows not set");
+                await expect(staker.accrue([])).to.be.revertedWith("Must accrue nonzero deposits");
             });
 
             it("accrues rewards", async () => {
