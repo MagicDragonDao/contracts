@@ -47,13 +47,12 @@ import {
     PROGRAM_DAYS,
     rollToNearestAccrual,
 } from "./helpers";
-import { time } from "console";
 
 const ether = ethers.utils.parseEther;
 
 describe("Atlas Mine Staking (Pepe Pool)", () => {
     let ctx: TestContext;
-    let USER_INITIAL_BALANCE = ether("100000");
+    const USER_INITIAL_BALANCE = ether("100000");
 
     const fixture = async (): Promise<TestContext> => {
         const signers = await ethers.getSigners();
@@ -2093,8 +2092,7 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 expectRoundedEqual(postclaimBalance.sub(preclaimBalance), expectedReward);
 
                 // Withdraw funds to make sure we can
-                await staker.connect(signer).withdrawAll();
-                // await expect(staker.connect(signer).withdrawAll()).to.not.be.reverted;
+                await expect(staker.connect(signer).withdrawAll()).to.not.be.reverted;
 
                 // Mine a block to wind clock
                 await ethers.provider.send("evm_increaseTime", [10]);
@@ -2135,9 +2133,7 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
 
                 // Withdraw funds to make sure we can
                 if ((await staker.userTotalStake(signer.address)).gt(0)) {
-                    // await staker.connect(signer).withdrawAll();
-                    await staker.connect(signer).withdrawAll();
-                    // await expect(staker.connect(signer).withdrawAll()).to.not.be.reverted;
+                    await expect(staker.connect(signer).withdrawAll()).to.not.be.reverted;
                 }
 
                 // Make sure another claim gives 0
@@ -2173,8 +2169,7 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
 
                 // Withdraw funds to make sure we can
                 if ((await staker.userTotalStake(signer.address)).gt(0)) {
-                    await staker.connect(signer).withdrawAll();
-                    // await expect(staker.connect(signer).withdrawAll()).to.not.be.reverted;
+                    await expect(staker.connect(signer).withdrawAll()).to.not.be.reverted;
                 }
 
                 // Make sure another claim gives 0
@@ -2222,8 +2217,7 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
 
                 // Withdraw funds to make sure we can
                 if ((await staker.userTotalStake(signer.address)).gt(0)) {
-                    await staker.connect(signer).withdrawAll();
-                    // await expect(staker.connect(signer).withdrawAll()).to.not.be.reverted;
+                    await expect(staker.connect(signer).withdrawAll()).to.not.be.reverted;
                 }
 
                 // Make sure another claim gives 0
@@ -2292,13 +2286,11 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
 
                 // Withdraw funds to make sure we can
                 if ((await staker.userTotalStake(signer.address)).gt(0)) {
-                    await staker.connect(signer).withdrawAll();
-                    // await expect(staker.connect(signer).withdrawAll()).to.not.be.reverted;
+                    await expect(staker.connect(signer).withdrawAll()).to.not.be.reverted;
                 }
 
                 if ((await staker2.userTotalStake(signer.address)).gt(0)) {
-                    await staker2.connect(signer).withdrawAll();
-                    // await expect(staker2.connect(signer).withdrawAll()).to.not.be.reverted;
+                    await expect(staker2.connect(signer).withdrawAll()).to.not.be.reverted;
                 }
 
                 // Make sure another claim gives 0
@@ -2335,8 +2327,7 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
 
                 // Withdraw funds to make sure we can
                 if ((await staker.userTotalStake(signer.address)).gt(0)) {
-                    await staker.connect(signer).withdrawAll();
-                    // await expect(staker.connect(signer).withdrawAll()).to.not.be.reverted;
+                    await expect(staker.connect(signer).withdrawAll()).to.not.be.reverted;
                 }
 
                 // Make sure another claim gives 0

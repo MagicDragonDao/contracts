@@ -191,18 +191,7 @@ export const accrue = async (
     } catch (e: unknown) {
         if ((<Error>e).message.includes("Not accruing")) {
             // Roll the window
-            const currentTime = (await ethers.provider.getBlock("latest")).timestamp;
-            const currentDaySecs = currentTime % 86_400;
-            const accrualWindowStart = windows[0];
-
-            const startOfDay = currentTime - currentDaySecs;
-            const timeUntilWindowStart = accrualWindowStart * 3_600 + 1;
-            let nextWindow = startOfDay + timeUntilWindowStart;
-
-            // If past window, need to go to next day
-            if (nextWindow < currentTime) nextWindow += 86_400;
-
-            await setNextBlockTimestamp(nextWindow);
+            await rollToNextAccrual(windows);
 
             tx = await staker.accrue(depositIds!);
         } else {
@@ -274,6 +263,36 @@ export const rollToDepositWindow = async (windows = ACCRUAL_WINDOWS): Promise<nu
     await setNextBlockTimestamp(nextWindowEnd);
 
     return nextWindowEnd;
+};
+export const rollToNextAccrual = async (windows = ACCRUAL_WINDOWS): Promise<number> => {
+    // Roll the window
+    const currentTime = (await ethers.provider.getBlock("latest")).timestamp;
+    const currentDaySecs = currentTime % 86_400;
+    const [accrualWindowStart, accrualWindowEnd] = windows;
+
+    const startOfDay = currentTime - currentDaySecs;
+    const timeUntilWindowStart = accrualWindowStart * 3_600 + 1;
+    const timeUntilWindowEnd = accrualWindowEnd * 3_600 + 1;
+    const nextWindowStart = startOfDay + timeUntilWindowStart;
+    const nextWindowEnd = startOfDay + timeUntilWindowEnd;
+
+    let nextWindow: number;
+
+    if (currentTime >= nextWindowStart && currentTime <= nextWindowEnd) {
+        // If in window, just increment by 1
+        nextWindow = currentTime + 1;
+    } else if (currentTime < nextWindowStart) {
+        // If before window start, roll to the window
+        nextWindow = nextWindowStart + 1;
+    } else {
+        // If after window, roll to next day's window
+        const nextDay = startOfDay + 86_400;
+        nextWindow = nextDay + timeUntilWindowStart + 1;
+    }
+
+    await setNextBlockTimestamp(nextWindow);
+
+    return nextWindow;
 };
 
 export const rollToNearestAccrual = async (time: number, windows = ACCRUAL_WINDOWS): Promise<number> => {
@@ -1273,7 +1292,9 @@ export const runScenario = async (
         const { timestamp, actions: batchActions } = batch;
 
         // Make deposit, then roll to stake
-        await rollToNearestAccrual(timestamp);
+        await setNextBlockTimestamp(timestamp);
+        await ethers.provider.send("evm_mine", []);
+        await rollToNextAccrual();
 
         // Make sure any accrual happens for previous time
         const actionStakers = batchActions.reduce(
@@ -1414,7 +1435,9 @@ export const runScenario = async (
     }
 
     // Now roll to end - all staking should be processed
-    await rollToNearestAccrual(end);
+    await setNextBlockTimestamp(end);
+    await ethers.provider.send("evm_mine", []);
+    await rollToNextAccrual();
 
     // Accrue last time and then re-enable deposits
     const accruals = Object.values(allStakers).map(staker => accrue(staker));
