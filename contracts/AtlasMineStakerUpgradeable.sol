@@ -221,7 +221,7 @@ contract AtlasMineStakerUpgradeable is
      * @param _amount               The amount to withdraw.
      *
      */
-    function withdraw(uint256 depositId, uint256 _amount) public virtual override whenNotAccruing {
+    function withdraw(uint256 depositId, uint256 _amount) public virtual override nonReentrant whenNotAccruing {
         UserStake storage s = userStake[msg.sender][depositId];
         require(s.amount > 0, "No deposit");
         require(block.timestamp >= s.unlockAt, "Deposit locked");
@@ -554,7 +554,7 @@ contract AtlasMineStakerUpgradeable is
                 break;
             }
 
-            // Withdraw position - auto-harvest
+            // Withdraw position (does not harvest)
             mine.withdrawPosition(s.depositId, s.amount);
         }
 
@@ -689,6 +689,7 @@ contract AtlasMineStakerUpgradeable is
      */
     function setAccrualWindows(uint256[] calldata windows) external override onlyOwner {
         require(windows.length % 2 == 0, "Invalid window length");
+        require(windows.length < 5, "Too many windows");
 
         for (uint256 i = 0; i < windows.length; i++) {
             // Must be 0-23, and monotonically increasing

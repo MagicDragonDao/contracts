@@ -46,6 +46,7 @@ import {
     ONE_DAY_SEC,
     PROGRAM_DAYS,
     rollToNearestAccrual,
+    rollToNextAccrual,
 } from "./helpers";
 
 const ether = ethers.utils.parseEther;
@@ -685,6 +686,7 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                     magic,
                     mine,
                     start,
+                    end,
                 } = ctx;
 
                 const amount = ether("20000");
@@ -697,22 +699,21 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 const tx = await staker.stakeScheduled();
                 await tx.wait();
 
-                const unlockTime = await rollLock(start);
-                await rollToNearestAccrual(unlockTime);
+                const timestamp = await rollToPartialWindow(start, end, 0.5);
+                await rollToNearestAccrual(timestamp);
 
-                // Fast-forward in scenarios - 1.3mm seconds should pass,
-                // so 13k MAGIC to pool
+                // Fast-forward in scenarios - 1/2 program should pass
+                const expectedAccrual = TOTAL_REWARDS.div(2);
+
                 const depositIds = await mine.getAllUserDepositIds(staker.address);
                 expect(depositIds.length).to.be.gt(0);
-
-                const expectedAccrual = ether("13000");
 
                 const accrueTx = await staker.accrue(depositIds);
                 const receipt = await accrueTx.wait();
 
                 const harvestEvent = receipt.events?.find(e => e.event === "MineHarvest");
                 expect(harvestEvent).to.not.be.undefined;
-                expectRoundedEqual(harvestEvent?.args?.[0], ether("13000"), 5);
+                expectRoundedEqual(harvestEvent?.args?.[0], expectedAccrual);
                 expect(harvestEvent?.args?.[1]).to.eq(0);
                 expect(harvestEvent?.args?.[2]).to.deep.eq(depositIds);
 
@@ -727,6 +728,7 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                     mine,
                     magic,
                     start,
+                    end,
                 } = ctx;
 
                 // Set 3 hour staking wait so we can stake twice in the same window
@@ -751,8 +753,11 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 await staker.stakeScheduled();
 
                 // Move forward to unlock time and accrue
-                const unlockTime = await rollLock(start);
-                await rollToNearestAccrual(unlockTime);
+                const timestamp = await rollToPartialWindow(start, end, 0.5);
+                await rollToNearestAccrual(timestamp);
+
+                // 1/2 time passed, rewards split equally
+                const expectedAccrual = TOTAL_REWARDS.div(4);
 
                 const depositIds = await mine.getAllUserDepositIds(staker.address);
                 expect(depositIds.length).to.be.gt(0);
@@ -772,8 +777,8 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 const rewardsUser1 = postclaimBalanceUser1.sub(preclaimBalanceUser1);
                 const rewardsUser2 = postclaimBalanceUser2.sub(preclaimBalanceUser2);
 
-                expectRoundedEqual(rewardsUser1, ether("6500"));
-                expectRoundedEqual(rewardsUser2, ether("6500"));
+                expectRoundedEqual(rewardsUser1, expectedAccrual);
+                expectRoundedEqual(rewardsUser2, expectedAccrual);
 
                 // Should get _exactly_ the same
                 expect(rewardsUser1).to.eq(rewardsUser2);
@@ -786,6 +791,7 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                     magic,
                     mine,
                     start,
+                    end,
                 } = ctx;
 
                 // Set 3 hour staking wait so we can stake twice in the same window
@@ -809,17 +815,18 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 await stakeSingle(staker, user, amount);
                 await staker.stakeScheduled();
 
-                const unlockTime = await rollLock(start);
-                await rollToNearestAccrual(unlockTime);
+                // Move forward to unlock time and accrue
+                const timestamp = await rollToPartialWindow(start, end, 0.5);
+                await rollToNearestAccrual(timestamp);
 
                 // Fast-forward in scenarios - 1.3mm seconds should pass,
                 // so 13k MAGIC to pool
                 const depositIds = await mine.getAllUserDepositIds(staker.address);
                 expect(depositIds.length).to.eq(2);
 
-                const expectedAccrual = ether("13000");
+                const expectedAccrual = TOTAL_REWARDS.div(2);
 
-                // Staker should now have 13000 magic
+                // Staker should now have rewards
                 await staker.accrue(depositIds);
                 expectRoundedEqual(await magic.balanceOf(staker.address), expectedAccrual);
 
@@ -832,7 +839,7 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 // Accrue again, staker should have another 13000
                 await staker.accrue([depositIds[0]]);
                 await staker.accrue([depositIds[1]]);
-                expectRoundedEqual(await magic.balanceOf(staker.address), expectedAccrual.mul(2));
+                expectRoundedEqual(await magic.balanceOf(staker.address), expectedAccrual);
             });
         });
     });
@@ -1573,6 +1580,22 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
 
                     await expect(staker.connect(user).setAccrualWindows([0, 1])).to.be.revertedWith(
                         "Ownable: caller is not the owner",
+                    );
+                });
+
+                it("does not allow an owner to set invalid accrual windows (wrong length)", async () => {
+                    const { admin, staker } = ctx;
+
+                    await expect(staker.connect(admin).setAccrualWindows([0, 1, 12])).to.be.revertedWith(
+                        "Invalid window length",
+                    );
+                });
+
+                it("does not allow an owner to set invalid accrual windows (too many)", async () => {
+                    const { admin, staker } = ctx;
+
+                    await expect(staker.connect(admin).setAccrualWindows([0, 1, 12, 13, 20, 21])).to.be.revertedWith(
+                        "Too many windows",
                     );
                 });
 
