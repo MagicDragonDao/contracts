@@ -237,7 +237,9 @@ contract AtlasMineStakerUpgradeable is
      */
     function withdrawAll() public virtual nonReentrant whenNotAccruing usesBuffer {
         uint256[] memory depositIds = allUserDepositIds[msg.sender].values();
-        for (uint256 i = 0; i < depositIds.length; i++) {
+        uint256 numDeposits = depositIds.length;
+
+        for (uint256 i = 0; i < numDeposits; i++) {
             UserStake storage s = userStake[msg.sender][depositIds[i]];
 
             if (s.amount > 0 && s.unlockAt > 0 && s.unlockAt <= block.timestamp) {
@@ -332,7 +334,9 @@ contract AtlasMineStakerUpgradeable is
      */
     function claimAll() public virtual nonReentrant usesBuffer {
         uint256[] memory depositIds = allUserDepositIds[msg.sender].values();
-        for (uint256 i = 0; i < depositIds.length; i++) {
+        uint256 numDeposits = depositIds.length;
+
+        for (uint256 i = 0; i < numDeposits; i++) {
             UserStake storage s = userStake[msg.sender][depositIds[i]];
 
             if (s.amount > 0) {
@@ -388,7 +392,9 @@ contract AtlasMineStakerUpgradeable is
         uint256 totalStake;
 
         uint256[] memory depositIds = allUserDepositIds[msg.sender].values();
-        for (uint256 i = 0; i < depositIds.length; i++) {
+        uint256 numDeposits = depositIds.length;
+
+        for (uint256 i = 0; i < numDeposits; i++) {
             UserStake storage s = userStake[msg.sender][depositIds[i]];
 
             totalStake += s.amount;
@@ -766,7 +772,9 @@ contract AtlasMineStakerUpgradeable is
      */
     function userTotalStake(address user) external view override returns (uint256 totalStake) {
         uint256[] memory depositIds = allUserDepositIds[user].values();
-        for (uint256 i = 0; i < depositIds.length; i++) {
+        uint256 numDeposits = depositIds.length;
+
+        for (uint256 i = 0; i < numDeposits; i++) {
             UserStake storage s = userStake[user][depositIds[i]];
             totalStake += s.amount;
         }
@@ -802,8 +810,9 @@ contract AtlasMineStakerUpgradeable is
      */
     function pendingRewardsAll(address user) external view override returns (uint256 reward) {
         uint256[] memory depositIds = allUserDepositIds[user].values();
+        uint256 numDeposits = depositIds.length;
 
-        for (uint256 i = 0; i < depositIds.length; i++) {
+        for (uint256 i = 0; i < numDeposits; i++) {
             reward += pendingRewards(user, depositIds[i]);
         }
     }
@@ -895,8 +904,9 @@ contract AtlasMineStakerUpgradeable is
      */
     function _harvestMine(uint256[] memory depositIds) internal returns (uint256, uint256) {
         uint256 preclaimBalance = magic.balanceOf(address(this));
+        uint256 numDeposits = depositIds.length;
 
-        for (uint256 i = 0; i < depositIds.length; i++) {
+        for (uint256 i = 0; i < numDeposits; i++) {
             // Might fail because of reward debt calculation
             try mine.harvestPosition(depositIds[i]) {} catch {
                 // SafeCast error
