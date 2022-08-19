@@ -134,7 +134,7 @@ contract AtlasMineStakerUpgradeable is
     /// @notice Whether the accRewardsPerShare reset has been called (upgrade #3)
     bool private _rewardsResetCalled;
     /// @notice Whether the accRewardsPerShare reset has been called (upgrade #3)
-    uint256 private accrueRewardBps;
+    uint256 private accrueIncentiveBps;
 
     // ========================================== INITIALIZER ===========================================
 
@@ -446,10 +446,10 @@ contract AtlasMineStakerUpgradeable is
     function accrue(uint256[] calldata depositIds) public virtual override whenAccruing {
         require(depositIds.length != 0, "Must accrue nonzero deposits");
 
-        uint256 accrueReward = _updateRewards(depositIds);
+        uint256 accrueIncentive = _updateRewards(depositIds);
 
-        if (accrueReward > 0) {
-            magic.transfer(msg.sender, accrueReward);
+        if (accrueIncentive > 0) {
+            magic.transfer(msg.sender, accrueIncentive);
         }
     }
 
@@ -743,12 +743,12 @@ contract AtlasMineStakerUpgradeable is
      *
      * @param _reward               The new accrual reward, in bps.
      */
-    function setAccrueReward(uint256 _reward) external onlyOwner {
+    function setAccrueIncentive(uint256 _reward) external onlyOwner {
         require(_reward <= 500, "reward too high");
 
-        accrueRewardBps = _reward;
+        accrueIncentiveBps = _reward;
 
-        emit SetAccrualReward(_reward);
+        emit SetAccrualIncentive(_reward);
     }
 
     // ======================================== VIEW FUNCTIONS =========================================
@@ -970,13 +970,13 @@ contract AtlasMineStakerUpgradeable is
         uint256 feeEarned = (earned * fee) / FEE_DENOMINATOR;
         feeReserve += feeEarned;
 
-        uint256 accrueReward = (earned * accrueRewardBps) / FEE_DENOMINATOR;
+        uint256 accrueIncentive = (earned * accrueIncentiveBps) / FEE_DENOMINATOR;
 
-        earned -= (feeEarned + accrueReward);
+        earned -= (feeEarned + accrueIncentive);
 
         emit MineHarvest(earned, feeEarned, depositIds);
 
-        return (earned, feeEarned, accrueReward);
+        return (earned, feeEarned, accrueIncentive);
     }
 
     /**
@@ -988,12 +988,12 @@ contract AtlasMineStakerUpgradeable is
     function _updateRewards(uint256[] memory depositIds) internal returns (uint256) {
         if (totalStaked == 0) return 0;
 
-        (uint256 newRewards, , uint256 accrueReward) = _harvestMine(depositIds);
+        (uint256 newRewards, , uint256 accrueIncentive) = _harvestMine(depositIds);
         totalRewardsEarned += newRewards;
 
         accRewardsPerShare += (newRewards * ONE) / totalStaked;
 
-        return accrueReward;
+        return accrueIncentive;
     }
 
     /**

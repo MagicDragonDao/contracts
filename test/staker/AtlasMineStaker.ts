@@ -721,6 +721,55 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 expectRoundedEqual(await magic.balanceOf(staker.address), expectedAccrual);
             });
 
+            it("accrues rewards, sending an incentive to the accruer", async () => {
+                const {
+                    users: [user, accruer],
+                    staker,
+                    magic,
+                    mine,
+                    start,
+                    end,
+                } = ctx;
+
+                // 1% of rewards go to person calling accrue
+                await staker.setAccrueIncentive(100);
+                const accruerBalanceBefore = await magic.balanceOf(accruer.address);
+
+                const amount = ether("20000");
+                await stakeSingle(staker, user, amount);
+
+                // Go to start of rewards program
+                await rollTo(start);
+
+                // Make a tx to deposit
+                const tx = await staker.stakeScheduled();
+                await tx.wait();
+
+                const timestamp = await rollToPartialWindow(start, end, 0.5);
+                await rollToNearestAccrual(timestamp);
+
+                // Fast-forward in scenarios - 1/2 program should pass
+                const expectedAccrual = TOTAL_REWARDS.div(2);
+                const expectedHarvestedRewards = expectedAccrual.div(100).mul(99);
+
+                const depositIds = await mine.getAllUserDepositIds(staker.address);
+                expect(depositIds.length).to.be.gt(0);
+
+                const accrueTx = await staker.connect(accruer).accrue(depositIds);
+                const receipt = await accrueTx.wait();
+
+                const harvestEvent = receipt.events?.find(e => e.event === "MineHarvest");
+                expect(harvestEvent).to.not.be.undefined;
+                expectRoundedEqual(harvestEvent?.args?.[0], expectedHarvestedRewards);
+                expect(harvestEvent?.args?.[1]).to.eq(0);
+                expect(harvestEvent?.args?.[2]).to.deep.eq(depositIds);
+                const accruerBalanceAfter = await magic.balanceOf(accruer.address);
+
+                // Staker should now have 13000 magic
+                expectRoundedEqual(await magic.balanceOf(staker.address), expectedHarvestedRewards);
+                expectRoundedEqual(accruerBalanceAfter.sub(accruerBalanceBefore), expectedAccrual.div(100));
+            });
+
             it("deposits at different times during the same deposit window receive the same rewards", async () => {
                 const {
                     users: [user1, user2],
@@ -1569,6 +1618,31 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
 
                 await increaseTime(14400);
                 await expect(staker.stakeScheduled()).to.not.be.reverted;
+            });
+
+            it("does not allow a non-owner to set the accrual incentive", async () => {
+                const {
+                    users: [user],
+                    staker,
+                } = ctx;
+
+                await expect(staker.connect(user).setAccrueIncentive(500)).to.be.revertedWith(
+                    "Ownable: caller is not the owner",
+                );
+            });
+
+            it("does not allow an owner to set the accrual incentive over the max", async () => {
+                const { admin, staker } = ctx;
+
+                await expect(staker.connect(admin).setAccrueIncentive(10000)).to.be.revertedWith("reward too high");
+            });
+
+            it("allows an owner to change the accrual incentive", async () => {
+                const { admin, staker } = ctx;
+
+                await expect(staker.connect(admin).setAccrueIncentive(200))
+                    .to.emit(staker, "SetAccrualIncentive")
+                    .withArgs(200);
             });
 
             describe("setAccrualWindows", () => {
