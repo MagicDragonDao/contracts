@@ -133,6 +133,8 @@ contract AtlasMineStakerUpgradeable is
     uint256[] public accrualWindows;
     /// @notice Whether the accRewardsPerShare reset has been called (upgrade #3)
     bool private _rewardsResetCalled;
+    /// @notice Whether the accRewardsPerShare reset has been called (upgrade #3)
+    uint256 private accrueRewardBps;
 
     // ========================================== INITIALIZER ===========================================
 
@@ -321,7 +323,7 @@ contract AtlasMineStakerUpgradeable is
      * @param depositId             The ID of the deposit to claim rewards from.
      *
      */
-    function claim(uint256 depositId) public virtual override nonReentrant {
+    function claim(uint256 depositId) public virtual override nonReentrant whenNotAccruing {
         UserStake storage s = userStake[msg.sender][depositId];
 
         require(s.amount > 0, "No deposit");
@@ -334,7 +336,7 @@ contract AtlasMineStakerUpgradeable is
      *         Will apply to both locked and unlocked deposits.
      *
      */
-    function claimAll() public virtual nonReentrant usesBuffer {
+    function claimAll() public virtual nonReentrant usesBuffer whenNotAccruing {
         uint256[] memory depositIds = allUserDepositIds[msg.sender].values();
         uint256 numDeposits = depositIds.length;
 
@@ -444,7 +446,11 @@ contract AtlasMineStakerUpgradeable is
     function accrue(uint256[] calldata depositIds) public virtual override whenAccruing {
         require(depositIds.length != 0, "Must accrue nonzero deposits");
 
-        _updateRewards(depositIds);
+        uint256 accrueReward = _updateRewards(depositIds);
+
+        if (accrueReward > 0) {
+            magic.transfer(msg.sender, accrueReward);
+        }
     }
 
     // ======================================= HOARD OPERATIONS ========================================
@@ -732,6 +738,19 @@ contract AtlasMineStakerUpgradeable is
         accRewardsPerShare -= (_amountToReserve * ONE) / totalStaked;
     }
 
+    /**
+     * @notice Used to set a reward for calling accrue and helping the mine harvest.
+     *
+     * @param _reward               The new accrual reward, in bps.
+     */
+    function setAccrueReward(uint256 _reward) external onlyOwner {
+        require(_reward <= 500, "reward too high");
+
+        accrueRewardBps = _reward;
+
+        emit SetAccrualReward(_reward);
+    }
+
     // ======================================== VIEW FUNCTIONS =========================================
 
     /**
@@ -925,7 +944,14 @@ contract AtlasMineStakerUpgradeable is
      * @return earned               The amount of rewards earned for depositors, minus the fee.
      * @return feeEearned           The amount of fees earned for the contract operator.
      */
-    function _harvestMine(uint256[] memory depositIds) internal returns (uint256, uint256) {
+    function _harvestMine(uint256[] memory depositIds)
+        internal
+        returns (
+            uint256,
+            uint256,
+            uint256
+        )
+    {
         uint256 preclaimBalance = magic.balanceOf(address(this));
         uint256 numDeposits = depositIds.length;
 
@@ -944,9 +970,13 @@ contract AtlasMineStakerUpgradeable is
         uint256 feeEarned = (earned * fee) / FEE_DENOMINATOR;
         feeReserve += feeEarned;
 
-        emit MineHarvest(earned - feeEarned, feeEarned, depositIds);
+        uint256 accrueReward = (earned * accrueRewardBps) / FEE_DENOMINATOR;
 
-        return (earned - feeEarned, feeEarned);
+        earned -= (feeEarned + accrueReward);
+
+        emit MineHarvest(earned, feeEarned, depositIds);
+
+        return (earned, feeEarned, accrueReward);
     }
 
     /**
@@ -955,13 +985,15 @@ contract AtlasMineStakerUpgradeable is
      *
      * @param depositIds            The deposits to harvest rewards for.
      */
-    function _updateRewards(uint256[] memory depositIds) internal {
-        if (totalStaked == 0) return;
+    function _updateRewards(uint256[] memory depositIds) internal returns (uint256) {
+        if (totalStaked == 0) return 0;
 
-        (uint256 newRewards, ) = _harvestMine(depositIds);
+        (uint256 newRewards, , uint256 accrueReward) = _harvestMine(depositIds);
         totalRewardsEarned += newRewards;
 
         accRewardsPerShare += (newRewards * ONE) / totalStaked;
+
+        return accrueReward;
     }
 
     /**

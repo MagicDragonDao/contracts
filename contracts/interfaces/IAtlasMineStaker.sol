@@ -15,6 +15,7 @@ interface IAtlasMineStaker {
     event StakingPauseToggle(bool paused);
     event SetMinimumStakingWait(uint256 wait);
     event SetAccrualWindows(uint256[] windows);
+    event SetAccrualReward(uint256 reward);
 
     // ================= Data Types ==================
 
