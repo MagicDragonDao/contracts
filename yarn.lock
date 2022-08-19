@@ -361,19 +361,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ethereum-waffle/chai@npm:^3.4.0":
-  version: 3.4.1
-  resolution: "@ethereum-waffle/chai@npm:3.4.1"
+"@ethereum-waffle/chai@npm:^3.4.4":
+  version: 3.4.4
+  resolution: "@ethereum-waffle/chai@npm:3.4.4"
   dependencies:
-    "@ethereum-waffle/provider": ^3.4.0
-    ethers: ^5.4.7
-  checksum: 826bb97e279a2834326b07a1bd607ab2d12664cb4ab840e820d058623449321e637cf9afca8f2462f472531f36d3ecd76595e15b600b2833c02fb5c78685f1f5
+    "@ethereum-waffle/provider": ^3.4.4
+    ethers: ^5.5.2
+  checksum: b2b9b6b839c3f6b4abf8489fe50549e6fda07bd81ae8e4250b20d9a76ce4a729ef47c741364387b1d2dbc7fac14b46a5d6dcc4d404344b9cce5f9698ff012251
   languageName: node
   linkType: hard
 
-"@ethereum-waffle/compiler@npm:^3.4.0":
-  version: 3.4.0
-  resolution: "@ethereum-waffle/compiler@npm:3.4.0"
+"@ethereum-waffle/compiler@npm:^3.4.4":
+  version: 3.4.4
+  resolution: "@ethereum-waffle/compiler@npm:3.4.4"
   dependencies:
     "@resolver-engine/imports": ^0.3.3
     "@resolver-engine/imports-fs": ^0.3.3
@@ -386,41 +386,41 @@ __metadata:
     solc: ^0.6.3
     ts-generator: ^0.1.1
     typechain: ^3.0.0
-  checksum: 152e139b2c6087a4957568935bbc8f0c59add88a2b7e8c484681a1fa60f68397ebd8324ff00a394907218d2a2bb658ced5472e32dd3b41fdb51b81075f7e0144
+  checksum: ebffca732969253934c1e8cca6cc1f12d6294f848d44e6595af81460bc3230bc69096d0965b9deb2c7eecd472a1d536d8cbe993f95bfc76fbbe2114ddbabff70
   languageName: node
   linkType: hard
 
-"@ethereum-waffle/ens@npm:^3.3.1":
-  version: 3.3.1
-  resolution: "@ethereum-waffle/ens@npm:3.3.1"
+"@ethereum-waffle/ens@npm:^3.4.4":
+  version: 3.4.4
+  resolution: "@ethereum-waffle/ens@npm:3.4.4"
   dependencies:
     "@ensdomains/ens": ^0.4.4
     "@ensdomains/resolver": ^0.2.4
     ethers: ^5.5.2
-  checksum: 8743633f26ef7f0ac39346a2d5cf47ea57174dccb4ca872c0ea91ad9a4e9b274500aec2ccc22ab6476c92268604264ba1cd6c2d972befbd8092698f4a5164cfe
+  checksum: 71d93c09ef3ab89a46f05b9e2a06e129e2109d160c3a819e4bf3b4414fc4707e7fc646c87c1d82f9ba769dc1ac3c6f4934fd72499654fcfc9db4abf46c21d118
   languageName: node
   linkType: hard
 
-"@ethereum-waffle/mock-contract@npm:^3.3.0":
-  version: 3.3.1
-  resolution: "@ethereum-waffle/mock-contract@npm:3.3.1"
+"@ethereum-waffle/mock-contract@npm:^3.4.4":
+  version: 3.4.4
+  resolution: "@ethereum-waffle/mock-contract@npm:3.4.4"
   dependencies:
     "@ethersproject/abi": ^5.5.0
     ethers: ^5.5.2
-  checksum: dc64e9985a67b1ba25d334c544fc768114c7e3e8a1069a3c43e5fed82bfbd899583c68efe3bf41db110a84f668a02978504af4998f4fc551646ab5f4bf38eaf4
+  checksum: 6e5c62b342e424cd1937f2f7eb424056ad143b238320880f378c0db61c6d694617f968687321a2f030d546aa5b4dde42681cbb419589d7f87452c82844a4488b
   languageName: node
   linkType: hard
 
-"@ethereum-waffle/provider@npm:^3.4.0":
-  version: 3.4.1
-  resolution: "@ethereum-waffle/provider@npm:3.4.1"
+"@ethereum-waffle/provider@npm:^3.4.4":
+  version: 3.4.4
+  resolution: "@ethereum-waffle/provider@npm:3.4.4"
   dependencies:
-    "@ethereum-waffle/ens": ^3.3.1
+    "@ethereum-waffle/ens": ^3.4.4
     ethers: ^5.5.2
     ganache-core: ^2.13.2
     patch-package: ^6.2.2
     postinstall-postinstall: ^2.1.0
-  checksum: d3fad39c72ecb730207152e3a441c63d1313501d9c9e6194c1de91498b431388931dca4706c0c838763f25aaff7348d3268fe021a5d9f4d40b5bd61df05fb931
+  checksum: 9e251d7b0198c22e337b18368e3893de766a821e818702dbef0e0d603bad550c6e3a29676cff11272bc82762833586ee9659593d957ec8759a8cc93c2b0f3d00
   languageName: node
   linkType: hard
 
@@ -993,11 +993,12 @@ __metadata:
     chai: ^4.3.4
     commitizen: ^4.2.4
     cross-env: ^7.0.3
+    csv-writer: ^1.6.0
     cz-conventional-changelog: ^3.3.0
     dotenv: ^10.0.0
     eslint: ^8.3.0
     eslint-config-prettier: ^8.3.0
-    ethereum-waffle: ^3.4.0
+    ethereum-waffle: "^3.4.0 "
     ethereumjs-util: ^7.1.3
     ethers: ^5.5.1
     fs-extra: ^10.0.0
@@ -1009,9 +1010,11 @@ __metadata:
     lint-staged: ^11.2.6
     lodash: ^4.17.21
     mocha: ^9.1.3
+    node-fetch: 2
     pinst: ^2.1.6
     prettier: ^2.5.0
     prettier-plugin-solidity: ^1.0.0-beta.19
+    qs: ^6.11.0
     shelljs: ^0.8.4
     shx: ^0.3.3
     solc-0.8: "npm:solc@^0.8.5"
@@ -4692,6 +4695,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"csv-writer@npm:^1.6.0":
+  version: 1.6.0
+  resolution: "csv-writer@npm:1.6.0"
+  checksum: 2e62cb46f00b674f0710eb90586000601f3a467aabe529464dcb402d453a1322a716d7522ef3282dd6551f1059305c7dd3db49def1201caaf340597dcf7b4c7e
+  languageName: node
+  linkType: hard
+
 "cz-conventional-changelog@npm:3.2.0":
   version: 3.2.0
   resolution: "cz-conventional-changelog@npm:3.2.0"
@@ -5912,18 +5922,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ethereum-waffle@npm:^3.4.0":
-  version: 3.4.0
-  resolution: "ethereum-waffle@npm:3.4.0"
+"ethereum-waffle@npm:^3.4.0 ":
+  version: 3.4.4
+  resolution: "ethereum-waffle@npm:3.4.4"
   dependencies:
-    "@ethereum-waffle/chai": ^3.4.0
-    "@ethereum-waffle/compiler": ^3.4.0
-    "@ethereum-waffle/mock-contract": ^3.3.0
-    "@ethereum-waffle/provider": ^3.4.0
+    "@ethereum-waffle/chai": ^3.4.4
+    "@ethereum-waffle/compiler": ^3.4.4
+    "@ethereum-waffle/mock-contract": ^3.4.4
+    "@ethereum-waffle/provider": ^3.4.4
     ethers: ^5.0.1
   bin:
     waffle: bin/waffle
-  checksum: bfda147c4a57235c101aeb0a483bff3463df2029d4dcfabc8147de8c507a8df2bda101d03fb90cc880bb8df619a49fe9ed275d12757c3dfa386f947b73415ac0
+  checksum: 5a181b52f66f1b3c89ed1b68ef44cbd9acd4d743262de9edbe1fd57b0925576dd62c3436b1e65434d5ac03ab16da0df283972cd9aae726de0b8b9cdd7876b917
   languageName: node
   linkType: hard
 
@@ -6204,7 +6214,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ethers@npm:^5.0.1, ethers@npm:^5.0.2, ethers@npm:^5.4.7, ethers@npm:^5.5.1, ethers@npm:^5.5.2":
+"ethers@npm:^5.0.1, ethers@npm:^5.0.2, ethers@npm:^5.5.1, ethers@npm:^5.5.2":
   version: 5.5.4
   resolution: "ethers@npm:5.5.4"
   dependencies:
@@ -10490,14 +10500,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"node-fetch@npm:2.6.1":
-  version: 2.6.1
-  resolution: "node-fetch@npm:2.6.1"
-  checksum: 91075bedd57879117e310fbcc36983ad5d699e522edb1ebcdc4ee5294c982843982652925c3532729fdc86b2d64a8a827797a745f332040d91823c8752ee4d7c
-  languageName: node
-  linkType: hard
-
-"node-fetch@npm:^2.6.0, node-fetch@npm:^2.6.1":
+"node-fetch@npm:2, node-fetch@npm:^2.6.0, node-fetch@npm:^2.6.1":
   version: 2.6.7
   resolution: "node-fetch@npm:2.6.7"
   dependencies:
@@ -10508,6 +10511,13 @@ __metadata:
     encoding:
       optional: true
   checksum: 8d816ffd1ee22cab8301c7756ef04f3437f18dace86a1dae22cf81db8ef29c0bf6655f3215cb0cdb22b420b6fe141e64b26905e7f33f9377a7fa59135ea3e10b
+  languageName: node
+  linkType: hard
+
+"node-fetch@npm:2.6.1":
+  version: 2.6.1
+  resolution: "node-fetch@npm:2.6.1"
+  checksum: 91075bedd57879117e310fbcc36983ad5d699e522edb1ebcdc4ee5294c982843982652925c3532729fdc86b2d64a8a827797a745f332040d91823c8752ee4d7c
   languageName: node
   linkType: hard
 
@@ -11677,6 +11687,15 @@ __metadata:
   version: 6.9.6
   resolution: "qs@npm:6.9.6"
   checksum: cb6df402bb8a3dbefa4bd46eba0dfca427079baca923e6b8d28a03e6bfb16a5c1dcdb96e69388f9c5813ac8ff17bb8bbca22f2ecd31fe1e344a55cb531b5fabf
+  languageName: node
+  linkType: hard
+
+"qs@npm:^6.11.0":
+  version: 6.11.0
+  resolution: "qs@npm:6.11.0"
+  dependencies:
+    side-channel: ^1.0.4
+  checksum: 6e1f29dd5385f7488ec74ac7b6c92f4d09a90408882d0c208414a34dd33badc1a621019d4c799a3df15ab9b1d0292f97c1dd71dc7c045e69f81a8064e5af7297
   languageName: node
   linkType: hard
 

@@ -124,7 +124,8 @@ const config: HardhatUserConfig = {
         rinkeby: createTestnetConfig("rinkeby"),
         ropsten: createTestnetConfig("ropsten"),
         arbitrumOne: {
-            url: "https://arb1.arbitrum.io/rpc",
+            // url: "https://arb1.arbitrum.io/rpc",
+            url: "https://arb-mainnet.g.alchemy.com/v2/YfFJbmU2VrOV7DFCW9UMEr7PHCE-XbKZ",
             accounts: { mnemonic },
             chainId: chainIds.arbitrumOne,
         },

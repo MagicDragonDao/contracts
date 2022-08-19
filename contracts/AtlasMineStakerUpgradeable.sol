@@ -131,6 +131,8 @@ contract AtlasMineStakerUpgradeable is
     /// @notice The defined accrual windows in terms of UTC hours.
     ///         Must be an even-length array of increasing order
     uint256[] public accrualWindows;
+    /// @notice Whether the accRewardsPerShare reset has been called (upgrade #3)
+    bool private _rewardsResetCalled;
 
     // ========================================== INITIALIZER ===========================================
 
@@ -708,6 +710,26 @@ contract AtlasMineStakerUpgradeable is
         accrualWindows = windows;
 
         emit SetAccrualWindows(windows);
+    }
+
+    /**
+     * @notice Must be used when upgrading to a new contract to set aside rewards for those
+     *         who have deposited.
+     *
+     * @dev    Cannot be used in normal operation, will only be called once after the
+     *         initial reward accrual post-upgrade.
+     *
+     *
+     * @param _amountToReserve         The amount of rewards to reserve.
+     */
+    function reserveWithdrawerRewards(uint256 _amountToReserve) external onlyOwner {
+        require(!_rewardsResetCalled, "reset already called");
+        _rewardsResetCalled = true;
+
+        feeReserve += _amountToReserve;
+        totalRewardsEarned -= _amountToReserve;
+
+        accRewardsPerShare -= (_amountToReserve * ONE) / totalStaked;
     }
 
     // ======================================== VIEW FUNCTIONS =========================================
