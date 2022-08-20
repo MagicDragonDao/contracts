@@ -25,6 +25,23 @@ export async function main(): Promise<void> {
     console.log("Have this many deposits:", depositIds.length);
     console.log();
 
+    const addr = "0xB6631E52E513eEE0b8c932d7c76F8ccfA607a28e";
+    const id = await staker.currentId(addr);
+
+    for (let i = 0; i <= id.toNumber(); i++) {
+        console.log("Checking id", i);
+
+        const stake = await staker.getUserStake(addr, i);
+
+        if (stake.amount.gt(0)) {
+            console.log("Should have reward for", i);
+            const r = await staker.pendingRewards(addr, i);
+            console.log("Reward", ethers.utils.formatEther(r));
+        } else {
+            console.log("No deposit for", i);
+        }
+    }
+
     // for (let i = 0; i < depositIds.length; i += CHUNK_SIZE) {
     //     const start = i;
     //     const end = i + CHUNK_SIZE;

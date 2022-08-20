@@ -835,7 +835,13 @@ contract AtlasMineStakerUpgradeable is
     function pendingRewards(address user, uint256 depositId) public view override returns (uint256 reward) {
         UserStake storage s = userStake[user][depositId];
 
+        if (s.amount == 0) return 0;
+
         int256 accumulatedRewards = _accumulatedRewards(s.amount);
+
+        if (accumulatedRewards <= s.rewardDebt) {
+            return 0;
+        }
 
         // Reduce by 1 wei to work around off-by-one error in atlas mine
         reward = (accumulatedRewards - s.rewardDebt - 1).toUint256();
@@ -855,7 +861,11 @@ contract AtlasMineStakerUpgradeable is
         uint256 numDeposits = depositIds.length;
 
         for (uint256 i = 0; i < numDeposits; i++) {
-            reward += pendingRewards(user, depositIds[i]);
+            UserStake storage s = userStake[user][depositId];
+
+            if (s.amount > 0) {
+                reward += pendingRewards(user, depositIds[i]);
+            }
         }
     }
 
