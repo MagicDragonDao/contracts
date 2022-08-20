@@ -102,7 +102,7 @@ const compilerSettings = {
     // https://hardhat.org/hardhat-network/#solidity-optimizer-support
     optimizer: {
         enabled: optimizerEnabled,
-        runs: 1000,
+        runs: 200,
     },
 };
 

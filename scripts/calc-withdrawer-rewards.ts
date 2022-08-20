@@ -115,8 +115,8 @@ export async function determineWithdrawerRewards(totalRewards: BigNumberish): Pr
         };
     });
 
-    await wCsvWriter.writeRecords(withdrawlCsvData);
-    await uCsvWriter.writeRecords(userEntries);
+    // await wCsvWriter.writeRecords(withdrawlCsvData);
+    // await uCsvWriter.writeRecords(userEntries);
 }
 
 export async function simulateHarvest(): Promise<BigNumberish> {
@@ -157,32 +157,32 @@ export async function simulateHarvest(): Promise<BigNumberish> {
         signer,
     });
 
-    const impl = await stakerFactory.deploy();
-    await impl.deployed();
+    // const impl = await stakerFactory.deploy();
+    // await impl.deployed();
 
-    const proxyAdminAbi = [
-        "function upgrade(address proxy, address implementation)",
-        "function getProxyImplementation(address proxy) view returns (address)",
-    ];
+    // const proxyAdminAbi = [
+    //     "function upgrade(address proxy, address implementation)",
+    //     "function getProxyImplementation(address proxy) view returns (address)",
+    // ];
 
-    // Deploy new contract
-    const proxyAdmin = new ethers.Contract(PROXY_ADMIN, proxyAdminAbi, signer);
-    const upgradeTx = await proxyAdmin.populateTransaction.upgrade(STAKER_ADDR, impl.address);
+    // // Deploy new contract
+    // const proxyAdmin = new ethers.Contract(PROXY_ADMIN, proxyAdminAbi, signer);
+    // const upgradeTx = await proxyAdmin.populateTransaction.upgrade(STAKER_ADDR, impl.address);
 
-    const upgradeParams = {
-        to: PROXY_ADMIN,
-        from: MULTISIG,
-        data: upgradeTx.data,
-        gas: ethers.utils.hexValue(3000000),
-        gasPrice: ethers.utils.hexValue(1),
-        value: ethers.utils.hexValue(0),
-    };
+    // const upgradeParams = {
+    //     to: PROXY_ADMIN,
+    //     from: MULTISIG,
+    //     data: upgradeTx.data,
+    //     gas: ethers.utils.hexValue(3000000),
+    //     gasPrice: ethers.utils.hexValue(1),
+    //     value: ethers.utils.hexValue(0),
+    // };
 
-    await provider.send("eth_sendTransaction", [upgradeParams]);
+    // await provider.send("eth_sendTransaction", [upgradeParams]);
 
     // Should be upgraded
-    const reportedImpl = await proxyAdmin.getProxyImplementation(STAKER_ADDR);
-    assert(impl.address === reportedImpl, "New implementation not updated");
+    // const reportedImpl = await proxyAdmin.getProxyImplementation(STAKER_ADDR);
+    // assert(impl.address === reportedImpl, "New implementation not updated");
 
     console.log("Deployed");
     console.log(SECTION_SEPARATOR);

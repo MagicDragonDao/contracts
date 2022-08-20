@@ -1,0 +1,5382 @@
+[
+    {
+        "timestamp": "1658016094",
+        "tx": "0x4fba0d6dbfd2e933c1ef027bdbe3fbf791d283fd023d231cdde0863b623168d9",
+        "user": "0x8c7751c07CCC062Dab7863B6d2Fd2d3b872b23c1",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x0204f7b8252573e50000"
+        },
+        "reward": "18299078799495254"
+    },
+    {
+        "timestamp": "1658016801",
+        "tx": "0xcc27b87e13686a4aa109cca4832d3df77b1ce42abd68865777781efa505413ed",
+        "user": "0xa231AA34C4acA5543E910e6b0D24B14d20933917",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x410d586a20a4c00000"
+        },
+        "reward": "15021174328103752"
+    },
+    {
+        "timestamp": "1658017937",
+        "tx": "0xbb294a9afb26667eec277089c4edef33e95a544c6bf0510592a393d0d1dc1183",
+        "user": "0x97Ccb2DB265fA5EBA774cB609A4F7A625c286856",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x3ba1910bf341b00000"
+        },
+        "reward": "32502403254253240"
+    },
+    {
+        "timestamp": "1658025007",
+        "tx": "0x02972532f4e7e3956a3ae5af7dea608e9b842fd827e7efa5ae3457aa8a20bd62",
+        "user": "0x8794941Dd8fE7804Ba8D2D1189a041aF36f5A588",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x043ba933485b270000"
+        },
+        "reward": "10583414618184374"
+    },
+    {
+        "timestamp": "1658030236",
+        "tx": "0x408e7f63f2a2ddc25886ea771652ee09c0afaaed04ee1c4d4f29f5448ed2cc19",
+        "user": "0xeb11255b15600390e60a7aa1FBe1C821F6D0FD8a",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x2647c21b2c3fc38000"
+        },
+        "reward": "151062009058460030"
+    },
+    {
+        "timestamp": "1658031965",
+        "tx": "0x1d786166b27c5d60678bbe52e122443a363775bca689f3808a1dd685aae991a7",
+        "user": "0xf24b2315e851E27d4F867E251e037E1c73a31285",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x23682a8481602f0000"
+        },
+        "reward": "156652242044170115"
+    },
+    {
+        "timestamp": "1658055785",
+        "tx": "0x74c9390455d9f666b8d888f4b9401877f09995f6a24c6756f6ef8c6899ceeb1a",
+        "user": "0x63095Ce68aE2f6DC0a3E068d97F2d392c51EBD06",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x1568a458ed3e38300000"
+        },
+        "reward": "60350054901900372541"
+    },
+    {
+        "timestamp": "1658056891",
+        "tx": "0x323c6a69918b815ca7483904d60269974084cce0018e4e733b9d7e74b86a20f7",
+        "user": "0x5947021aBb36F092e5110DaB43B7850b739BB520",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x040668be79ebcbbb0000"
+        },
+        "reward": "11661496456819488282"
+    },
+    {
+        "timestamp": "1658065171",
+        "tx": "0x72699e0a6e50772a82aa2aaac0c09ad02de61397d09d5ed5057e6922f33de07d",
+        "user": "0x542a19c328650051733ddAE1794aDDAf8670B8c3",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x7bfdf141a406a80000"
+        },
+        "reward": "1687169273436472395"
+    },
+    {
+        "timestamp": "1658067187",
+        "tx": "0x1c01ef70f75bdc99272bd99632414d9bab75dcd5aa85516fe0b22182add0f825",
+        "user": "0xA4c8d9e4Ec5f2831701A81389465498B83f9457d",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x0323a471e97b803a8000"
+        },
+        "reward": "11383262802674562548"
+    },
+    {
+        "timestamp": "1658070790",
+        "tx": "0x7dd9ff2a3349faadc53cb875afe2f752cc077e76494f73e468329a16fabc926c",
+        "user": "0xA697AEdF5af55fd7a3D75122fAa8fFC57e84261C",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x043c33c1937564800000"
+        },
+        "reward": "16437542142993216531"
+    },
+    {
+        "timestamp": "1658075118",
+        "tx": "0xd7db030b10793b31226638186efd0eea15792cfd0dd4957e4301d017a80d2716",
+        "user": "0xb60D5239391BC26A363a10aE2c772CAd0438Eb21",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x01ff05936744358000"
+        },
+        "reward": "32653126137214807"
+    },
+    {
+        "timestamp": "1658075270",
+        "tx": "0x754bf894aef7f5ec30155369a68040f28c3a8be9abb7b938c8426e161dcbaf3e",
+        "user": "0x0edCAEB7270005F31E51790bA2c5c574fF24dEc6",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x097e2023bb95e08000"
+        },
+        "reward": "155678493338984969"
+    },
+    {
+        "timestamp": "1658075790",
+        "tx": "0x24c9193e271e979f6b558747b7075e608f4f92dd302c0fd2720984d565100e43",
+        "user": "0x67C2952229D829B8bC40BA3c957e943d884FC739",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0xbc3e9724eac6650000"
+        },
+        "reward": "3114251031042502011"
+    },
+    {
+        "timestamp": "1658076488",
+        "tx": "0xc248b1fea37eaefaaf053452c4428bd5088f5357f81bd4f32939846788d68f0b",
+        "user": "0xDC7C6F367E4680D3B8e4ceAB1e65cB7E361314A1",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x19bff2ff57968c0000"
+        },
+        "reward": "430966036452704873"
+    },
+    {
+        "timestamp": "1658077645",
+        "tx": "0xa477d634bbcd822f801654174b0c984bed6fef277ffe147014809f91c66e0555",
+        "user": "0x94969A30126FBe6123E5A0f9076C77A21081bdAD",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x043c33c1937564800000"
+        },
+        "reward": "18492834558545137210"
+    },
+    {
+        "timestamp": "1658084580",
+        "tx": "0x58c86abadf56597a6db4ff1f227230ab8313ea5789ead05de897be6084962cbe",
+        "user": "0xf00C9CAe156084EF119ABb5822fc5f86f79d184e",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x01043561a88293000000"
+        },
+        "reward": "4937307091489872577"
+    },
+    {
+        "timestamp": "1658093582",
+        "tx": "0xf9e1b23d428f18d38c4f3be988c12b9a13f1c8ea17d161e785dfb7dd8ac39f8c",
+        "user": "0xbB72d39ba7F1F4b81808FF9112c03b26A2f560Ec",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x02a034919dfbfbc00000"
+        },
+        "reward": "14428098788883483993"
+    },
+    {
+        "timestamp": "1658119342",
+        "tx": "0x59bdf5486e133ad54ca3cd1f75f9431caa6dd153e8761886153dcdd41cdf976f",
+        "user": "0xeFEA6725B90A234B8d7eA5e5887dCbeAa82d8B75",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x03456f0a026158ff0000"
+        },
+        "reward": "23940105993772614827"
+    },
+    {
+        "timestamp": "1658134553",
+        "tx": "0x37fd91f55670bed472bdc4539b72cc7d702f5cc51d923a7308f60c4eb287966c",
+        "user": "0xda1C97b1Ee2EdF8E99e9eF225549A74A049B6798",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x3d1f511834e3220000"
+        },
+        "reward": "2004439162256299586"
+    },
+    {
+        "timestamp": "1658161414",
+        "tx": "0x0b30b00c70cd93084e8f8e08d07d48ba16d6820cd327b2a50e916e8733daebb7",
+        "user": "0x542a19c328650051733ddAE1794aDDAf8670B8c3",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x6c6b935b8bbd400000"
+        },
+        "reward": "4360877771804460378"
+    },
+    {
+        "timestamp": "1658161568",
+        "tx": "0xf9335adeca0bc9b92c413f99f778f222d095ea640b3c9bcf3f5a27a8705c80b4",
+        "user": "0x85dAe618f69Cf79dfc36Adb20145f575a01db94a",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0xec2b31760a67600000"
+        },
+        "reward": "9509235652990928136"
+    },
+    {
+        "timestamp": "1658162296",
+        "tx": "0x93868e5ba5f01ccc7472277f125b59dc962f58b434aa6e11f59a161a21bf12e4",
+        "user": "0xd7cE367fA0e74F11Ae934939712ff2e3d634b5E7",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x2fc1840772be96200000"
+        },
+        "reward": "494716561064946287068"
+    },
+    {
+        "timestamp": "1658165769",
+        "tx": "0xbc0a9a3a26cfc9da850d1e209956973bfeba849162a5918126868ded43f31381",
+        "user": "0x37abA67ADBc27C9434Fcd9fC7cE7F00a06066A41",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x6a1ee4cbca95f48000"
+        },
+        "reward": "4396189622516428461"
+    },
+    {
+        "timestamp": "1658169379",
+        "tx": "0xd2517a52c9c94d4dd9acefe1fb38b9cdfa9e41e0108ab400c1fb7bef07658aaa",
+        "user": "0x5581a2536F0cEb3500079c574DDdEB515D8b027e",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x04f7b805fc82788000"
+        },
+        "reward": "210750779861992421"
+    },
+    {
+        "timestamp": "1658169379",
+        "tx": "0x84a48fa8414a10bca49df1b260bb61905d6b08624c47b65ac765eb21e1ccb12b",
+        "user": "0x5581a2536F0cEb3500079c574DDdEB515D8b027e",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x1c75d6ae6e48140000"
+        },
+        "reward": "1207417958112400246"
+    },
+    {
+        "timestamp": "1658169417",
+        "tx": "0x2ae16ad366b1942e8fb8eae7185d821ae19d0e62968b3de66b53dfb2c08e3caa",
+        "user": "0x5581a2536F0cEb3500079c574DDdEB515D8b027e",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x1dec89f360efa00000"
+        },
+        "reward": "1269828194057545548"
+    },
+    {
+        "timestamp": "1658169417",
+        "tx": "0x11770340cbc639c3862b5c358f5facd148f09528d8fdef1ed272db20a5b5c4ad",
+        "user": "0x5581a2536F0cEb3500079c574DDdEB515D8b027e",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x0a5aa85009e39c0000"
+        },
+        "reward": "439378958451071013"
+    },
+    {
+        "timestamp": "1658169497",
+        "tx": "0x5e6ef4b8b7724f46bb6474c88619aca2964a170c935df4cc08dfc8c8313b71dd",
+        "user": "0x5581a2536F0cEb3500079c574DDdEB515D8b027e",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x03e733628714200000"
+        },
+        "reward": "165716113707887230"
+    },
+    {
+        "timestamp": "1658169539",
+        "tx": "0xd0c74348c19dc1d6553aa00c9a1999ef1a6b586af69132b707bfb45a3e8716c0",
+        "user": "0x5581a2536F0cEb3500079c574DDdEB515D8b027e",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x0332ca1b67940c0000"
+        },
+        "reward": "135832296906489801"
+    },
+    {
+        "timestamp": "1658173058",
+        "tx": "0xa604616cf1433bbf4d4114f287f122f3baaed9d7581d9833f145984154de5cc1",
+        "user": "0xf23cFd24FA504b82e50aC50Cd26319922626406B",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x25be53952425120000"
+        },
+        "reward": "1639652061234144451"
+    },
+    {
+        "timestamp": "1658175609",
+        "tx": "0x7e32eb83ae2c7635c0f38d775ccfaf82d5809ed36428e852ae9cd5b624d9e93a",
+        "user": "0x2DcabEc2934D043D74e5234a5BAD2924C07208eD",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x6c6b935b8bbd400000"
+        },
+        "reward": "4786477711100733377"
+    },
+    {
+        "timestamp": "1658178390",
+        "tx": "0x92270dada5e8a90e9130ba15c3f67c4e501517a9c0a5c097ed5d90180b5ad86f",
+        "user": "0xbab34ea9e3864EBa6b4B056F7f455147d64A4926",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x4b4a9c146346150000"
+        },
+        "reward": "3381829559857780802"
+    },
+    {
+        "timestamp": "1658178411",
+        "tx": "0x6a1e2caf3c9ce7570cbbc4875c286f7d41b7708be850b3655c8d316de2886c97",
+        "user": "0xbab34ea9e3864EBa6b4B056F7f455147d64A4926",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x352cf53e6105d88000"
+        },
+        "reward": "2388772410779318540"
+    },
+    {
+        "timestamp": "1658178411",
+        "tx": "0x89e428320969d0a4222a9f5afa2fdcecf0834cc0ab6967a791fa9a849718463e",
+        "user": "0xbab34ea9e3864EBa6b4B056F7f455147d64A4926",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x1a7fc49b1c2bff0000"
+        },
+        "reward": "1190400928296653078"
+    },
+    {
+        "timestamp": "1658180206",
+        "tx": "0xad9c9bd79f51ac67e3f3072a4d6bbdb6c5b59a29a3b4803a0fd9888d7eca22d0",
+        "user": "0xF63b9D007013a850f9ad628D9268865070721dFD",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0xbdbc41e0348b300000"
+        },
+        "reward": "8617536777212735837"
+    },
+    {
+        "timestamp": "1658189160",
+        "tx": "0xb9de037e9da646e17be4e83efb9820ef9f8001002183e04d721a58da97862629",
+        "user": "0x81Ef89f8D1c59949FefF0C618EBe69C9e6FFd540",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x3635c9adc5dea00000"
+        },
+        "reward": "2596384497586428520"
+    },
+    {
+        "timestamp": "1658200325",
+        "tx": "0xc1ddfc628daa08dc25dd1d82608a0d3163bb7caa880ffe34d0f2c72f9e6fada8",
+        "user": "0x67C2952229D829B8bC40BA3c957e943d884FC739",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x0173b90f412625388000"
+        },
+        "reward": "18951323053857098967"
+    },
+    {
+        "timestamp": "1658204945",
+        "tx": "0x71f146e22308f6cdef4642a6667978ed889665c78eac8ad8e6a62aef07178599",
+        "user": "0x6B5e7f211e9E870F0139400bF91F70A03153d730",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0xa04ab08561064c8000"
+        },
+        "reward": "8376847717549012652"
+    },
+    {
+        "timestamp": "1658213416",
+        "tx": "0x6aa361e42568aca8be01591bdfa8d26e427c65403f53ee32403efcaa7a39670c",
+        "user": "0x64dF7AF696e0977771a0E1e1B1a8dD22DED3Cf4b",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0xf9eee6fdc48ecf0000"
+        },
+        "reward": "13646993860591924819"
+    },
+    {
+        "timestamp": "1658228590",
+        "tx": "0xfab7d2be1d2bce0e7a65107d611b3f38fa52abc1010279518884113a84fccd95",
+        "user": "0x6F86c2e72467750E634E1d9298845E75F9e55Fd7",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x505ea7310f7b200000"
+        },
+        "reward": "4725641017222945147"
+    },
+    {
+        "timestamp": "1658228667",
+        "tx": "0xa195ebc528c5c156f3dd7e39dc8eb9d86a83ead140c53cfe336a4f8805359ca2",
+        "user": "0x6F86c2e72467750E634E1d9298845E75F9e55Fd7",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0xe64d2c277a754c0000"
+        },
+        "reward": "13546344023455886433"
+    },
+    {
+        "timestamp": "1658230699",
+        "tx": "0x84f97ebcdc55eedfdaa946ad32f6df2b5cce1308710fbbd51f55f02a1fd0045f",
+        "user": "0x35F272A684B3D5ecb77584Aac5FE1F4A0CA0C379",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x01289f82048830250000"
+        },
+        "reward": "17614065849334002622"
+    },
+    {
+        "timestamp": "1658235488",
+        "tx": "0xa53363861aa1ae267e2c316e9c3d6b2ddab380c4544caa963028c095f489715f",
+        "user": "0x07a1f6fc89223c5ebD4e4ddaE89Ac97629856A0f",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0xa2a15d09519be00000"
+        },
+        "reward": "9872689313934107907"
+    },
+    {
+        "timestamp": "1658237618",
+        "tx": "0xb5fa7231375190c92e8ac49730b55fde8f2906dfea31d18dfaf795dd60fefc09",
+        "user": "0x87A6be3552386Cc5266A5596c88022D7d8F4Aa97",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x7e376e6a3901960000"
+        },
+        "reward": "7736486514695348258"
+    },
+    {
+        "timestamp": "1658243525",
+        "tx": "0x99524adf7ca6950213131395c3dfc9cb920923853ca8064961f78a36232368bd",
+        "user": "0xfb53cC84f5187c2F386E9895476B3DECF33d4982",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0xfe1ce13746456d0000"
+        },
+        "reward": "15991031000337915253"
+    },
+    {
+        "timestamp": "1658246223",
+        "tx": "0xdc930a2be432b672810a5170f4d6dc5b3265188103628aca583c4060f8a42d82",
+        "user": "0x7Cd14403f752f3CFf683721a266431046e57c74c",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x021e19e0c9bab2400000"
+        },
+        "reward": "34518268834991874533"
+    },
+    {
+        "timestamp": "1658248701",
+        "tx": "0xbf07eb77473865fff875a1d3e58b27c85df94cc6fad78f45770eae3e2ed0b182",
+        "user": "0xB0BaDc6F2F383dF0bF25Fd34F316A979FB6AD1d6",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x06095dd8e48946970000"
+        },
+        "reward": "99460149152252091328"
+    },
+    {
+        "timestamp": "1658253353",
+        "tx": "0x258049690ca8bab44803a4ec820af71abfd961296c47f434b4eab48ebe7a3df0",
+        "user": "0xAc8D2856eAfbFd8653E035068940cDfF299e8796",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x065a4da25d3016c00000"
+        },
+        "reward": "106761422461843281027"
+    },
+    {
+        "timestamp": "1658253626",
+        "tx": "0xcef0884cf6066ea18661543de17c428d7e21fa60e9104de76e34a32c45ab3edc",
+        "user": "0x9bCA2E57BD0863Bb231aEC2587aCBb9645b59cbf",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x054b40b1f852bda00000"
+        },
+        "reward": "89070166936555337097"
+    },
+    {
+        "timestamp": "1658256417",
+        "tx": "0x5fdd4f861dcfa17d817fe792b3592ced89e1f4ff1455e57eea5ebc095400e9eb",
+        "user": "0xD6278E5EeA2981B1D4Ad89f3d6C44670caD6E427",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x0d8d726b7177a80000"
+        },
+        "reward": "901161773544629612"
+    },
+    {
+        "timestamp": "1658257459",
+        "tx": "0x5c13803ee1869886c9650a9296dcb744430eb910932886cf48563050e2aec9da",
+        "user": "0x166e017CaD0a6F860CD80bFc477c30F915dae09b",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x41d52f7dd542600000"
+        },
+        "reward": "4396453357414324204"
+    },
+    {
+        "timestamp": "1658257459",
+        "tx": "0x5a2b51a9d4d230de36e2f8ad78e26818befd97e9301807b455863de7633cedbc",
+        "user": "0x166e017CaD0a6F860CD80bFc477c30F915dae09b",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x2cc60db40bc0d40000"
+        },
+        "reward": "2990080639478341536"
+    },
+    {
+        "timestamp": "1658257459",
+        "tx": "0x65a2c30781eeb45c9b07bf3b751ea7c62a75cd1e4075ad272fb62992d68fdcc2",
+        "user": "0x166e017CaD0a6F860CD80bFc477c30F915dae09b",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x049be02a0cceef8000"
+        },
+        "reward": "307791557966080722"
+    },
+    {
+        "timestamp": "1658257524",
+        "tx": "0xe9771ea1bf421bc8a0ca839732db1e3140afdbaec48f3b6199362f2340765fe2",
+        "user": "0xa957498ad9744f5C827056988B2C948c09A8D722",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x0b6afec410f3e00000"
+        },
+        "reward": "762720547391204927"
+    },
+    {
+        "timestamp": "1658262435",
+        "tx": "0xa9e783f70b0f444ef27a6cc6af9be28b10ef140d9cf1564e3f75f7170d09818b",
+        "user": "0x1d10CcD74D38C9FB3F23B01E39677884591bCFF8",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x0b3f00a9dc91e30000"
+        },
+        "reward": "766514334366486553"
+    },
+    {
+        "timestamp": "1658262479",
+        "tx": "0x70a7e5e726caa7c75c60242126788dea824c444c25bf93b6cdba61e55e098750",
+        "user": "0x1d10CcD74D38C9FB3F23B01E39677884591bCFF8",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x1043561a8829300000"
+        },
+        "reward": "1108657109923305519"
+    },
+    {
+        "timestamp": "1658262657",
+        "tx": "0xec3a1be00a18934822067ab9f15479bb4724f813da9083291de17ef82b591b8e",
+        "user": "0xF9cEeaf31368B870aD5762204E3D0937FB2257b8",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x8cf23f909c0fa00000"
+        },
+        "reward": "9615299542967097353"
+    },
+    {
+        "timestamp": "1658268370",
+        "tx": "0x89b70a14fd38b5a7db3766de4f1f47769284049d0497abd9643cd83a428c079c",
+        "user": "0x7A9bC8B789A2157623975C732c9f66c88AD53Ca1",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x1b1ae4d6e2ef500000"
+        },
+        "reward": "1891918405743862097"
+    },
+    {
+        "timestamp": "1658268398",
+        "tx": "0x318699eec2691e23c1a37625d51ce187977b70b4142bcbc42087edba0769f779",
+        "user": "0x7A9bC8B789A2157623975C732c9f66c88AD53Ca1",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x0ad78ebc5ac6200000"
+        },
+        "reward": "756851312972432444"
+    },
+    {
+        "timestamp": "1658268455",
+        "tx": "0x44d59c2ebbcc01daf8a46df863399744d0a7dd7172f6fc96abb97e13544c8cf1",
+        "user": "0x7A9bC8B789A2157623975C732c9f66c88AD53Ca1",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x0ad78ebc5ac6200000"
+        },
+        "reward": "757022212560596499"
+    },
+    {
+        "timestamp": "1658268581",
+        "tx": "0x3efbde32a91d1c2b88c2bb625d5c4c00bd6d364d173aff12068a4caae74e9157",
+        "user": "0x7A9bC8B789A2157623975C732c9f66c88AD53Ca1",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x056bc75e2d63100000"
+        },
+        "reward": "378699995298795362"
+    },
+    {
+        "timestamp": "1658280240",
+        "tx": "0x64892bcf26e0c41d17ffff8aecee323c64ec3cf23c52bb6714a3c4b8b11f5de6",
+        "user": "0x8dbCBD5a3936091BD881D3C52edb14FE689633A1",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x02c0bb3dd30c4e200000"
+        },
+        "reward": "51503169378252280910"
+    },
+    {
+        "timestamp": "1658280343",
+        "tx": "0xb9a6e44412620b0ab9671babaa73868080d0d728297aec3d017b99f2379ee2f9",
+        "user": "0x8dbCBD5a3936091BD881D3C52edb14FE689633A1",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x2fd3469d4af5e48000"
+        },
+        "reward": "3496529738148720681"
+    },
+    {
+        "timestamp": "1658280932",
+        "tx": "0x4f20775e11f38a622108cca3ceda7aa570bc8502779f42de5e5829451547a1b7",
+        "user": "0xbD4977B8E9909c344c00914e1b67ba512Fe0Dd70",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x54069233bf7f780000"
+        },
+        "reward": "6156842055270983463"
+    },
+    {
+        "timestamp": "1658281117",
+        "tx": "0xe2c0948693f7b525fef40705a7d2d8de6eedfe8a52fb20b6d195a1770b11b8f2",
+        "user": "0xfBC409e8d366c8E35350207f25159f41457ce710",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x01230467e56bf10000"
+        },
+        "reward": "83354272353157355"
+    },
+    {
+        "timestamp": "1658281211",
+        "tx": "0xce6de5ae952b89303e3cb641301bd0405d291f4b39676b2349479fb34e5bd1a7",
+        "user": "0xC91e679aDD1116BC2B6C647C16a10251Be25acbf",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x3635c9adc5dea00000"
+        },
+        "reward": "3976338707243393147"
+    },
+    {
+        "timestamp": "1658281211",
+        "tx": "0x17cd853269cee7f0402b0bb89a9c44efc3dbf11307154c66072c32eba9e8cf16",
+        "user": "0xC91e679aDD1116BC2B6C647C16a10251Be25acbf",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x28a857425466f80000"
+        },
+        "reward": "2982254030432544860"
+    },
+    {
+        "timestamp": "1658282920",
+        "tx": "0x3a0fee06186775a58b7f32f02a437bc57f860dc0395b30156c66918c20bb527a",
+        "user": "0x23dd7aFc61f7Be0883d632B6520A90dad6197952",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x1781527258cb87600000"
+        },
+        "reward": "444217410624642341833"
+    },
+    {
+        "timestamp": "1658293549",
+        "tx": "0xf27c9319169a322b6b1eacd37abad10062ae59148bb983f7054816e2755a2e52",
+        "user": "0x41508175b2b8a106eE58696aF8Af35c92a4ed1a1",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x0f2dc7d47f15600000"
+        },
+        "reward": "1165164009366314102"
+    },
+    {
+        "timestamp": "1658303093",
+        "tx": "0x51d1e7deb86d55cb5cb47c7fda436460efe2ac7c6cc1ef52eaa8fd50e7ebb8e0",
+        "user": "0x98771321ad898eD7e2A367fC860aaf398E070807",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x1b1ae4d6e2ef500000"
+        },
+        "reward": "2152187984683356414"
+    },
+    {
+        "timestamp": "1658320769",
+        "tx": "0x8345b4de07ae41c821876fc045ba2c217a71fd039177c31bb271059c06a5b09e",
+        "user": "0x64178cb8054e231a355Bfc5dB740f0268b5ca0D2",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x3635c9adc5dea00000"
+        },
+        "reward": "4569360278172662865"
+    },
+    {
+        "timestamp": "1658321012",
+        "tx": "0x8a626dc5c053426b8fd359e5dec3045436ea40a8239adb334c5c26e89a298901",
+        "user": "0x90E7a24DB5b75892B8129c72478A43540f1b5dC3",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0xa2a15d09519be00000"
+        },
+        "reward": "13719009413445321565"
+    },
+    {
+        "timestamp": "1658322760",
+        "tx": "0x8a21c95aa8fe2df6e617085de5c7ee301b3a465e40d2a3dd7873df614c89ef52",
+        "user": "0x60B0224beBd002E2cF9eF7d505dcD07Ea5BD1156",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x0a0ac5f2f360b1460000"
+        },
+        "reward": "218105450795787337306"
+    },
+    {
+        "timestamp": "1658323599",
+        "tx": "0x6f104427eda26951ef75aa87e943c6e29779214b742c4ce0a354df9c874e5382",
+        "user": "0xb17DCdb6A589E78d37CcD6227dee418eD2A3C873",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x30ca024f987b900000"
+        },
+        "reward": "4150606816237313004"
+    },
+    {
+        "timestamp": "1658334233",
+        "tx": "0x2f56a86ae6cad4a93034070e61bdf5ba962aa9c412da3b43b41d910e44e592fa",
+        "user": "0xE7436AFad54fec84A67bE7866ad21f4fb0d3eFC6",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x0472698b413b43200000"
+        },
+        "reward": "100195235416701137240"
+    },
+    {
+        "timestamp": "1658338399",
+        "tx": "0xd4dfa0f04c0e741cf4ffb392ca95bdbfb72a05581e16415efced5af5cd15f6a6",
+        "user": "0xEd47E1F7fD024e35f5Db9d1f53c1aBBc855fF06E",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x02f6f10780d22cc00000"
+        },
+        "reward": "67671169890088505947"
+    },
+    {
+        "timestamp": "1658346678",
+        "tx": "0x05e226f7fdd8c40ba166171cb72cd62745528739e5d80c50d69bffd5522586ca",
+        "user": "0x14EB987F50389Df4229d01c44e65Dc27E29679c2",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x1e6ce1726172700000"
+        },
+        "reward": "2782536852646667744"
+    },
+    {
+        "timestamp": "1658346732",
+        "tx": "0xb580c1ca46d41ff23173965905b7fc8b53766efaba3c2d465ddbab1eba5bdbf0",
+        "user": "0x14EB987F50389Df4229d01c44e65Dc27E29679c2",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x1c3fde2d891c958000"
+        },
+        "reward": "2583968807799192325"
+    },
+    {
+        "timestamp": "1658346789",
+        "tx": "0xd235936a1710862475a5581425adbbe24264e8ef4d1e648d8fbb622f4a0ea6b1",
+        "user": "0x14EB987F50389Df4229d01c44e65Dc27E29679c2",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x1c146e2f1e799c8000"
+        },
+        "reward": "2568891076755914733"
+    },
+    {
+        "timestamp": "1658348891",
+        "tx": "0x3774947c6657766fd9852417c3a91d3a8fabdec1464069cd67683cfbe32de0ab",
+        "user": "0x88568A743a8F83a3E3a41C5330Ccca6F42a133BE",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x065a4da25d3016c00000"
+        },
+        "reward": "149728277340836584716"
+    },
+    {
+        "timestamp": "1658349009",
+        "tx": "0xf77dbd05724ad82eb933841ce235b848a70036bebb846eba4d15753aee0e562a",
+        "user": "0x88568A743a8F83a3E3a41C5330Ccca6F42a133BE",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x060be2a6a0dd5d908000"
+        },
+        "reward": "142559114320487760098"
+    },
+    {
+        "timestamp": "1658349009",
+        "tx": "0x8fb3ae7aaacad60fa84f4a69cbba06860383cdb264489ac55111814a598b92b6",
+        "user": "0x88568A743a8F83a3E3a41C5330Ccca6F42a133BE",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x04315c32d71a9e600000"
+        },
+        "reward": "98855688465810610591"
+    },
+    {
+        "timestamp": "1658349096",
+        "tx": "0x4b0334ba7ebd6ca3af9d406d660c5cfe0aad039421f6270092f6a03a01ba8df2",
+        "user": "0x88568A743a8F83a3E3a41C5330Ccca6F42a133BE",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x04d397015293a01d0000"
+        },
+        "reward": "113826653833625204833"
+    },
+    {
+        "timestamp": "1658349612",
+        "tx": "0x80617392634d6f3bd5b384e1796762024c7cb4891b112aab9a5fd7fa20fbdfe0",
+        "user": "0x9D589AB9C7a250FAECeBE5FDE32B4E37961E5df0",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x878678326eac900000"
+        },
+        "reward": "12504378068549163511"
+    },
+    {
+        "timestamp": "1658357269",
+        "tx": "0xd342e6a43f273ca4dc787fc843a5892b2fe9a0cfe38762ae47d261d1b29e881b",
+        "user": "0xA0F0Cdb449723721F12A139065E1b39d479720fB",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x1894c5988fb2ad0000"
+        },
+        "reward": "2320053579356432866"
+    },
+    {
+        "timestamp": "1658357434",
+        "tx": "0x8aa740845a15fa2379eef48ff65294af2271cee1a80956bf09fa15ba9d08d893",
+        "user": "0xA0F0Cdb449723721F12A139065E1b39d479720fB",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x1f477122705a108000"
+        },
+        "reward": "2953654757838829865"
+    },
+    {
+        "timestamp": "1658368176",
+        "tx": "0x9d1230d1056d17a00f4078f0258dcd33a89a9b3db61b75bbb09cb814c1c8731b",
+        "user": "0x0edCAEB7270005F31E51790bA2c5c574fF24dEc6",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x011d4a9b2c07eeb10000"
+        },
+        "reward": "27787296547909318949"
+    },
+    {
+        "timestamp": "1658370558",
+        "tx": "0xa206337cec40b650dd095c0adaa21eae03b3e22dc0d76181e2d824f04a2a8f66",
+        "user": "0x06Fee2818ed2Bfce2635b03a231EbBC9Dd18860f",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x74778f4b571c4bc00000"
+        },
+        "reward": "2923666203635759749327"
+    },
+    {
+        "timestamp": "1658397257",
+        "tx": "0xe02031a3159ea74535cbf211064790df1cb14166496b962fca394307a35a455b",
+        "user": "0xc7707bc6ddaC11ec714012102D35232EF8cBDE11",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x878678326eac900000"
+        },
+        "reward": "14290016419004511081"
+    },
+    {
+        "timestamp": "1658397257",
+        "tx": "0x96cc6ab11a943cb15812b1d3810a668cc0ad2a056b08cfc15905aa85918495f6",
+        "user": "0xc7707bc6ddaC11ec714012102D35232EF8cBDE11",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x6c6b935b8bbd400000"
+        },
+        "reward": "11432013135203608865"
+    },
+    {
+        "timestamp": "1658397257",
+        "tx": "0x3aa623b446dcc9c9edf27d8309f95db925f73aa5a5847e2c9d37e5cfd07cbad2",
+        "user": "0xc7707bc6ddaC11ec714012102D35232EF8cBDE11",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x3ba1910bf341b00000"
+        },
+        "reward": "6287607224361984876"
+    },
+    {
+        "timestamp": "1658401592",
+        "tx": "0x559ae7cb2e7b2d53273072fed3b4944979ffe5221db344254c7c7fbd76d05a9b",
+        "user": "0xFfdf3eCBCB89A19870e251dCe10F417908A65FB1",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x2564b4285b6d990000"
+        },
+        "reward": "3987648302844863204"
+    },
+    {
+        "timestamp": "1658417193",
+        "tx": "0x26f2fa6afe778d7bf62afb38dbc9b6900677b47ebfa945852ae3f875bdd39886",
+        "user": "0xf1A0D817BD61154DcDd791731D5Faf76D9b10ccC",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x0bb78b88d758ee0000"
+        },
+        "reward": "1300054211499391352"
+    },
+    {
+        "timestamp": "1658422483",
+        "tx": "0xb10dd6268976c30b965245dffa76a7e70c2fd4056b093c5e12924f2cc6737d2b",
+        "user": "0x6aE5bf41457D9f938F4f2588b9200f4390B23f9c",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x3635c9adc5dea00000"
+        },
+        "reward": "6094174375586580151"
+    },
+    {
+        "timestamp": "1658426332",
+        "tx": "0xa1305314e8159400fa51602c15446482c7931f589666b0bc62ee253ecfff0177",
+        "user": "0x2ed7Cc0236BA832D7DFB190E9bcED27de1A034f2",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x08b43427d26bf18000"
+        },
+        "reward": "987738974130397732"
+    },
+    {
+        "timestamp": "1658426570",
+        "tx": "0xcef00bd78dd8c7b12d456a5d1f262a00efab0c389448ad2ae27ce271106a69a1",
+        "user": "0xbB72d39ba7F1F4b81808FF9112c03b26A2f560Ec",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x01c1f1a388b71e300000"
+        },
+        "reward": "51090180029619481841"
+    },
+    {
+        "timestamp": "1658461170",
+        "tx": "0x445d69c9e22fba9e362f759c462fa920bd8af7cc3e70b3c3a8cddfb32cac0236",
+        "user": "0xBd87f05AE586f92668618042F247d8F4F580DB6A",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x01c7db4d915516d18000"
+        },
+        "reward": "56123305505399375462"
+    },
+    {
+        "timestamp": "1658461170",
+        "tx": "0x709d0edf58e70c85a32e465c551b2df97f3f2c91dcd48cff66d77da09606fa7e",
+        "user": "0xBd87f05AE586f92668618042F247d8F4F580DB6A",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x410d586a20a4c00000"
+        },
+        "reward": "8008966341998925987"
+    },
+    {
+        "timestamp": "1658461170",
+        "tx": "0x2ba1aafa52f9861108579a80c27aa653ea7b4ad7b8d6bea83916a390df353b23",
+        "user": "0xBd87f05AE586f92668618042F247d8F4F580DB6A",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x2086ac351052600000"
+        },
+        "reward": "4004483170999462993"
+    },
+    {
+        "timestamp": "1658461362",
+        "tx": "0x9ca57626c70fa1855f1d375b42294b4fcd28b99f00b71d74177f78d16308d9db",
+        "user": "0xBd87f05AE586f92668618042F247d8F4F580DB6A",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x3c2c582ef7cb980000"
+        },
+        "reward": "7411488789176157708"
+    },
+    {
+        "timestamp": "1658461391",
+        "tx": "0x41f3a7d42299be91907c6558b5c079008e34ec00a5a74c5acdc69be276b3b438",
+        "user": "0xBd87f05AE586f92668618042F247d8F4F580DB6A",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x3635c9adc5dea00000"
+        },
+        "reward": "6677451671752109909"
+    },
+    {
+        "timestamp": "1658461441",
+        "tx": "0x43495a93da4d14925c164d3ca983fa989f5d4b056d29b865ce0c68519aef7518",
+        "user": "0xBd87f05AE586f92668618042F247d8F4F580DB6A",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x2086ac351052600000"
+        },
+        "reward": "4006920738809592405"
+    },
+    {
+        "timestamp": "1658461451",
+        "tx": "0xff3a5caef97a6345edc5ad6528d22d8689579d48d2886a32e7e8fe77ec3b349b",
+        "user": "0xBd87f05AE586f92668618042F247d8F4F580DB6A",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x2b5e3af16b18800000"
+        },
+        "reward": "5342680914615010262"
+    },
+    {
+        "timestamp": "1658461451",
+        "tx": "0xc5cbbf64d89ebf2814130c8ca9f83e5d56e83c8de691dd2f3da47d5791c7e21a",
+        "user": "0xBd87f05AE586f92668618042F247d8F4F580DB6A",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x249781bbb25cac0000"
+        },
+        "reward": "4507887021706414909"
+    },
+    {
+        "timestamp": "1658461451",
+        "tx": "0x1ac7c8190c1b5f0ac3e9b3f1893b70418171d269ab70483c54a0ff031d65b721",
+        "user": "0xBd87f05AE586f92668618042F247d8F4F580DB6A",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x1beb0f8b69be2c0000"
+        },
+        "reward": "3439350838783412856"
+    },
+    {
+        "timestamp": "1658462918",
+        "tx": "0xaf22343bbe42d82247430fa7ff44c8ccb637afff7307b4abdc392f8888c941c5",
+        "user": "0x3d6B35daCc2C8079E073aea6B0208E1CC734A5C5",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x5150ae84a8cdf00000"
+        },
+        "reward": "10050514832776390059"
+    },
+    {
+        "timestamp": "1658462918",
+        "tx": "0x26a43eda714b34748e60d90d3da0c270f242aac13816760722176870edf309ba",
+        "user": "0x3d6B35daCc2C8079E073aea6B0208E1CC734A5C5",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x2b5e3af16b18800000"
+        },
+        "reward": "5360274577480741365"
+    },
+    {
+        "timestamp": "1658466929",
+        "tx": "0x6e7ebf5ade211944e5b989f9872d3172c03855664b31e6cf1f60fdc7dc8dc839",
+        "user": "0xc3526d54f9dE73959Bac1B67668668a3E940f659",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x01a055690d9db80000"
+        },
+        "reward": "202814186782175230"
+    },
+    {
+        "timestamp": "1658466929",
+        "tx": "0xca8f0f3381dea645e7a90fb7644856cb3e31a388611bc416279d325240975aad",
+        "user": "0xc3526d54f9dE73959Bac1B67668668a3E940f659",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0xbdb92611645d8000"
+        },
+        "reward": "92422424916637252"
+    },
+    {
+        "timestamp": "1658469725",
+        "tx": "0x86211e992fa162a2a9d2a915968f14b5cfb892dcb6ea6b45745b58877d53146e",
+        "user": "0x3EbDb522301913A5203315c8A840A9Ee99cE9eEE",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x7d6204c8b2e5a10000"
+        },
+        "reward": "15733284633408409507"
+    },
+    {
+        "timestamp": "1658469725",
+        "tx": "0x2db09de07a8c9e776008e5267ecbc07d5b66aa616954dba558f4232b28ed68ca",
+        "user": "0x3EbDb522301913A5203315c8A840A9Ee99cE9eEE",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x056bc75e2d63100000"
+        },
+        "reward": "680238826541520040"
+    },
+    {
+        "timestamp": "1658469725",
+        "tx": "0xb54ed182f07a951026d167f361e32693cefec49b44ca61ed5169ca57b145817f",
+        "user": "0x3EbDb522301913A5203315c8A840A9Ee99cE9eEE",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x3635c9adc5dea00000"
+        },
+        "reward": "6802388265415200404"
+    },
+    {
+        "timestamp": "1658471841",
+        "tx": "0x4b76ed40f6b6693db0c938d03e9f0b192569987d39269c07c2b1f4edb339324c",
+        "user": "0x34a370d288734d23bC48A926Cad90A6615abe4e3",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x02c0bb3dd30c4e200000"
+        },
+        "reward": "88843425158399080348"
+    },
+    {
+        "timestamp": "1658492566",
+        "tx": "0x6b3c4f323b179fdf360af9a491e36ebe4c813d23f8bf630cdb7d98ef40d5cf2b",
+        "user": "0x3a11dd5ed38908FeC270f025C605c07420ACD734",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x1043561a8829300000"
+        },
+        "reward": "2143440624183906774"
+    },
+    {
+        "timestamp": "1658493103",
+        "tx": "0x0496426535ea345737b80fcf6590848f36d25c3b7a368a2b909d4b8a596ff52e",
+        "user": "0x3b10256766A47d39D3ED484cF7C6c10987d0F33a",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x1b1ae4d6e2ef500000"
+        },
+        "reward": "3576426175343533104"
+    },
+    {
+        "timestamp": "1658493103",
+        "tx": "0x644f8501936df8b8e0cb8edbe6024f0d10d16b364598f3110697544d718ab419",
+        "user": "0x3b10256766A47d39D3ED484cF7C6c10987d0F33a",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x23feabb28bcd4b8000"
+        },
+        "reward": "4749400973775653030"
+    },
+    {
+        "timestamp": "1658493103",
+        "tx": "0xfb6ad726c5a3ca9ed983cb0b76e21a0fbfa4ec9be84b3a4ea1acf96f5591d276",
+        "user": "0x3b10256766A47d39D3ED484cF7C6c10987d0F33a",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x59dfd4eda0ab968000"
+        },
+        "reward": "11858635230828229509"
+    },
+    {
+        "timestamp": "1658493103",
+        "tx": "0x09dcafbc442f8f950ebb92de323ec001eb8b203109785d2c08e15e16daa79918",
+        "user": "0x3b10256766A47d39D3ED484cF7C6c10987d0F33a",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x0b5ba9046bb7118000"
+        },
+        "reward": "1498658471663603424"
+    },
+    {
+        "timestamp": "1658493103",
+        "tx": "0x7b26256946f34dba60b7eea98814ca1361ffa043b32b1bcd76c60f36c8c29f3d",
+        "user": "0x3b10256766A47d39D3ED484cF7C6c10987d0F33a",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x080f35f15005530000"
+        },
+        "reward": "1063414558976646133"
+    },
+    {
+        "timestamp": "1658493103",
+        "tx": "0xd38d7bce578bdcb230a2fa7f9d88cfec248a24e421d7c8b6e21b7b3047c4d99e",
+        "user": "0x3b10256766A47d39D3ED484cF7C6c10987d0F33a",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x223d3983226d7e8000"
+        },
+        "reward": "4517748697546301704"
+    },
+    {
+        "timestamp": "1658493103",
+        "tx": "0x45a0a371044e29da5a138fb2a6c1df61adbd4ab12e06c1aa2eb4615978cb15e0",
+        "user": "0x3b10256766A47d39D3ED484cF7C6c10987d0F33a",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x235e257554a85a0000"
+        },
+        "reward": "4666663930635255735"
+    },
+    {
+        "timestamp": "1658505179",
+        "tx": "0xfe712ecccc41c7c14c9e86a54c1e54c88c3d975cd81ae087dfc7b130f8f2ea76",
+        "user": "0x9Ec5c1F58Ec2719d93e21365AdC8FC57C011E40A",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0xa8053b5b841cf70000"
+        },
+        "reward": "22730866237265547279"
+    },
+    {
+        "timestamp": "1658521827",
+        "tx": "0x1b49473c06f2565624ba382e36382d4061051f5475184471a2eafe357db9da3c",
+        "user": "0x2B91074dDEbBcc995990e0686162709d58E256E9",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x9083c0f15a93b68000"
+        },
+        "reward": "20216175516629240969"
+    },
+    {
+        "timestamp": "1658530698",
+        "tx": "0x83cefbbc587388b91a5dc1c5f60fa71bb7ad3a05e36525cca4a03ff4ee768479",
+        "user": "0x76C9d075F88F7915eB1AB5EfB3846838B59E2DB6",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x4d3ae11eec560d0000"
+        },
+        "reward": "10993173364113688695"
+    },
+    {
+        "timestamp": "1658530698",
+        "tx": "0x019bbd9ff481672564143b1850086fdf42d82ca5ca847dfc9ba9c480de9fd919",
+        "user": "0x76C9d075F88F7915eB1AB5EfB3846838B59E2DB6",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x1233fe9eeb3ede0000"
+        },
+        "reward": "2591090040577918732"
+    },
+    {
+        "timestamp": "1658538192",
+        "tx": "0xffc0945c4318fc9c76630a6530cc3301fdf96764995af5152c9f1a6995510119",
+        "user": "0x67C2952229D829B8bC40BA3c957e943d884FC739",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x56c6de6bdcee8b0000"
+        },
+        "reward": "12531935919468860239"
+    },
+    {
+        "timestamp": "1658538236",
+        "tx": "0x18fe4047d55d5c03ee7b660e4a9ea2af6f3633b41db4e51b022a47b6fd7f384b",
+        "user": "0x67C2952229D829B8bC40BA3c957e943d884FC739",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x0f887feb5ca61a8000"
+        },
+        "reward": "2243427062129296960"
+    },
+    {
+        "timestamp": "1658538236",
+        "tx": "0xfac4b97fbdd0abd58f301bf1977ce154b490fa5fe3f428bc93411a75a41b3852",
+        "user": "0x67C2952229D829B8bC40BA3c957e943d884FC739",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x0be728e529b94b8000"
+        },
+        "reward": "1719120125703807407"
+    },
+    {
+        "timestamp": "1658538261",
+        "tx": "0x6e6beb34e379f07a931e8d1d1ed58808f01edb9f185301309b4cd8b86e90833b",
+        "user": "0x67C2952229D829B8bC40BA3c957e943d884FC739",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x432a42891e57268000"
+        },
+        "reward": "9700972589102664212"
+    },
+    {
+        "timestamp": "1658548980",
+        "tx": "0x976f0c143894732a03c76601b8a41ee63fbfa32ca7d154d62cff991a7e757c45",
+        "user": "0xEA64D088Fbcbb24464F33B15A6A775261C362F01",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x022b1c8c1227a00000"
+        },
+        "reward": "319620607318159430"
+    },
+    {
+        "timestamp": "1658548980",
+        "tx": "0x51b79bcd52715789cbf1f6259447a48be765e8d3d393513758a77fc950c11c29",
+        "user": "0xEA64D088Fbcbb24464F33B15A6A775261C362F01",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x015af1d78b58c40000"
+        },
+        "reward": "199762879573849644"
+    },
+    {
+        "timestamp": "1658548980",
+        "tx": "0xc889a96676bfc39869f331be6d1d60a8121c9803f7049b94014ed475095bd604",
+        "user": "0xEA64D088Fbcbb24464F33B15A6A775261C362F01",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x0821ab0d4414980000"
+        },
+        "reward": "1198577277443097865"
+    },
+    {
+        "timestamp": "1658548980",
+        "tx": "0xf3ac7bc819b341bd3d5cead68dc29848c76f1f6a505875aa004cef3aa4664a9c",
+        "user": "0xEA64D088Fbcbb24464F33B15A6A775261C362F01",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x02fb474098f67c0000"
+        },
+        "reward": "439478335062469217"
+    },
+    {
+        "timestamp": "1658548980",
+        "tx": "0x9818357b4a1fe33f95d8746b32faebe678c7aacb36b68403c39b0cfcc78ea6c9",
+        "user": "0xEA64D088Fbcbb24464F33B15A6A775261C362F01",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x01c9f78d2893e40000"
+        },
+        "reward": "263687001037481530"
+    },
+    {
+        "timestamp": "1658548980",
+        "tx": "0x28aa1761342e50f4087eec26f2ddc7b633900ff1c7c3aa44846a85121bdb2718",
+        "user": "0xEA64D088Fbcbb24464F33B15A6A775261C362F01",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x0270801d946c940000"
+        },
+        "reward": "359573183232929359"
+    },
+    {
+        "timestamp": "1658548980",
+        "tx": "0x1e381b7d6267010525179e6163f4c6db8b051726dc335e9cd3a6d1a4c21c4c85",
+        "user": "0xEA64D088Fbcbb24464F33B15A6A775261C362F01",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x022b1c8c1227a00000"
+        },
+        "reward": "319620607318159430"
+    },
+    {
+        "timestamp": "1658548980",
+        "tx": "0x0750b6019f325865733341d2691bd80b01cd5da2149a96a31699906248d830ea",
+        "user": "0xEA64D088Fbcbb24464F33B15A6A775261C362F01",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x019c72a689649c0000"
+        },
+        "reward": "237478111237392457"
+    },
+    {
+        "timestamp": "1658549036",
+        "tx": "0xe18621906f8e9df7502d9ad22e86f5ce922c21e74307ea8b7062300ed5377238",
+        "user": "0xEA64D088Fbcbb24464F33B15A6A775261C362F01",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x0454c081b4150f0000"
+        },
+        "reward": "638461291579120442"
+    },
+    {
+        "timestamp": "1658549036",
+        "tx": "0x6273af567e2007fb6e24a15d1df5ba870f02fb85cbe104d6594e5d7eaef821b5",
+        "user": "0xEA64D088Fbcbb24464F33B15A6A775261C362F01",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x0ca217f2cbbdce8000"
+        },
+        "reward": "1862313288243044623"
+    },
+    {
+        "timestamp": "1658549036",
+        "tx": "0xa3596dc0ce5efc61c6faa8e839278048f052b4732434c410cd2ac86872264470",
+        "user": "0xEA64D088Fbcbb24464F33B15A6A775261C362F01",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x08b1584be9d4368000"
+        },
+        "reward": "1281437698557923002"
+    },
+    {
+        "timestamp": "1658549036",
+        "tx": "0x3e4781d13b956e940d55c88b7fa9391bec5741b9fe45b95a2b71cb7080907655",
+        "user": "0xEA64D088Fbcbb24464F33B15A6A775261C362F01",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x0b43950f1cf9c40000"
+        },
+        "reward": "1660475642845219441"
+    },
+    {
+        "timestamp": "1658549036",
+        "tx": "0xff1a57b12635700e8e7c2c05a84a2eea7cf16bd0550e576756d15fcedc05be3a",
+        "user": "0xEA64D088Fbcbb24464F33B15A6A775261C362F01",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x045ed7545a04c48000"
+        },
+        "reward": "644271006438534423"
+    },
+    {
+        "timestamp": "1658549036",
+        "tx": "0x85e46f52523dd9f9375a87dfd569fce1f3c51d30ae322062fe4cc22929e5a8bb",
+        "user": "0xEA64D088Fbcbb24464F33B15A6A775261C362F01",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x043d17213ca7048000"
+        },
+        "reward": "624836031833177063"
+    },
+    {
+        "timestamp": "1658549036",
+        "tx": "0xecf659e70c7922e54c5547593e0d62fb65b7ae3e697a701e57af5e7aa5d62628",
+        "user": "0xEA64D088Fbcbb24464F33B15A6A775261C362F01",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x02533efebf9a0e0000"
+        },
+        "reward": "342765185350735149"
+    },
+    {
+        "timestamp": "1658549036",
+        "tx": "0x2eb2573e3a47bc9b2c5fcb4efeef24fb7769f4b3e43247b9d16e62b95f9d80b1",
+        "user": "0xEA64D088Fbcbb24464F33B15A6A775261C362F01",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x011d9ad8f6658a0000"
+        },
+        "reward": "164462079514084896"
+    },
+    {
+        "timestamp": "1658549109",
+        "tx": "0xa99b7f22dfa266cbbdff96dd734062dfdf4ef5f6fb5ca2cef026ca5a77f7ab8f",
+        "user": "0xEA64D088Fbcbb24464F33B15A6A775261C362F01",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x018493fba64ef00000"
+        },
+        "reward": "223788573308014107"
+    },
+    {
+        "timestamp": "1658549109",
+        "tx": "0x8e712f91e4c4d3275581c0e7a27f63dca376bb1c9f851842ff05f3b3af614222",
+        "user": "0xEA64D088Fbcbb24464F33B15A6A775261C362F01",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x03d952abd36cbc0000"
+        },
+        "reward": "567463882316750057"
+    },
+    {
+        "timestamp": "1658549109",
+        "tx": "0xefd8ceed57c51a22ab87d26b7df93aae997f77e1fa1a30627daf86640c0e97ca",
+        "user": "0xEA64D088Fbcbb24464F33B15A6A775261C362F01",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x0254beb02d1dcc0000"
+        },
+        "reward": "343675309008735950"
+    },
+    {
+        "timestamp": "1658549109",
+        "tx": "0x71d8ed0b886fc8b6c74a38a2bcd532090f34344c83f2a4541684d2be4be219d0",
+        "user": "0xEA64D088Fbcbb24464F33B15A6A775261C362F01",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x021d3bd55e803c0000"
+        },
+        "reward": "311705512821876792"
+    },
+    {
+        "timestamp": "1658549109",
+        "tx": "0x7a9b1f5c47b378dc12c6a4b9ef7d7a1ded3b2c48f815852a51e06d7502d840c1",
+        "user": "0xEA64D088Fbcbb24464F33B15A6A775261C362F01",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x026214d895aaf28000"
+        },
+        "reward": "351356052542628863"
+    },
+    {
+        "timestamp": "1658549316",
+        "tx": "0x74c90653af7b9206f85418a8374dea8fc9b5b98fbcc29651ba1311f654c9a22f",
+        "user": "0x02F11Fe7A88805f3afbE76F28D0Ee7B090d4E99B",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x0146584858ac4b900000"
+        },
+        "reward": "48133224385152397547"
+    },
+    {
+        "timestamp": "1658553360",
+        "tx": "0x6c1da67c0c7c98fb14445b982a69bd17fbbe5a36fdd69515dab01e4f12b13964",
+        "user": "0xA148F43B6Aca0F99e3a831ed07F158cE4Cde0319",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x04ff39fff63e06ac8000"
+        },
+        "reward": "190106151056573777987"
+    },
+    {
+        "timestamp": "1658553360",
+        "tx": "0x7b974d9a47bf95c949806ca08d674736f29e1186bf814e6c3dac2d4c3b7f9c8c",
+        "user": "0xA148F43B6Aca0F99e3a831ed07F158cE4Cde0319",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x02c0bb3dd30c4e200000"
+        },
+        "reward": "104730295847705435447"
+    },
+    {
+        "timestamp": "1658574904",
+        "tx": "0x11fcc318b1d0898d47f5ebe1e4cf4e4023c91fa445b9328e3221fe626719ed5e",
+        "user": "0x9EE681ba97cEE80A74b21e30818980AAe0179528",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x064a0a4c42a7ed900000"
+        },
+        "reward": "248860661234599966354"
+    },
+    {
+        "timestamp": "1658589798",
+        "tx": "0x6df66b5318f72fc80d733edf06f91a639f547c8d45c072a58c5e94db75bf5f24",
+        "user": "0x251D14EA6929fc5163DB5de098F82bED3710bb32",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x3554b4373472908000"
+        },
+        "reward": "8462902914022633804"
+    },
+    {
+        "timestamp": "1658596509",
+        "tx": "0x8c541082a5a9b09054a6d5d1093782888c1accfc9217fdb13e22b923f1c8fb3e",
+        "user": "0x4f8cDB39327588A2b11EdCeBC50cC1302Aa87cFA",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x01a055690d9db80000"
+        },
+        "reward": "261090946346117874"
+    },
+    {
+        "timestamp": "1658598434",
+        "tx": "0x90c646281d5b78b4a17ce9d109a4ad73157c44aa246c3bb50a1522632bbf7ea4",
+        "user": "0xEA64D088Fbcbb24464F33B15A6A775261C362F01",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x0956bbf84ffe95e18000"
+        },
+        "reward": "385087359267468940640"
+    },
+    {
+        "timestamp": "1658606880",
+        "tx": "0x9c48261a5321193ef58e6e9e9fb1fe11d2001e4ade61e566d7c37d6235da384a",
+        "user": "0x5947021aBb36F092e5110DaB43B7850b739BB520",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x043c33c1937564800000"
+        },
+        "reward": "177170103930481058539"
+    },
+    {
+        "timestamp": "1658606970",
+        "tx": "0x95d07daaf708b5a9f5bee6122d017466e847a27cbfe505d5826fc5e542f60dc6",
+        "user": "0xA0F0Cdb449723721F12A139065E1b39d479720fB",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0xb2c4b9b00eca900000"
+        },
+        "reward": "29217106427990453639"
+    },
+    {
+        "timestamp": "1658610605",
+        "tx": "0x266baa7c51c6eab4c74411e21f77bc09f498586ffca1684824708619b24514a0",
+        "user": "0xd4912C3e08EdBa5dEa3156Ef56A79716f776a2D9",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0xb02ecf74c313880000"
+        },
+        "reward": "28971629006177828757"
+    },
+    {
+        "timestamp": "1658621663",
+        "tx": "0xbc95e74e2b822e8cd81a1b6a4eef4e1c63ee50320194bccc30b24bf8ddd9b60f",
+        "user": "0x81Ef89f8D1c59949FefF0C618EBe69C9e6FFd540",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x3635c9adc5dea00000"
+        },
+        "reward": "9080119987035388035"
+    },
+    {
+        "timestamp": "1658624500",
+        "tx": "0x0747ff94dc56bbc43a8ed66a6af4d36aea25f06de9101e19c835ba8fa042bbc0",
+        "user": "0x9c4C62c12ebd76FF81B709B75140604B2cfF131e",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0xa2a15d09519be00000"
+        },
+        "reward": "27367949995743380714"
+    },
+    {
+        "timestamp": "1658626983",
+        "tx": "0x46aa22fe5f7034da5a2f9c4c7ed3a2311f61fb895b7b73e7b2c966f872238580",
+        "user": "0xcFe033De280444Eab8bD16f65dAFe822AEf89f62",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x017b7883c06916600000"
+        },
+        "reward": "64119111897250294849"
+    },
+    {
+        "timestamp": "1658629036",
+        "tx": "0xa7579f5d9f6a09c3956fdc11a74950ac022055c04de6be40f01bc8affa8d1154",
+        "user": "0x618E79Fa928aA226C19B7AfE5Fef58649A8c59fb",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x0167131f34521ca18000"
+        },
+        "reward": "60876650953009437444"
+    },
+    {
+        "timestamp": "1658632703",
+        "tx": "0x4df04b0c9ee027798742c08f41edcef12d8d6963e943f7c753efc4e675464a7f",
+        "user": "0x79C0c0E159e357a9530323742CD72A4Dba704bE8",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0xbbb4e190fdcc318000"
+        },
+        "reward": "32013662180075563445"
+    },
+    {
+        "timestamp": "1658636110",
+        "tx": "0xaada1c754284b5874b80a05c5b965149c5a0627fb8303e4324be4f1d59cafda4",
+        "user": "0x049f3663E135616a6feF73A75c502F8ba56D8864",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x43c33c193756480000"
+        },
+        "reward": "11620872171316833495"
+    },
+    {
+        "timestamp": "1658636110",
+        "tx": "0xf6aae625cfef3d11b6b171bae730f8a5bd5d5d059af8dfe3e9734f73998881be",
+        "user": "0x049f3663E135616a6feF73A75c502F8ba56D8864",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x4a176935ab5a090000"
+        },
+        "reward": "12706224445326877529"
+    },
+    {
+        "timestamp": "1658636135",
+        "tx": "0x7f890338b0e5ea9d3eba53286b1cb6c003496a796d80fbd9751ed917f91ede75",
+        "user": "0x049f3663E135616a6feF73A75c502F8ba56D8864",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x38ebad5cdc90280000"
+        },
+        "reward": "9761926142694675788"
+    },
+    {
+        "timestamp": "1658636256",
+        "tx": "0x299e8e27e7980bc3b04f96f3fb22fd7cb2fb315d2200f0413daa240cf78fde8c",
+        "user": "0x049f3663E135616a6feF73A75c502F8ba56D8864",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x375938aa8299d40000"
+        },
+        "reward": "9494163066549946000"
+    },
+    {
+        "timestamp": "1658636321",
+        "tx": "0xe180464064cfca7b7584b39dac63e035173e7c50d162d42a4fd5452c4e10abc1",
+        "user": "0x049f3663E135616a6feF73A75c502F8ba56D8864",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x43c33c193756480000"
+        },
+        "reward": "11624826098192120286"
+    },
+    {
+        "timestamp": "1658636364",
+        "tx": "0x398c54513875917250d079bfd851961bec7e0d62bc7889e9a8fd871653aa6b96",
+        "user": "0x049f3663E135616a6feF73A75c502F8ba56D8864",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x38ebad5cdc90280000"
+        },
+        "reward": "9765530774797662362"
+    },
+    {
+        "timestamp": "1658636406",
+        "tx": "0x27178b69d84dff5c8847ad8090c8e5544aa29f032bb880e8d2274da1d6c774c3",
+        "user": "0x049f3663E135616a6feF73A75c502F8ba56D8864",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x2bc98fa1711d5f0000"
+        },
+        "reward": "7512843082989570119"
+    },
+    {
+        "timestamp": "1658636459",
+        "tx": "0xc7ce4a8891d85b0112d9bc7ad4ee99bd065fbfe4fd870975dcf207e760fa8983",
+        "user": "0x049f3663E135616a6feF73A75c502F8ba56D8864",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x338ebf6603e2c30000"
+        },
+        "reward": "8846786244629352984"
+    },
+    {
+        "timestamp": "1658637899",
+        "tx": "0xcd0fd0b2439a640cd788a5d5da4c0527ec71887cd3f69aee6c88cabac6eb549d",
+        "user": "0xc4B86BaB861FFf0C97C5Ba8C1E2a547FCAF1a422",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x0a4fd8bfaa7b948000"
+        },
+        "reward": "1773528723346373530"
+    },
+    {
+        "timestamp": "1658637899",
+        "tx": "0x455cbe220d7330dd5f426fa770002f846167f4276d22a8c4002c8afd21c05c4c",
+        "user": "0xc4B86BaB861FFf0C97C5Ba8C1E2a547FCAF1a422",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0xaf8dd3fa38b10000"
+        },
+        "reward": "117942489789937100"
+    },
+    {
+        "timestamp": "1658642145",
+        "tx": "0xa1ba452c4bbf4767b4a71686807df92576f43de13230b173945d12481b5d5ef3",
+        "user": "0x8c7751c07CCC062Dab7863B6d2Fd2d3b872b23c1",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x038b3280c509f2f20000"
+        },
+        "reward": "157092743432798761222"
+    },
+    {
+        "timestamp": "1658647844",
+        "tx": "0x5f0f807300c326be8a09157e75e3577574defad46eb9ac5408b24d80bd6cac01",
+        "user": "0x52Cd47933C3428E5AE8f442A47f904c390942dce",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x032d26d12e980b600000"
+        },
+        "reward": "142089065749903340809"
+    },
+    {
+        "timestamp": "1658647962",
+        "tx": "0xe77ddc2e1845b92a816458b7895cde5e70a00580899a75535e367e8bffc5f551",
+        "user": "0xF63b9D007013a850f9ad628D9268865070721dFD",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0xbdbc41e0348b300000"
+        },
+        "reward": "33160306703917073783"
+    },
+    {
+        "timestamp": "1658647962",
+        "tx": "0xea3bc464dab07a81ee2866d8f5a0644301553f7c9983f80859b7d788e08b4283",
+        "user": "0xF63b9D007013a850f9ad628D9268865070721dFD",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0xa2a15d09519be00000"
+        },
+        "reward": "28423120031928920385"
+    },
+    {
+        "timestamp": "1658653509",
+        "tx": "0xbeef8b448986ff40f257782e9624ec55f9ab1290e9110ae32e46522b8aa0def1",
+        "user": "0x60B0224beBd002E2cF9eF7d505dcD07Ea5BD1156",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x0cb6f05c3beb62ae8000"
+        },
+        "reward": "573862981847574000912"
+    },
+    {
+        "timestamp": "1658661549",
+        "tx": "0x5b57acfa54095ec672ba06decc5bb2ef9e81600c687c447504296c41bcc1f525",
+        "user": "0xABECAf64276523F1aE4068Ee0e01CBc3735eF6f3",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x821ab0d44149800000"
+        },
+        "reward": "23227340805413664908"
+    },
+    {
+        "timestamp": "1658661549",
+        "tx": "0x4d368d7ecd4ab2eefa62f2bf0c999ab109a066c1aa49010e6cea1e45857ababb",
+        "user": "0xABECAf64276523F1aE4068Ee0e01CBc3735eF6f3",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x46791fc84e07d00000"
+        },
+        "reward": "12581476269599068492"
+    },
+    {
+        "timestamp": "1658661549",
+        "tx": "0xe7589f1042a69ba54be1a2bb7fa06103214a249abd62b33ca3d3f2e34fd40c1e",
+        "user": "0xABECAf64276523F1aE4068Ee0e01CBc3735eF6f3",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x34422ffc8254900000"
+        },
+        "reward": "9329648556841155404"
+    },
+    {
+        "timestamp": "1658661549",
+        "tx": "0x6e2fde9d4affafb96843e96881f139aef27a303ab4cfedbc2349db3bfc9d0e2d",
+        "user": "0xABECAf64276523F1aE4068Ee0e01CBc3735eF6f3",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x1b1ae4d6e2ef500000"
+        },
+        "reward": "4839029334461180189"
+    },
+    {
+        "timestamp": "1658666577",
+        "tx": "0x113587e6a75ef6aee370be00301592733bc01af02cb82eddde4e9669fd6a2851",
+        "user": "0x542a19c328650051733ddAE1794aDDAf8670B8c3",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x6c6b935b8bbd400000"
+        },
+        "reward": "19506868764035750037"
+    },
+    {
+        "timestamp": "1658670721",
+        "tx": "0x3c6b77b676b3d651f4f57402fb844feccbdc50fd6ed805a3c85d3cceceb208e6",
+        "user": "0xa0209b6bFC479c9fD0a7b33edE8fEff489e682b8",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x15af1d78b58c400000"
+        },
+        "reward": "3926223152573881325"
+    },
+    {
+        "timestamp": "1658670721",
+        "tx": "0xc185cb744cf470f94446020cb4e384dc1c291e3851b40e82bd5d28f672ef09ee",
+        "user": "0xa0209b6bFC479c9fD0a7b33edE8fEff489e682b8",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x1b1ae4d6e2ef500000"
+        },
+        "reward": "4907778940717351657"
+    },
+    {
+        "timestamp": "1658670721",
+        "tx": "0x58b7ad8e3ff10c6b2ae90254758b341b0c0f8aaab8bdf47f5fb7d28063212c8a",
+        "user": "0xa0209b6bFC479c9fD0a7b33edE8fEff489e682b8",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x1b1ae4d6e2ef500000"
+        },
+        "reward": "4907778940717351657"
+    },
+    {
+        "timestamp": "1658670721",
+        "tx": "0xa51bd7b8c45bc205c97c46a22bb2393689d50bf22fb6bb275c4fa85d1f7bd630",
+        "user": "0xa0209b6bFC479c9fD0a7b33edE8fEff489e682b8",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x15af1d78b58c400000"
+        },
+        "reward": "3926223152573881325"
+    },
+    {
+        "timestamp": "1658670721",
+        "tx": "0xe1d693d461a1b893fe6b72d85b41cee6b503c6c50428c367fa7c747d6e102f8a",
+        "user": "0xa0209b6bFC479c9fD0a7b33edE8fEff489e682b8",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x15af1d78b58c400000"
+        },
+        "reward": "3926223152573881325"
+    },
+    {
+        "timestamp": "1658670721",
+        "tx": "0x299303710a61b756b0ab25afca31c26a1230c68766053675ba34309fb303f764",
+        "user": "0xa0209b6bFC479c9fD0a7b33edE8fEff489e682b8",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x0d02ab486cedc00000"
+        },
+        "reward": "2355733891544328795"
+    },
+    {
+        "timestamp": "1658670764",
+        "tx": "0x1dc118f5c0eaa68e2ab96e96adf6087464f7e2ac44573340c25b1ec4e469cbc8",
+        "user": "0xa0209b6bFC479c9fD0a7b33edE8fEff489e682b8",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x8ac7230489e80000"
+        },
+        "reward": "98162025026883045"
+    },
+    {
+        "timestamp": "1658672025",
+        "tx": "0x686141add3f9efba669c2e19803a73923c14f868defe39dcd7fc24cc052718d4",
+        "user": "0x87A6be3552386Cc5266A5596c88022D7d8F4Aa97",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0xc7339fd804ab730000"
+        },
+        "reward": "36140298334090017421"
+    },
+    {
+        "timestamp": "1658677717",
+        "tx": "0xe22393a7ee3358e794ea2e79b8aaea5123b7264abae1326260447d2e5c6f879b",
+        "user": "0xce26b6E071502c8d32d0A509f6f108c55A365532",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x25e0f00ced6ae50000"
+        },
+        "reward": "6931785791633034736"
+    },
+    {
+        "timestamp": "1658679155",
+        "tx": "0xb3200760068908dc08ebe8ba98cb0b7c9e4383813328da7367d6f5e91aae0d43",
+        "user": "0x35080cDA95A7A6959EFfc293f4A4274110B77777",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x19bc471c416a71e50000"
+        },
+        "reward": "1208273089607766351007"
+    },
+    {
+        "timestamp": "1658689650",
+        "tx": "0xd2fda051a95426eac10fa4f1938b8ecae597a00c153ffadb596246ce578f09f7",
+        "user": "0xda1C97b1Ee2EdF8E99e9eF225549A74A049B6798",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x1f5140e7316a440000"
+        },
+        "reward": "5834421116324115436"
+    },
+    {
+        "timestamp": "1658704350",
+        "tx": "0xb07d59108d0e9f86908aae22ab4bf61d30654e24b19cf47fe763d7829b42fb5b",
+        "user": "0x0edCAEB7270005F31E51790bA2c5c574fF24dEc6",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x038ee1ea3edd8a0000"
+        },
+        "reward": "677343610981744619"
+    },
+    {
+        "timestamp": "1658704498",
+        "tx": "0x9efddef0f0e289933abb9bad53ac2ba84bb37387146f5304145532b777e1312b",
+        "user": "0x131D97f8a0b172b5f65712c52478fA3a35Acd83e",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x6c6b935b8bbd400000"
+        },
+        "reward": "20643830743468928507"
+    },
+    {
+        "timestamp": "1658710412",
+        "tx": "0xff1ab0b4971b3a540b886ce5c8acaa4f5450ce17a9a219bb0e492c311f85a9a6",
+        "user": "0x2e09F3A922bB1F4491c2379e815fC14453c99d09",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0xa53dcd0b1fd7570000"
+        },
+        "reward": "31733155515325131747"
+    },
+    {
+        "timestamp": "1658712872",
+        "tx": "0xcc3e7a7c0dcd80ca27b1afa78d86b622e10ed92a4bcce3348f2acb51eb8eaa01",
+        "user": "0x996f047f5ca79c7a1cFb92a534Add66520D9C2b1",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x17687f87b2f58c8000"
+        },
+        "reward": "4511261843783990004"
+    },
+    {
+        "timestamp": "1658712872",
+        "tx": "0x4bb6fdc794bebeb3fa94e3cd9603583057144cfa91c60e929f49f6d0bcbd7eb3",
+        "user": "0x996f047f5ca79c7a1cFb92a534Add66520D9C2b1",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x3793859dc0973e8000"
+        },
+        "reward": "10710737841176434586"
+    },
+    {
+        "timestamp": "1658720637",
+        "tx": "0x04e9cf3380b6cd61a86eba9d4ce2b78cb124e423a366793e7a9113b3e3ff305b",
+        "user": "0xA82fCEFd303Fa68864b787a5f118b09cE5A4c93d",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x0cb49b44ba602d800000"
+        },
+        "reward": "633831493111329320351"
+    },
+    {
+        "timestamp": "1658724987",
+        "tx": "0xf557aec5c4863ca03c50bb1dbb86546d8f3865b3d35df23a9d622e27be7eb666",
+        "user": "0x1be2655C587C39610751176ce3C6f3c7018D61c1",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x855ed7934500925b0000"
+        },
+        "reward": "6694446192737941503164"
+    },
+    {
+        "timestamp": "1658724987",
+        "tx": "0x1b7be053ea76e4047b77e106dd9c698ff2a0859ce0ce9fdbe1ee5c5bbc5dd5a1",
+        "user": "0x1be2655C587C39610751176ce3C6f3c7018D61c1",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x0581767ba6189c400000"
+        },
+        "reward": "276355817490466791764"
+    },
+    {
+        "timestamp": "1658724987",
+        "tx": "0x43f3f1ee82ccf062e66be67711e725cdfb714c1ed555c536f8f58b252c099d7e",
+        "user": "0x1be2655C587C39610751176ce3C6f3c7018D61c1",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x051c2342901b93ad0000"
+        },
+        "reward": "256488831610615010653"
+    },
+    {
+        "timestamp": "1658731372",
+        "tx": "0x6be2a04f0383f35d00be3a6d44436a6592307cae40f4d9264a874de0032930d3",
+        "user": "0xCDEdCee9C46284667997eB4D29f8427b696dA3df",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x4439f202e526f90000"
+        },
+        "reward": "13497725672286359975"
+    },
+    {
+        "timestamp": "1658733536",
+        "tx": "0x35acba54c21609c1021d6d4ce28a533a4ee2b24ff1620e7b3ef81c3896e9f385",
+        "user": "0x330A21a4F5F68f56AFEdC64EdAe40F04b139Bb34",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0xad78ebc5ac62000000"
+        },
+        "reward": "34423134730913884098"
+    },
+    {
+        "timestamp": "1658733665",
+        "tx": "0x9a558621921c9fcea7e6b841948c2032a3aa7fbdfb40696cf1bd6cac901f8be8",
+        "user": "0x5677B247f9E3934F700d6F675a1723814dFb4903",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x7caee97613e6700000"
+        },
+        "reward": "24746075974494202881"
+    },
+    {
+        "timestamp": "1658734860",
+        "tx": "0x6f1527292fa36fde3bbcda8e3162f33fa1bb08e760f72aa783be53eec8315d16",
+        "user": "0x349ac7eE3DE37cdcA1759578Bc6faC2c7BFdD43C",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x15af1d78b58c400000"
+        },
+        "reward": "4310831176617891946"
+    },
+    {
+        "timestamp": "1658754617",
+        "tx": "0xb8a55dbc88fb1b6e33c12c8374197f53f71dd8eb43a361e6c38f304b5c06f3c9",
+        "user": "0x0A83aD9ca5E86c793c01533E128594209142aB41",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x3752213ab7b19a8000"
+        },
+        "reward": "11300138922814588472"
+    },
+    {
+        "timestamp": "1658754617",
+        "tx": "0x0712e197c8ae954551c462c9a4e0eba96a8f75df259c6d6254e900a87b2bc978",
+        "user": "0x0A83aD9ca5E86c793c01533E128594209142aB41",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x572447bcb35db28000"
+        },
+        "reward": "17800053323244951676"
+    },
+    {
+        "timestamp": "1658754751",
+        "tx": "0x123e5e2093cf833eef9f702263f9f1bdf99e6dfb6c67bc4a34fecdfb0cac19b5",
+        "user": "0x0A83aD9ca5E86c793c01533E128594209142aB41",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x323da0e0b83ef90000"
+        },
+        "reward": "10264314486011704732"
+    },
+    {
+        "timestamp": "1658758062",
+        "tx": "0x50e08fc26288505598c545412ad291bb6c1655e7a298faa3be232bcf991c6f65",
+        "user": "0xA1301BC880de06b84BE4D9150105c6b8cC6202B2",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x5150ae84a8cdf00000"
+        },
+        "reward": "16687355365551620661"
+    },
+    {
+        "timestamp": "1658759589",
+        "tx": "0xe2d2a35c316db5aac519ffaa14d69107cddcce95e65ce714903d4cd63e8bddad",
+        "user": "0xe8AFB7C355B68A2A9C616E7877D0ef3352c59D5a",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x6871b92023970000"
+        },
+        "reward": "83898306126804693"
+    },
+    {
+        "timestamp": "1658759589",
+        "tx": "0x33f57d9e6b929f9f322b454a9033604cbd30c6e491b962ff12c4770a160b64ab",
+        "user": "0xe8AFB7C355B68A2A9C616E7877D0ef3352c59D5a",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x02e8a782b52de90000"
+        },
+        "reward": "598168390931714885"
+    },
+    {
+        "timestamp": "1658777138",
+        "tx": "0x6baa83a0b791211d85ed22bbfd826cc7323e40de1f7295244b6144b3c636a752",
+        "user": "0xC31E87AE18519262b1D20C19737384B1Ca124B43",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x4be4e7267b6ae00000"
+        },
+        "reward": "15975225776387171365"
+    },
+    {
+        "timestamp": "1658782446",
+        "tx": "0xe47a892c95d15d341f364e521992452062306a2a2e2fb7d974248cf6ec38d985",
+        "user": "0xBdc7b838cD042F01175521363C2251Fd03F24ac8",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x2b5e3af16b18800000"
+        },
+        "reward": "9192359041121728153"
+    },
+    {
+        "timestamp": "1658806601",
+        "tx": "0xef140c181b319e8509a44e53207d38012da26fe4892bda9f675cd09f764c3c33",
+        "user": "0x86639a057001987005e9c48663e50C5B12Eb4633",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0xa2a15d09519be00000"
+        },
+        "reward": "35557683128444043901"
+    },
+    {
+        "timestamp": "1658806601",
+        "tx": "0xdf107f2c956f3c8dbb85101c330a03d554c70dc12b08b52acde25a771c29cacc",
+        "user": "0x86639a057001987005e9c48663e50C5B12Eb4633",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x021e19e0c9bab2400000"
+        },
+        "reward": "118525610428146813003"
+    },
+    {
+        "timestamp": "1658806601",
+        "tx": "0xf78cf25e65cf79ea80876d80dd64529d1af405e6863818e9223d45e78c687076",
+        "user": "0x86639a057001987005e9c48663e50C5B12Eb4633",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x0405fdf7e5af85e00000"
+        },
+        "reward": "225198659813478944706"
+    },
+    {
+        "timestamp": "1658806669",
+        "tx": "0x2fd376d191ad5bc824018d8720f675cb6d0a55165bb186ef07d5babcd8fed69b",
+        "user": "0x86639a057001987005e9c48663e50C5B12Eb4633",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x010f0cf064dd59200000"
+        },
+        "reward": "59267902219334439711"
+    },
+    {
+        "timestamp": "1658813307",
+        "tx": "0x6d181382decba446e4675c79b8b684e6d76702c824e9c752db8208c51369656a",
+        "user": "0x049f3663E135616a6feF73A75c502F8ba56D8864",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x13bb9ca5e8839d8000"
+        },
+        "reward": "4351009150905134435"
+    },
+    {
+        "timestamp": "1658816306",
+        "tx": "0xcb49d4361eb6aaaeeecc13c0d8100ae02678272d0eeab15dbe0ba19789c143ee",
+        "user": "0x9bc8130233193142D8deDCbdf256cD638Be3a6ea",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x1043561a8829300000"
+        },
+        "reward": "3599415168189987300"
+    },
+    {
+        "timestamp": "1658816316",
+        "tx": "0x02c871579a9613899dc9c6aa203cc3d7c4f2928e85547fbb0568030ca1a7274c",
+        "user": "0x9bc8130233193142D8deDCbdf256cD638Be3a6ea",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x03cdb50cc2afbb8000"
+        },
+        "reward": "841829739755717416"
+    },
+    {
+        "timestamp": "1658827536",
+        "tx": "0xf940d27ca18e2def7666244f35bed721fe18278bd299876e8caacd19c174a6f0",
+        "user": "0xe4A9cf3a85c2F764A5Cef141134164Fb82cBc15b",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x0ad78ebc5ac6200000"
+        },
+        "reward": "2433280329233365814"
+    },
+    {
+        "timestamp": "1658827536",
+        "tx": "0x964a0b034bc0d4e9888d09347f51931ee9b395ce2067e704d1ce91fd744a6070",
+        "user": "0xe4A9cf3a85c2F764A5Cef141134164Fb82cBc15b",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x0ad78ebc5ac6200000"
+        },
+        "reward": "2433280329233365814"
+    },
+    {
+        "timestamp": "1658827650",
+        "tx": "0xce57be178a1ac688a85ff195b356761be4afce57de72e2daef554161b17cc90e",
+        "user": "0xe4A9cf3a85c2F764A5Cef141134164Fb82cBc15b",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x6c6b935b8bbd400000"
+        },
+        "reward": "24336221284096939236"
+    },
+    {
+        "timestamp": "1658827650",
+        "tx": "0xf5aaf009958e2bbd96bd60bfbff2e5750428dc66ffcce1b99977f5a9671641c6",
+        "user": "0xe4A9cf3a85c2F764A5Cef141134164Fb82cBc15b",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x03cb71f51fc5580000"
+        },
+        "reward": "851767744943392873"
+    },
+    {
+        "timestamp": "1658849492",
+        "tx": "0x2439b279cc4574bee49af8119271883bd9128a0f14f0ff3bbd1807b9de02211b",
+        "user": "0x410Ef4DF49583dAeec7A3CB09f85C2A9Ee658AFd",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x06ca40194607f2ea0000"
+        },
+        "reward": "400670504577376162957"
+    },
+    {
+        "timestamp": "1658852540",
+        "tx": "0xed1ecececd78b1a14c2be33d7a4c9fe1ccf6b54b093a4b1fe0bf7d986255e62a",
+        "user": "0x5cC15a41774830d9e6d6C7ddee6C6C957932caa1",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x115d3a99a9614f400000"
+        },
+        "reward": "1028381795582279097081"
+    },
+    {
+        "timestamp": "1658854317",
+        "tx": "0xcd212f3966ba90cc787130ebeb1c88f13afe40ab4dfc1a3bc89b53d01f35d2ba",
+        "user": "0xF92FdaE0fe3c4e9f60Ea44304937468b3890a283",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x39ccbbb870b2aa8000"
+        },
+        "reward": "13400088117752504945"
+    },
+    {
+        "timestamp": "1658856638",
+        "tx": "0xb66facf44d68195754f5109143e43b00fb4aeae28290866d888b4608391c8de8",
+        "user": "0xC1E42F862d202B4A0eD552c1145735EE088f6Ccf",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x0307bb8909bf863e0000"
+        },
+        "reward": "180341007049581183038"
+    },
+    {
+        "timestamp": "1658870949",
+        "tx": "0x69476d82d4f9f448e2d0dd5aa45bc37f66612bf5ed134e7c25bfa21005cf5f53",
+        "user": "0x5a3CC4FfDe3112c246E86d888F637cE30a0aaFCf",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0xa55740b8684d680000"
+        },
+        "reward": "39092503499225199010"
+    },
+    {
+        "timestamp": "1658887298",
+        "tx": "0x56061c1b2984442986d8bca2d08da314f93a79821d555ad43046c3bdaacf307c",
+        "user": "0xD5D8f74c93647726230Ac6364C4b5dceEE374a0a",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x02544faa778090e00000"
+        },
+        "reward": "143685357850507276751"
+    },
+    {
+        "timestamp": "1658891196",
+        "tx": "0x68eba1e6f7876fc6c4b32d57d70df35201a8527e06beb12c832728773a37f6fe",
+        "user": "0xcFe033De280444Eab8bD16f65dAFe822AEf89f62",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x080bfbefcb5f0bc00000"
+        },
+        "reward": "498588155162751906443"
+    },
+    {
+        "timestamp": "1658900268",
+        "tx": "0x4c6de987566b8071b1e6cb38b962214389c49ff85b77bdf6e996be49161cc3a9",
+        "user": "0xbB72d39ba7F1F4b81808FF9112c03b26A2f560Ec",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x01583bf3dc4212780000"
+        },
+        "reward": "84180305468449711593"
+    },
+    {
+        "timestamp": "1658903736",
+        "tx": "0xbe355f86007027d85ab97e199bd944f32deb4e859e2963cc85357bd58978b165",
+        "user": "0x80dDa80819fa9F013941055505eaF055a5EC2ff6",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x1b1ae4d6e2ef500000"
+        },
+        "reward": "6654365236158018313"
+    },
+    {
+        "timestamp": "1658903748",
+        "tx": "0x307660c35ee01200bae1dba1a68c7e6df8fff4c80703eee66abb3cdb033a07d8",
+        "user": "0x80dDa80819fa9F013941055505eaF055a5EC2ff6",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x1b1ae4d6e2ef500000"
+        },
+        "reward": "6654455183309683605"
+    },
+    {
+        "timestamp": "1658903748",
+        "tx": "0x0af32a6370b29a2a9aa990ab0b76ae977a614ab0c8020cd239c8d30de8a9e9e0",
+        "user": "0x80dDa80819fa9F013941055505eaF055a5EC2ff6",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x1b1ae4d6e2ef500000"
+        },
+        "reward": "6654455183309683605"
+    },
+    {
+        "timestamp": "1658903748",
+        "tx": "0xe7a4fbeb53ecc2bcbf5b93a86ffb9fa30e0c5eaae2b6b4d39551564df228fd01",
+        "user": "0x80dDa80819fa9F013941055505eaF055a5EC2ff6",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x1b1ae4d6e2ef500000"
+        },
+        "reward": "6654455183309683605"
+    },
+    {
+        "timestamp": "1658903748",
+        "tx": "0xbb195f81c1c39d918fae9e8ed0a4218fb0a087703b59512269fda7218a7e115e",
+        "user": "0x80dDa80819fa9F013941055505eaF055a5EC2ff6",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x3635c9adc5dea00000"
+        },
+        "reward": "13308910366619367210"
+    },
+    {
+        "timestamp": "1658903748",
+        "tx": "0x4a3a0cb216a15027966b844683c8611502c9608dfc1a1ef0b4eb126687b4e10b",
+        "user": "0x80dDa80819fa9F013941055505eaF055a5EC2ff6",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0xb6f1709d8bee9e8000"
+        },
+        "reward": "44913646358782211620"
+    },
+    {
+        "timestamp": "1658907069",
+        "tx": "0x9eb7a34d8dccd06cbc9566eb55de8a6068bddc634ad5d4f355cd0b51177a2e72",
+        "user": "0x60B0224beBd002E2cF9eF7d505dcD07Ea5BD1156",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x0525614fd2cd69930000"
+        },
+        "reward": "324634670444568483805"
+    },
+    {
+        "timestamp": "1658934201",
+        "tx": "0xff0fbca09a5fa4230eb3bad48b00eb08e616da1df45f227c1ce0faae73181282",
+        "user": "0xd816Fd2b18672990ff9D8AAa8155774a796fE501",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x02d6ebeb6e4b016c0000"
+        },
+        "reward": "184585371728705250256"
+    },
+    {
+        "timestamp": "1658936087",
+        "tx": "0x58bcb3f9cc53e89800315547aa1f430cf316db8da141b20644d1db0da4f454fa",
+        "user": "0x51129076a523B041f85B5A73B1d8522c6230034a",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x04a89f54ef0121c00000"
+        },
+        "reward": "303461631503873623354"
+    },
+    {
+        "timestamp": "1658941898",
+        "tx": "0x5bf8557a5fc2aa5a9e32c3b095ad23f9850b446a1bf1a6536b5c1787e899d3f5",
+        "user": "0x43A20a80E7e61B77eC834C1A9f7435Df0DD11b49",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x4cb7715e9a4a538000"
+        },
+        "reward": "19643740061059040973"
+    },
+    {
+        "timestamp": "1658941898",
+        "tx": "0x2d32dabe5d7ab97e55b65dbfa9ca0e33aa6c67e28a53f15401f87e5ef527dbd4",
+        "user": "0x43A20a80E7e61B77eC834C1A9f7435Df0DD11b49",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x019f8b40ac4b9ce28000"
+        },
+        "reward": "106402528957605821223"
+    },
+    {
+        "timestamp": "1658941898",
+        "tx": "0x7465b54229bc6a47f4804fd152647814e2b01a99bfec156e03fa3f7f7a5445e4",
+        "user": "0x43A20a80E7e61B77eC834C1A9f7435Df0DD11b49",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x0472698b413b43200000"
+        },
+        "reward": "291497311125114816826"
+    },
+    {
+        "timestamp": "1658944255",
+        "tx": "0xdd075fc6a2a3e8b669f367e8721ba02a046cd5d6c19f8f2f80406ad68d38982a",
+        "user": "0x8c7751c07CCC062Dab7863B6d2Fd2d3b872b23c1",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x02f6fa1e87d9c4a18000"
+        },
+        "reward": "194835335185720812676"
+    },
+    {
+        "timestamp": "1658951004",
+        "tx": "0x01e61f958b7f3cad0075f3cfc4ae382b8796d244f84ff45e4b539b3dcc81588e",
+        "user": "0x5fE8a15dbE1863B37F7e15B1B180af7627548738",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x6a4cc283c7dc9f0000"
+        },
+        "reward": "27486394258986962489"
+    },
+    {
+        "timestamp": "1658951004",
+        "tx": "0x6dd5447d72ac3b196fe245870191fc14b1cd942865e0537d193b1860630525de",
+        "user": "0x5fE8a15dbE1863B37F7e15B1B180af7627548738",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x8a5692f5033ace8000"
+        },
+        "reward": "35770680783672268923"
+    },
+    {
+        "timestamp": "1658954083",
+        "tx": "0x12b9e6197471125579076a4a7ccbcdf6ee434422a262c3f8d4c729c344d3ca36",
+        "user": "0x0e3081b10DB9A0656Bbf5b1EAa99bc303CDC9203",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0xee1caf241c1b940000"
+        },
+        "reward": "61772369810542455965"
+    },
+    {
+        "timestamp": "1658954304",
+        "tx": "0xe143007167b5c1cc23ed25849265ae669de9fc3a2b5c90aa00ea3aab9b0c37f2",
+        "user": "0x488BCa29538691dd89cF32F9fF4D49974a389f13",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x20a97df7453fd48000"
+        },
+        "reward": "8475376653842646977"
+    },
+    {
+        "timestamp": "1658960952",
+        "tx": "0x6a7053755ec5f43158a7876f5722c1e0a5a8c35011e805f1ad8439ae9eed0867",
+        "user": "0xF63b9D007013a850f9ad628D9268865070721dFD",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x3635c9adc5dea00000"
+        },
+        "reward": "14166466510596260503"
+    },
+    {
+        "timestamp": "1658968156",
+        "tx": "0xf29f30aaaf1b658ccee6ee9f1aadb48453e5f3b7979dec1aefdf46c6bd61ddfb",
+        "user": "0x9979CA3F09Ace14230D5c5883FC75e31E4693941",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x046e1b22569b546b8000"
+        },
+        "reward": "298629803682722445395"
+    },
+    {
+        "timestamp": "1658968201",
+        "tx": "0x76b9bc6f5bdddf16816643f7128c8dc695bb3bee188bb688649cf48584792705",
+        "user": "0x9979CA3F09Ace14230D5c5883FC75e31E4693941",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x02028f6baeef6d928000"
+        },
+        "reward": "135499049947842057044"
+    },
+    {
+        "timestamp": "1658971216",
+        "tx": "0xb176c180d22473e5efd3c927bde34564722a6b339bfefbca9094fe2822204691",
+        "user": "0xF45E9259f70787b64f0ecEd40213B07bDc3F0c32",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x02623f7a8564408000"
+        },
+        "reward": "629708139532486993"
+    },
+    {
+        "timestamp": "1658971216",
+        "tx": "0xe31dd9dea415c39863e18909bfe005339dad5825161ab688405c57901f46918f",
+        "user": "0xF45E9259f70787b64f0ecEd40213B07bDc3F0c32",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x041bda616d19f50000"
+        },
+        "reward": "1085395554720517571"
+    },
+    {
+        "timestamp": "1658971248",
+        "tx": "0xb514baca9ec8deb8a431b954d1cb803544fef67765ca446f4cb402b175978300",
+        "user": "0xF45E9259f70787b64f0ecEd40213B07bDc3F0c32",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x01fc6d37e4e7360000"
+        },
+        "reward": "524657408486075533"
+    },
+    {
+        "timestamp": "1658971312",
+        "tx": "0xa551128a810ae2d1cdebdac3f81712a06f847955726409e994c1c1fcb36862ae",
+        "user": "0xF45E9259f70787b64f0ecEd40213B07bDc3F0c32",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x0176cc236928f98000"
+        },
+        "reward": "386788184423548911"
+    },
+    {
+        "timestamp": "1658971312",
+        "tx": "0x6cf00d09118d4ba029003f49fcd717f1e00b4df49322cbe3d543587e39708860",
+        "user": "0xF45E9259f70787b64f0ecEd40213B07bDc3F0c32",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x01532537859cff0000"
+        },
+        "reward": "349995543782822538"
+    },
+    {
+        "timestamp": "1658971352",
+        "tx": "0x73a85846a0a730e22f30fbf04004a6d4901fb57b4bb94f36c76b5ab092a5faf5",
+        "user": "0xF45E9259f70787b64f0ecEd40213B07bDc3F0c32",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x019c2b98a4851a0000"
+        },
+        "reward": "425374534732438165"
+    },
+    {
+        "timestamp": "1658971430",
+        "tx": "0xd8da91cc250b8291ab33dc8224fc109fbad6766ef6d33dc7bafd623b0aa10de7",
+        "user": "0xF45E9259f70787b64f0ecEd40213B07bDc3F0c32",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x01d2b5c2d214630000"
+        },
+        "reward": "481700792111461987"
+    },
+    {
+        "timestamp": "1658971672",
+        "tx": "0xc6eee677e2db723bfb916ed7da1936ab431592f9d4fcf1284d372294d19e7b93",
+        "user": "0xF45E9259f70787b64f0ecEd40213B07bDc3F0c32",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0xe57bac6375dc0000"
+        },
+        "reward": "236914117651107681"
+    },
+    {
+        "timestamp": "1658971873",
+        "tx": "0x5defece31bc370c9e2236a8c366e803b3df8e2c8fee665c1a87ecc1d1564f8d0",
+        "user": "0xF45E9259f70787b64f0ecEd40213B07bDc3F0c32",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x1406e2912bb1558000"
+        },
+        "reward": "5294014692147204302"
+    },
+    {
+        "timestamp": "1658972073",
+        "tx": "0x01060fd75c1b7395a9589af8f6602b405048e317fb83df8f0264573512c65e71",
+        "user": "0xF45E9259f70787b64f0ecEd40213B07bDc3F0c32",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x057e671c112ba30000"
+        },
+        "reward": "1452553487953218883"
+    },
+    {
+        "timestamp": "1658972131",
+        "tx": "0x9686365efdbdb8f4644e11aefeb9eb2a50b3cc9e8328f74e086f8b07b9b39da0",
+        "user": "0xF45E9259f70787b64f0ecEd40213B07bDc3F0c32",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x0770a1155afcef8000"
+        },
+        "reward": "1967248442101685948"
+    },
+    {
+        "timestamp": "1658972210",
+        "tx": "0x0ef7670855ce77fc0bac5a55f7781c00b5a13f8186e5cbe1285a43dec3313531",
+        "user": "0x91E371C3CD3Aa81aF27b1602D4d8cf9D81ec5a90",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x84c90641376fd79b0000"
+        },
+        "reward": "8989062848897757994929"
+    },
+    {
+        "timestamp": "1658993123",
+        "tx": "0x6428abf5034d940276f72efeac4b684cb1d78a62f528c4cc7028b4727575f1b7",
+        "user": "0x448811Ca2806a04AC3d1f356537dACC4D03AEE87",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x4dd67a2584fbbb0000"
+        },
+        "reward": "21033463621336457801"
+    },
+    {
+        "timestamp": "1659021091",
+        "tx": "0xe6c0625d7ac3743333f1416e63b78456556c91e53edbf576d3a031523ebd313a",
+        "user": "0x096711587CA6b88bB54E96F8652CF81Ba3657fd1",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x01a16af753a6cbd00000"
+        },
+        "reward": "116023767882556578412"
+    },
+    {
+        "timestamp": "1659021519",
+        "tx": "0x81668bdbcb20512f46d34079cda4d386fde8becf54358f28dd4efd458a00a785",
+        "user": "0x5356df73b293BD9c6e8eFD22C99833391EF8821A",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x068606756c04f50000"
+        },
+        "reward": "1814027724024967554"
+    },
+    {
+        "timestamp": "1659021519",
+        "tx": "0x9d17c7422fd6d31c7faa9cea796a7d260acddc4a3ece7b606af87bb2c0049567",
+        "user": "0x5356df73b293BD9c6e8eFD22C99833391EF8821A",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x0a44d3e4df6beb8000"
+        },
+        "reward": "2855505573292538757"
+    },
+    {
+        "timestamp": "1659021519",
+        "tx": "0xe23a2f4358adfbb34a225946b32f0e0e37e6d329e44886827d8ec8099fcd40dc",
+        "user": "0x5356df73b293BD9c6e8eFD22C99833391EF8821A",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0xe299272d692cd00000"
+        },
+        "reward": "63011150978280878689"
+    },
+    {
+        "timestamp": "1659021519",
+        "tx": "0x4cfbbbb36491ac8c4139ae0583189b121818b36a2157afb78afdcc573a52d5d2",
+        "user": "0x5356df73b293BD9c6e8eFD22C99833391EF8821A",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x3ed3d4268e60450000"
+        },
+        "reward": "17470700851696259265"
+    },
+    {
+        "timestamp": "1659021519",
+        "tx": "0x3b76f4080b924cd75a14275f6f37d4da3d092929eebd329a6a4c3c1dfe05856c",
+        "user": "0x5356df73b293BD9c6e8eFD22C99833391EF8821A",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x43c930367176ec8000"
+        },
+        "reward": "18849514475268129392"
+    },
+    {
+        "timestamp": "1659021535",
+        "tx": "0x91901f75c148dd76c2d41413254fe394a537f1233593365a243dcb77a0364659",
+        "user": "0x5356df73b293BD9c6e8eFD22C99833391EF8821A",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x1e44d450abdca90000"
+        },
+        "reward": "8417127297218142074"
+    },
+    {
+        "timestamp": "1659051111",
+        "tx": "0xcf17fe40d1ccb866da91034adce040a8956f282eacc7c8121e67f9db871ec87a",
+        "user": "0x5D082946daddA4Ac0259c4eED8dAc62De97078fa",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x032d26d12e980b600000"
+        },
+        "reward": "232770860776421546124"
+    },
+    {
+        "timestamp": "1659051111",
+        "tx": "0x198debf437719b3d4604243cf196bb5369014d72a912a9c4a97e40a46cda9118",
+        "user": "0x5D082946daddA4Ac0259c4eED8dAc62De97078fa",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x6c6b935b8bbd400000"
+        },
+        "reward": "31036114770189539483"
+    },
+    {
+        "timestamp": "1659052028",
+        "tx": "0x56f290257a56fe35c02d5865dd263d4e42611918ab4754671f0624f45af032ce",
+        "user": "0x5D082946daddA4Ac0259c4eED8dAc62De97078fa",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x021e19e0c9bab2400000"
+        },
+        "reward": "155318043081076151920"
+    },
+    {
+        "timestamp": "1659055440",
+        "tx": "0xe9cd59f68b19e787d34b01f3d788f45f1a0363baca0e841e355be82af2556199",
+        "user": "0xC5239E1248a7D9b6B4292136F577A7212dc6E749",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x0f2dc7d47f15600000"
+        },
+        "reward": "4363227191405957804"
+    },
+    {
+        "timestamp": "1659055491",
+        "tx": "0x71eaaec3b55cae4fea173e06613ff37d19fad52cb433ac4f99e74c798b615008",
+        "user": "0xC5239E1248a7D9b6B4292136F577A7212dc6E749",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x0bed1d0263d9f00000"
+        },
+        "reward": "3428418137278295227"
+    },
+    {
+        "timestamp": "1659075967",
+        "tx": "0xffcc70a29210cfa618f1bfd446b64a3ab48b1845fa16f979ac15bc00f8b339b5",
+        "user": "0x5e6FF93A0ac631F2196567B720993c04Cf7AbdC7",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x016feb5319662bf00000"
+        },
+        "reward": "107848636274428699668"
+    },
+    {
+        "timestamp": "1659101895",
+        "tx": "0x58d585e0f4c2c3b0bf4369401d8447d11b85ed58329ca8f00f470f2fe96eda2c",
+        "user": "0x8209d9B30F613d766d2f45D1587FFbA22b7eaE44",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x5157f423e2143e0000"
+        },
+        "reward": "24427585505104938855"
+    },
+    {
+        "timestamp": "1659111004",
+        "tx": "0xb3b7ac7e1c3d7756b3db8e3276dc4695175c209f492e8d2e71572937e89d62d2",
+        "user": "0x745C1477C0e3CCCb00AAdd4D407abADe083C99E5",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x2a0bf1fe9163940000"
+        },
+        "reward": "12732585291365271804"
+    },
+    {
+        "timestamp": "1659111109",
+        "tx": "0xc6bc56538b4c65d1d930bab9084289ba8a34a0229fb581fafbc8659ec3fa3d0b",
+        "user": "0x828A30F9bfFf6726765b5C7eAc213B5Ad22fbFb8",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x27efeb3f3ce2cd8000"
+        },
+        "reward": "12094952046383424937"
+    },
+    {
+        "timestamp": "1659112428",
+        "tx": "0xb84154d6595175e975c0fd569e72fe9a56068968b2c5e4fe7286a46f21590f4a",
+        "user": "0xd0D289dAe2BD66DdC6dbD32F1537426BF71141A0",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x01969368974c05b00000"
+        },
+        "reward": "123279542261536654916"
+    },
+    {
+        "timestamp": "1659122035",
+        "tx": "0xead56cb8f88953eaf48e30f8cd1311bd81ded7d09b01c6cb18d1c25d698ba024",
+        "user": "0xda1C97b1Ee2EdF8E99e9eF225549A74A049B6798",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x017e159abc7792488000"
+        },
+        "reward": "116868482641927685423"
+    },
+    {
+        "timestamp": "1659127065",
+        "tx": "0x7f8b586a95bc8b3d1f04f4f2be9de1e8605e38e6a24e5acf8d95836b3c8275b2",
+        "user": "0x182FE7b9218592f5e072096C83a270281b74529a",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x070305c03368e68000"
+        },
+        "reward": "2154460651705734208"
+    },
+    {
+        "timestamp": "1659127065",
+        "tx": "0x9de75921957afee9170e5585eede1bc13172d332e625df4c33ccbc52756a88a1",
+        "user": "0x182FE7b9218592f5e072096C83a270281b74529a",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x03adb47dfa6bae8000"
+        },
+        "reward": "1130273581837689947"
+    },
+    {
+        "timestamp": "1659127065",
+        "tx": "0x5477cf2c0d4296a544f09e636af0328f3901f43fec2e0f3895ff88a421e38863",
+        "user": "0x182FE7b9218592f5e072096C83a270281b74529a",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x07858b05def9730000"
+        },
+        "reward": "2311116899951065920"
+    },
+    {
+        "timestamp": "1659127065",
+        "tx": "0x9f04c57fdb21044b2159ac5220c981271042d80ba84485656619442bfce2555a",
+        "user": "0x182FE7b9218592f5e072096C83a270281b74529a",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x031708ae0045440000"
+        },
+        "reward": "949431807547464918"
+    },
+    {
+        "timestamp": "1659127107",
+        "tx": "0x8f51ba1aef9d3cb324e1a671326f3e01118a47c210cb983621c97c49ea926eee",
+        "user": "0x182FE7b9218592f5e072096C83a270281b74529a",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x04ccb9b766784f8000"
+        },
+        "reward": "1474823164508046534"
+    },
+    {
+        "timestamp": "1659149549",
+        "tx": "0xbb2ebf0495b0d86977d295fb3f3e5609da2765aae5c0734eaec8ee3e305474a3",
+        "user": "0x0edCAEB7270005F31E51790bA2c5c574fF24dEc6",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x014c785c9204088000"
+        },
+        "reward": "407119516410265427"
+    },
+    {
+        "timestamp": "1659172456",
+        "tx": "0xe88c1777305ba17683f31f7c2470ac307777f45196e33f0f847c8c630f90852a",
+        "user": "0x245A4887C7CA101419D629E447f2dE60d8861de4",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x021e19e0c9bab2400000"
+        },
+        "reward": "173371635715655780189"
+    },
+    {
+        "timestamp": "1659173323",
+        "tx": "0x2f2afdfb614e8d46f4790f7e816f7c8fc31c55b02a448991c6af52fa19baa3f2",
+        "user": "0x5B4cA4107614101867DDE9be9619b6003db0ebB6",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x2bbf5ff054ac3c0000"
+        },
+        "reward": "14001579874529838651"
+    },
+    {
+        "timestamp": "1659199239",
+        "tx": "0x1987e92c7096ec10693dbd45e7afdc90064486f2678586940d52bdc94e939613",
+        "user": "0xC1E42F862d202B4A0eD552c1145735EE088f6Ccf",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x1ae4af0d352971600000"
+        },
+        "reward": "2252811428506752118311"
+    },
+    {
+        "timestamp": "1659201998",
+        "tx": "0x6029a82ce0bc66bb37549fd5ecf9e04cadd7523afa0281bca9fd48a564f0948c",
+        "user": "0xA0F0Cdb449723721F12A139065E1b39d479720fB",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x1cf878600efed48000"
+        },
+        "reward": "9501880970145491890"
+    },
+    {
+        "timestamp": "1659201998",
+        "tx": "0x7f2ee1031937d0affffb2e4e6fe1c55aaf9cb02d5a93db376c551948b4712c03",
+        "user": "0xA0F0Cdb449723721F12A139065E1b39d479720fB",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x77a02b7c6191980000"
+        },
+        "reward": "39235270744431624110"
+    },
+    {
+        "timestamp": "1659202083",
+        "tx": "0x74a9cc26a845b3dc8092f77aebe3b097be2ba6e5535aeb6555ad3c4bff42c91b",
+        "user": "0xA0F0Cdb449723721F12A139065E1b39d479720fB",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x374d30769a8d908000"
+        },
+        "reward": "18139298681515616758"
+    },
+    {
+        "timestamp": "1659202190",
+        "tx": "0x93b5aa2e59aa977129cbd9b3d92dae2f31da499d00d5837dd49a3b4dbc3871c4",
+        "user": "0xA0F0Cdb449723721F12A139065E1b39d479720fB",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x5c4768a61d39970000"
+        },
+        "reward": "30270890263436477030"
+    },
+    {
+        "timestamp": "1659224047",
+        "tx": "0x897520a06ad73a20cf676dac8bc80422376097cf6fc3f3a0acda0b447011587b",
+        "user": "0xca297F9413A18E4b919799D0D0A5Ad9c1bE6A0Ba",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x5e3e08d53914b00000"
+        },
+        "reward": "31484581188075362701"
+    },
+    {
+        "timestamp": "1659224047",
+        "tx": "0x2c777d532c68eff56945e7e732d9d7ef620534703400feb3a04f31136375552a",
+        "user": "0xca297F9413A18E4b919799D0D0A5Ad9c1bE6A0Ba",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x372d253f565b300000"
+        },
+        "reward": "18433377028901155253"
+    },
+    {
+        "timestamp": "1659224047",
+        "tx": "0x86f49f73d00c318175c44fd36ad6b21e5ca7c82b92fe08010629b1d0f26b42ab",
+        "user": "0xca297F9413A18E4b919799D0D0A5Ad9c1bE6A0Ba",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x19bff2ff57968c0000"
+        },
+        "reward": "8602522723700805586"
+    },
+    {
+        "timestamp": "1659224065",
+        "tx": "0xb30d9cf258255ee362ab1716470e0cd04bab4c3e8629183d922a01d7ac6d6ce8",
+        "user": "0xca297F9413A18E4b919799D0D0A5Ad9c1bE6A0Ba",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x104d88f21be66f038000"
+        },
+        "reward": "1394320030131927348481"
+    },
+    {
+        "timestamp": "1659236883",
+        "tx": "0xbaa4939b6e33a27afb773bb890d8923beaad3775717e09da9a0021bf58e73133",
+        "user": "0x60B0224beBd002E2cF9eF7d505dcD07Ea5BD1156",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x07b76ce7c2387fdd8000"
+        },
+        "reward": "666964416501362683613"
+    },
+    {
+        "timestamp": "1659251754",
+        "tx": "0xe087125cb41cde784bf63a4013e91128a2ab6244671c22b028aa6583e277c9b2",
+        "user": "0x6F86c2e72467750E634E1d9298845E75F9e55Fd7",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x3a3ca140387aa40000"
+        },
+        "reward": "19902041570355354255"
+    },
+    {
+        "timestamp": "1659253049",
+        "tx": "0xc1889003e8c03a4a1c6acc918cb16546c6d8246ae28b2702f62abeecc59ac858",
+        "user": "0x8AfAbDC1d0c2eB94Df0bbc85554424334d84C1E7",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x14e4aa7bffecda0000"
+        },
+        "reward": "7147599934677420939"
+    },
+    {
+        "timestamp": "1659277706",
+        "tx": "0x913fdda8c31f353d3e5b06d0a17f80899b7cd19414baf5ad221744f6610d9a4f",
+        "user": "0xd816Fd2b18672990ff9D8AAa8155774a796fE501",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x05df6f99b4a14e590000"
+        },
+        "reward": "524578740924901176646"
+    },
+    {
+        "timestamp": "1659280643",
+        "tx": "0x3ef611992357eeed9577a0b153467c7311427fe685197f29d8ca62a2fcb0a510",
+        "user": "0xdB012F63fCAd8765FCd1514ba7fCe621C5577892",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0xa5813492e411698000"
+        },
+        "reward": "57882310850348278507"
+    },
+    {
+        "timestamp": "1659280695",
+        "tx": "0xa5b5e25e78b42440642310302a76999caaa4f4ba57ab0b9357a281cffb7fad85",
+        "user": "0xc7eC028C706ec2FCfdCf66bba7e80DED634f6Ca9",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0xad78ebc5ac62000000"
+        },
+        "reward": "60671344628529600905"
+    },
+    {
+        "timestamp": "1659290284",
+        "tx": "0x5fcf9ad5d78576a6c6520ccd88481256555ed309124b7d5fd1cc518b41850dbe",
+        "user": "0x43A20a80E7e61B77eC834C1A9f7435Df0DD11b49",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x7ee2c7c54e33558000"
+        },
+        "reward": "44714351359525875733"
+    },
+    {
+        "timestamp": "1659294740",
+        "tx": "0xdb72ae4b1f8a0a88da371c69882a458ca2871442d1e3af084d76bc7573dfcf65",
+        "user": "0x6B5e7f211e9E870F0139400bF91F70A03153d730",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x77a331fa39e2a10000"
+        },
+        "reward": "42307459410383306679"
+    },
+    {
+        "timestamp": "1659310563",
+        "tx": "0x5fc3efb017ccf49eeec049a359270255f39bfcdf218235d089d3fd41defe67b7",
+        "user": "0x970b52Bf8964934E721f655325cc946e4901bE6b",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x056bc75e2d63100000"
+        },
+        "reward": "1940755211740532352"
+    },
+    {
+        "timestamp": "1659310906",
+        "tx": "0x4b377d656a81c3dc2a5e9ad60d06bfd9a8b103f60d9883e6b39830098ce9dc9c",
+        "user": "0xBc3D20463320958Dc7DE604b5FdCE94d9A85CEB2",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x3ba1910bf341b00000"
+        },
+        "reward": "21353963505866408321"
+    },
+    {
+        "timestamp": "1659365008",
+        "tx": "0xfa3f9f1611fa2aedbf14a97a11018d4f9605ec15e2a64f7235bc7d63076d8b7a",
+        "user": "0x3D2306f810CEc6641A17471b360A8C199a277BB8",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x43c33c193756480000"
+        },
+        "reward": "25279684453510158434"
+    },
+    {
+        "timestamp": "1659365016",
+        "tx": "0x14774dc96f33627ec9559c139197a430b4f4f476f9985511bd340c9b287235c5",
+        "user": "0x3D2306f810CEc6641A17471b360A8C199a277BB8",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x3635c9adc5dea00000"
+        },
+        "reward": "20223867492343680469"
+    },
+    {
+        "timestamp": "1659371669",
+        "tx": "0xa47e3685a4a34ebeab6e0f0902a1b7064112b997508b54153ac2eecfa0586acc",
+        "user": "0x362BfBcE031f9FE57691605fdC791FB1B084221E",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x6c6b935b8bbd400000"
+        },
+        "reward": "40647207784697090017"
+    },
+    {
+        "timestamp": "1659378575",
+        "tx": "0x36f965684f8568aaac4bf912aa10a4bf80efeeb0a03cf5e97d1170b8cba6cfed",
+        "user": "0xA0F0Cdb449723721F12A139065E1b39d479720fB",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x01b5402412ccebb28000"
+        },
+        "reward": "164762170796448126520"
+    },
+    {
+        "timestamp": "1659378591",
+        "tx": "0x05084573174dcb0b58696b099c7b22c6067a0fbeb3bb639c2a1d4dfd7430edff",
+        "user": "0xA0F0Cdb449723721F12A139065E1b39d479720fB",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x6c7905efe9709a8000"
+        },
+        "reward": "40874539970335180763"
+    },
+    {
+        "timestamp": "1659389329",
+        "tx": "0x1595598fba2a2e61d8a4047b992a4f9a73e41af5cb43e617966bf33f01eacd2c",
+        "user": "0x5947021aBb36F092e5110DaB43B7850b739BB520",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x043c33c1937564800000"
+        },
+        "reward": "411766966841667751989"
+    },
+    {
+        "timestamp": "1659420091",
+        "tx": "0xa01d3b4c85fdadc2a47f5a360fcaa049de5b1abd9915c281d43a33c375da9b8d",
+        "user": "0xe65572aeB09776e097ad49bA86B3C39FA4ab533d",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0xf3f20b8dfa69d00000"
+        },
+        "reward": "94722783249021027040"
+    },
+    {
+        "timestamp": "1659427522",
+        "tx": "0xd680ddb80d41278221a2d3b0443d00987ecac285bd1412ab88b2f0824fc178bc",
+        "user": "0x22E86ab483084053562cE713e94431C29D1Adb8b",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x6c6b935b8bbd400000"
+        },
+        "reward": "42321813872017606803"
+    },
+    {
+        "timestamp": "1659440410",
+        "tx": "0xfa86f90d258500cb6871efe2c0ffc081115cbeb9c5ddedfb3f36e8fb856779f4",
+        "user": "0x99C515BC95E43697B38f419d5359A3876B68E538",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x152d02c7e14af6800000"
+        },
+        "reward": "2135411341778585047486"
+    },
+    {
+        "timestamp": "1659442093",
+        "tx": "0xffc4ccbd2a46c2ba55d51aad43340b8879c361e653efd96dae84b2540ef84bc8",
+        "user": "0xd0dB7f650EbF84CaE67E827dCFFd839082A70F02",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x0710b84778b2360000"
+        },
+        "reward": "2786412609270786316"
+    },
+    {
+        "timestamp": "1659493059",
+        "tx": "0xc69c2def4544d5711aa45ddedc71c8630602b7f98a01d35988508162fe5b2d3b",
+        "user": "0x7EF52384Ea434381843DD86928d8216A7d56E6B9",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x01a6e5d80c107a8000"
+        },
+        "reward": "674775361428507375"
+    },
+    {
+        "timestamp": "1659493059",
+        "tx": "0x6f2e6e617923aba60599168c406b9adfabcac0df73e01b0e8d425eab4260be94",
+        "user": "0x7EF52384Ea434381843DD86928d8216A7d56E6B9",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x015af1d78b58c40000"
+        },
+        "reward": "553584617061421074"
+    },
+    {
+        "timestamp": "1659493059",
+        "tx": "0xbe616f9f7074387286aa1ca009d6ddd3b3a67268a2b2a53e9607c1f37665c498",
+        "user": "0x7EF52384Ea434381843DD86928d8216A7d56E6B9",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x0426e2c9b6ce648000"
+        },
+        "reward": "1695939689444687146"
+    },
+    {
+        "timestamp": "1659493059",
+        "tx": "0x2d9eebee033bb50ac675bafaf829c0b4d8ac9a2af2db9fe3622d0862bfb454d3",
+        "user": "0x7EF52384Ea434381843DD86928d8216A7d56E6B9",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x07f8c8c1dfe04b0000"
+        },
+        "reward": "3256273291094008586"
+    },
+    {
+        "timestamp": "1659493882",
+        "tx": "0x964c67e701ee1583ea9fac91cde1285392c8442433519bb8a6a6ed766fa7fc4a",
+        "user": "0xf00C9CAe156084EF119ABb5822fc5f86f79d184e",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x0111c389442ede338000"
+        },
+        "reward": "111887528230650112311"
+    },
+    {
+        "timestamp": "1659497742",
+        "tx": "0x3b04304c8eb222eb6982a335c455e1c1ee3557f141df1b7c04d25d337629d899",
+        "user": "0xF63b9D007013a850f9ad628D9268865070721dFD",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0xbdbc41e0348b300000"
+        },
+        "reward": "77747559520160611653"
+    },
+    {
+        "timestamp": "1659522452",
+        "tx": "0xb63fcf73f6a8e1d448ba2f623fe93bc986a9368999d6829a079421b047ef7335",
+        "user": "0xcB0c71764A4642FE54bee818c0D9bFf2f8637BA3",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x6c6b935b8bbd400000"
+        },
+        "reward": "45168041574546327884"
+    },
+    {
+        "timestamp": "1659527726",
+        "tx": "0xdf111383bbb7fdd083356570d7e965cc39d2da42da07ec0dabd4ca728014c319",
+        "user": "0x16E95f6Bf27f0b16B19AD7D07635E69c49897272",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x067088cdd26d643e0000"
+        },
+        "reward": "689186479588138008327"
+    },
+    {
+        "timestamp": "1659528026",
+        "tx": "0x734962fb8382905af6decc15a7eb2f2129e72e4bab077a04429908700acb1574",
+        "user": "0x14EB987F50389Df4229d01c44e65Dc27E29679c2",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x40be6c21c22f1a8000"
+        },
+        "reward": "27072187492326579136"
+    },
+    {
+        "timestamp": "1659528026",
+        "tx": "0xb6c8f5ea978501e88a342a528da2d1341e79d69700fba2482b21db1e33e0cf67",
+        "user": "0x14EB987F50389Df4229d01c44e65Dc27E29679c2",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x2dce1414bf44a28000"
+        },
+        "reward": "19153041152699351025"
+    },
+    {
+        "timestamp": "1659537539",
+        "tx": "0xb0a1b125839b5210ce37b93e5b636d93f476091f0a331010862886695b8b5df2",
+        "user": "0x4a40Bc93b4C8724B9BA9267587f37E6e80cDb358",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x032d26d12e980b600000"
+        },
+        "reward": "342152893502033107632"
+    },
+    {
+        "timestamp": "1659541890",
+        "tx": "0x3a66eaa0eb52baca8c1655b0da41158ffcf47a5c7541e0e784eb06adb07ad1ae",
+        "user": "0xbB72d39ba7F1F4b81808FF9112c03b26A2f560Ec",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x02a034919dfbfbc00000"
+        },
+        "reward": "283655202745931785061"
+    },
+    {
+        "timestamp": "1659556039",
+        "tx": "0x60406cc4994e71c05f6a1483e19d8568c6baaa4dc5650a1f56ac89a64014a59a",
+        "user": "0x0a14E36b53cE3aFc4330b6b09B689b21C0DDB3cE",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x15af1d78b58c400000"
+        },
+        "reward": "9235011980441409588"
+    },
+    {
+        "timestamp": "1659566695",
+        "tx": "0xa8b38cf8ce0e23a691d5cb9cce99e03097b377089f53e8c7d6486a3de612129e",
+        "user": "0x4840F547C39A18E416A240Ed64134516A41b97b3",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x05bf40f0cef7098000"
+        },
+        "reward": "2464559974942261655"
+    },
+    {
+        "timestamp": "1659566695",
+        "tx": "0x9e8fe6a18d8d5aba8ee0498f71f159b3ebdd188e23795f3499ee9ff4e3b8ff7e",
+        "user": "0x4840F547C39A18E416A240Ed64134516A41b97b3",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x03dabd0c4913d30000"
+        },
+        "reward": "1652927824726167883"
+    },
+    {
+        "timestamp": "1659577202",
+        "tx": "0xf41e745bc775898280acf933c4700a9307c9996fd407536ce67dd68bf7a2080d",
+        "user": "0x7302bC5b47F5588174A148C90747a88CB528A8c1",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x5b696b70dd56710000"
+        },
+        "reward": "39466324686061709217"
+    },
+    {
+        "timestamp": "1659577202",
+        "tx": "0x18a9ee9fec03e9a7f762bfe3a226c69496b47011e74ec7a668fdc48c061b0a81",
+        "user": "0x7302bC5b47F5588174A148C90747a88CB528A8c1",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x1725d0bda833cc0000"
+        },
+        "reward": "9993844709235492860"
+    },
+    {
+        "timestamp": "1659638946",
+        "tx": "0x456075346715bd8c8fd23f9db233137e28e42b80bc1062ced85166b286950add",
+        "user": "0x504552190Ee73a58cE0C9aD2690e82F67Ef14479",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x021e19e0c9bab2400000"
+        },
+        "reward": "243304047016225836913"
+    },
+    {
+        "timestamp": "1659660836",
+        "tx": "0xf84aa0e52532b9d4e0f843515076507a27a0e4787649edbebe6aff74141bc53f",
+        "user": "0x60B0224beBd002E2cF9eF7d505dcD07Ea5BD1156",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x0ab3ceb20dd1220b0000"
+        },
+        "reward": "1246256688490000707640"
+    },
+    {
+        "timestamp": "1659688798",
+        "tx": "0x97fa9ccede004bb7de12ae1085968acb71fcb621d2c724aa161a7f698ca535ae",
+        "user": "0x14EB987F50389Df4229d01c44e65Dc27E29679c2",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x1f7be9f1e801d10000"
+        },
+        "reward": "14564602935485538564"
+    },
+    {
+        "timestamp": "1659699954",
+        "tx": "0x450e868de8c6ca453a6ee595f7ea4654549bac6b77fd1cd3924161f2269e1b18",
+        "user": "0x27026fd0e2a5E0ebC808B2ED2943e3641999D1b1",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x312847e51ad2ca8000"
+        },
+        "reward": "22891977804778702426"
+    },
+    {
+        "timestamp": "1659711265",
+        "tx": "0x5a29c23b71d0647881afa5fff2fb5cafffa03e8439582be2287a8b9209955a20",
+        "user": "0xd4912C3e08EdBa5dEa3156Ef56A79716f776a2D9",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x02b5e3af16b1880000"
+        },
+        "reward": "1270727635591814579"
+    },
+    {
+        "timestamp": "1659713753",
+        "tx": "0x930004b33db21420876b37c58b0684fc90da0fc6fbd8b16dbfbbec77b775ee97",
+        "user": "0x427E27356Ef26855c13c6BadD1F771E1C14a93a2",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x2daf9a5261cde08000"
+        },
+        "reward": "21449725422458953291"
+    },
+    {
+        "timestamp": "1659738770",
+        "tx": "0x81290c91093ee26f6ec3996562746cdb14210f7ebd1c9d2813bf853fa86ec3be",
+        "user": "0x796c85135b28D778DABB786aa8a4f6B59554a0cd",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0xa39e7e88addb0000"
+        },
+        "reward": "304498979411428202"
+    },
+    {
+        "timestamp": "1659743041",
+        "tx": "0xaa9e4f2b25c475807d6dedaa106e3ac9c4a05aa0d47b180b15b506d5141a7cc6",
+        "user": "0xa4675d68f4fC3aE2D1644aE000027CdfEb68b377",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x69014665558ba40000"
+        },
+        "reward": "50150698146006847627"
+    },
+    {
+        "timestamp": "1659752769",
+        "tx": "0x3d313c1560479cb6b0cb4f5f651a847e68c845c3b357d0c9aa52f29680009cf0",
+        "user": "0x1830c41eeDEA4F101688f1aa6b2C2eF9370AD48D",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x25f273933db5700000"
+        },
+        "reward": "18225722999602303020"
+    },
+    {
+        "timestamp": "1659784818",
+        "tx": "0x17e891cad65415e2cc1a950142efa380ac86772a9b3d00d859be6c09cf3db0b1",
+        "user": "0x93c460A6d3Fd2BE77CF07a92E67614792a45A9c5",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x4563918244f40000"
+        },
+        "reward": "132585999264545805"
+    },
+    {
+        "timestamp": "1659786095",
+        "tx": "0x59a6ffccfce28450c2c90e389ca1f3a849a1147382ae51dee9f90a09ab7585b2",
+        "user": "0x35080cDA95A7A6959EFfc293f4A4274110B77777",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x10d98cfb57f42d0f0000"
+        },
+        "reward": "2111522494759516955308"
+    },
+    {
+        "timestamp": "1659790569",
+        "tx": "0x38d2068372fe559f9c7d7dd667c618eb09b74c9de8094fafedfdb77c5704ea37",
+        "user": "0x35080cDA95A7A6959EFfc293f4A4274110B77777",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x04972661c9ad0d990000"
+        },
+        "reward": "576700565921080974391"
+    },
+    {
+        "timestamp": "1659794899",
+        "tx": "0x3072e7bf635e1a611ef99422243747e5cd6c1f26d6c29e3807a6310face1e023",
+        "user": "0x5c200Dfef95d8Bc04315424B3f4a2249db248d45",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x025a5419af66253c0000"
+        },
+        "reward": "296311770840424520588"
+    },
+    {
+        "timestamp": "1659794899",
+        "tx": "0xf8c8fc24f0d3750b6f68e21df26a226c4d4159189da9854d62b1ae5ee7fe52dd",
+        "user": "0x5c200Dfef95d8Bc04315424B3f4a2249db248d45",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x3635c9adc5dea00000"
+        },
+        "reward": "26668326058898795840"
+    },
+    {
+        "timestamp": "1659794899",
+        "tx": "0x5fdf3617fef8ccea9f770098870d8ead06afa56394e9e7ba76a49f08c84f3e76",
+        "user": "0x5c200Dfef95d8Bc04315424B3f4a2249db248d45",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x4be4e7267b6ae00000"
+        },
+        "reward": "37335656482458314177"
+    },
+    {
+        "timestamp": "1659798470",
+        "tx": "0x754e71b6f2ebe9f6b97a9e114352822bedc89be0a3b6078c606cff1b6fab6f1f",
+        "user": "0x35080cDA95A7A6959EFfc293f4A4274110B77777",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x0a38dc9110ee56e00000"
+        },
+        "reward": "1289932998659699123455"
+    },
+    {
+        "timestamp": "1659798470",
+        "tx": "0x1e2a090f24e740854b6c6fff61763decf1ba359062cc6c8f48ac92db60a1d330",
+        "user": "0x35080cDA95A7A6959EFfc293f4A4274110B77777",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x40c52732b05b2b0000"
+        },
+        "reward": "31927224412730971583"
+    },
+    {
+        "timestamp": "1659798470",
+        "tx": "0xb9f26ea84fd0e496221fce5f9dab4e3b7742873fa077d49d7d5439e2b52e131d",
+        "user": "0x35080cDA95A7A6959EFfc293f4A4274110B77777",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x2d2e74c4aff6178000"
+        },
+        "reward": "22271360609923217980"
+    },
+    {
+        "timestamp": "1659801264",
+        "tx": "0xea4113e2cd1a0c005ed266e422b33a84718e69a89b990e66725a23d78af8568c",
+        "user": "0x7331D4F967331852a78D53f6040553c33de9Ff90",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x606ee43419b5530000"
+        },
+        "reward": "47609437170325143112"
+    },
+    {
+        "timestamp": "1659802059",
+        "tx": "0x28fda18d3d6621a1d9f8c5014dca08e348637b824a9934d08d6e0586778de9ed",
+        "user": "0xB8b3443bb3e12d225Ea5e4A17108ff60d026e774",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x015ce6c64c1a188000"
+        },
+        "reward": "673166943312528370"
+    },
+    {
+        "timestamp": "1659802059",
+        "tx": "0x7984cf9a21d61d2ebaa21f33bf424419a765b9cccafa9a756a44c05f9c659905",
+        "user": "0xB8b3443bb3e12d225Ea5e4A17108ff60d026e774",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x9802c9be35ad810000"
+        },
+        "reward": "75081797253264415899"
+    },
+    {
+        "timestamp": "1659802059",
+        "tx": "0x81b3fae1a6f561e786023abac8243586ea185274df7e26d90374ecfb361c2a0d",
+        "user": "0xB8b3443bb3e12d225Ea5e4A17108ff60d026e774",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x0242e9737c056b8000"
+        },
+        "reward": "1116946781762146334"
+    },
+    {
+        "timestamp": "1659803085",
+        "tx": "0x63e5010953c326775247623a965e596a393523f8e6a7eb0dd7ca4debe7c403db",
+        "user": "0xF9cEeaf31368B870aD5762204E3D0937FB2257b8",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x92626d249b7c7c8000"
+        },
+        "reward": "72344311442550285528"
+    },
+    {
+        "timestamp": "1659807685",
+        "tx": "0x77850044d69fbbe2cbadc1f299b8780d4989b897b01224596d0574ebd4877e8f",
+        "user": "0xF8DE1E04e35D3059Ed38a80c23a85884c3a12833",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x010f0cf064dd59200000"
+        },
+        "reward": "134300017195487664755"
+    },
+    {
+        "timestamp": "1659812854",
+        "tx": "0xc972bb65e02e1f9f11c4d900c8523648d0676af42fa89f99438057a63e3db148",
+        "user": "0x086f0f5D2cec81f9fd69332A2aAc8872188FDd8D",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x0a5b31e216de26728000"
+        },
+        "reward": "1317402684707154548157"
+    },
+    {
+        "timestamp": "1659813707",
+        "tx": "0x07cdd465b6870158557c3b6652f6f0e6ed4071484f44c8282e24b2d4c7d67ed8",
+        "user": "0xEA64D088Fbcbb24464F33B15A6A775261C362F01",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x1cd4cde6acce138000"
+        },
+        "reward": "14333317977174011195"
+    },
+    {
+        "timestamp": "1659817613",
+        "tx": "0xac5f8e82d505c22ebc326b57ae344a5f96f1fabcda2e3ed872f0efd4671a2c93",
+        "user": "0x6340aD78C79b6b5B9eFb7d7F0ed40b500253804E",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x36ffbcc4ac521c0000"
+        },
+        "reward": "27401868574085759783"
+    },
+    {
+        "timestamp": "1659818249",
+        "tx": "0x1920d971848880dbebf32deec0bb65744a1e6c452d32e139d96b9457a7d875a0",
+        "user": "0xb3F3658bF332ba6c9c0Cc5bc1201cABA7ada819B",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x2a5a058fc295ed000000"
+        },
+        "reward": "5403674078159244723049"
+    },
+    {
+        "timestamp": "1659824539",
+        "tx": "0x5f367800a099ae5f20eb297fd599912fbf18328b183ae0cabc77acab17673b37",
+        "user": "0xAE738A037EC2d8Cd4DC271475eed9e8a53604662",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x4933fee3fdcbb58000"
+        },
+        "reward": "36611831180699943285"
+    },
+    {
+        "timestamp": "1659831109",
+        "tx": "0x0337dbb3004c62c5a92ec92a86c81606df84634be9208baeab66aafd52acbbf2",
+        "user": "0xA0F0Cdb449723721F12A139065E1b39d479720fB",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x3a0f1c59994b5c0000"
+        },
+        "reward": "29143149274661949778"
+    },
+    {
+        "timestamp": "1659841994",
+        "tx": "0x62f6f1b471b0f4a46e20422fa9774126c5f7d703d0fd7ade7564e81a24125eec",
+        "user": "0xAC75CdC34283406B050caDF4EA5902A9310b138e",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0xd8d726b7177a800000"
+        },
+        "reward": "109497344974046465767"
+    },
+    {
+        "timestamp": "1659841994",
+        "tx": "0x7b71b8305e6c4c8ada487778e7f6ce0d445641b735a456690c6f4a656b39b280",
+        "user": "0xAC75CdC34283406B050caDF4EA5902A9310b138e",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x012a27d53bc048700000"
+        },
+        "reward": "150558849339313890430"
+    },
+    {
+        "timestamp": "1659841994",
+        "tx": "0x2252c6e06f377f90775da2bdf4aa27a41eccbd486c0dc460c04960387b572596",
+        "user": "0xAC75CdC34283406B050caDF4EA5902A9310b138e",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x97c9ce4cf6d5c00000"
+        },
+        "reward": "76648141481832526037"
+    },
+    {
+        "timestamp": "1659842043",
+        "tx": "0x61f91d5c70ce7b5f6f9f460e3824447e44017d1d21f9c8d596ac05e6cb6402c3",
+        "user": "0xAC75CdC34283406B050caDF4EA5902A9310b138e",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x0183fef69c3361db0000"
+        },
+        "reward": "195930554069441853801"
+    },
+    {
+        "timestamp": "1659842166",
+        "tx": "0x758408a680cb86495d8595d30c8f4879153be5b12c2771fed8bc6d366856dab9",
+        "user": "0xAC75CdC34283406B050caDF4EA5902A9310b138e",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x6c6b935b8bbd400000"
+        },
+        "reward": "54753829457052042954"
+    },
+    {
+        "timestamp": "1659850987",
+        "tx": "0xe02502ba958823b6cac63df8a4a80499b76dc227360d30cba5fa6d6cb19bceaf",
+        "user": "0xe7357cf2E07F55fB2F5cA79716f65E890221D8ad",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x7f64cd252a97f80000"
+        },
+        "reward": "64646507276764970361"
+    },
+    {
+        "timestamp": "1659873154",
+        "tx": "0xb12804ac6ba3f12101b9d5e4d6492b64ca0bc2cc3b4abd9709169b7ca979bb3d",
+        "user": "0x9092baEfF0aBDD6ac6E92fc4e7fedb7Ca71D7011",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0xb3f4746119ccc30000"
+        },
+        "reward": "92422015393492056504"
+    },
+    {
+        "timestamp": "1659879004",
+        "tx": "0x8fef0b2e275489daef0c1870c90e7490870d833b3d73d582632a5d4138e1b5a3",
+        "user": "0x82674C58211C0134348B016810Db718b832d4233",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x01ec1781ff62da320000"
+        },
+        "reward": "253526728802967115203"
+    },
+    {
+        "timestamp": "1659879004",
+        "tx": "0xa7a727dcad4edd577c7d03a2a8ed353b8cd80a8fc7c73da439de6b5cb55ff21c",
+        "user": "0x82674C58211C0134348B016810Db718b832d4233",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x02d9b3c0c607f1888000"
+        },
+        "reward": "375944064505962047331"
+    },
+    {
+        "timestamp": "1659889197",
+        "tx": "0xdd0a38f221736e299db5a57a21ab5c5b2803e4ca4f3c73d08a4a0e7075d37db4",
+        "user": "0xDcb3a61Eabc343e044989537F60FC61214EBdAa1",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x3ba1910bf341b00000"
+        },
+        "reward": "30890162024539853527"
+    },
+    {
+        "timestamp": "1659913701",
+        "tx": "0x634be0c1fa4e56bc59fd1123d48d1ccc9b227ded6b8881547ca5fe74af4391a8",
+        "user": "0xFA13A3c6Cf759E00f726991eB6DfE4E5E3a09d6F",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x3635c9adc5dea00000"
+        },
+        "reward": "28449309644255464553"
+    },
+    {
+        "timestamp": "1659920547",
+        "tx": "0x3c1494c68df9def849dbe56c63c4cd18963eef9ce5b068e5d79a6508f1cb1d7d",
+        "user": "0x04D23a785Fab0da015e661354c8D05b18876E9A9",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x3d8ea88432ec178000"
+        },
+        "reward": "32421612235578639861"
+    },
+    {
+        "timestamp": "1659927561",
+        "tx": "0xe00038c4d96f88ba5d092feb60a7dcba584dcf0681d97daebc6080197ad9aaa3",
+        "user": "0xA0F0Cdb449723721F12A139065E1b39d479720fB",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x4d1b04171681c10000"
+        },
+        "reward": "40760293869161807236"
+    },
+    {
+        "timestamp": "1659927574",
+        "tx": "0xc35c644eb9fa5d74ff9c770f1216db76c17a9482b9dc5a9e9f68ae73123bb652",
+        "user": "0xA0F0Cdb449723721F12A139065E1b39d479720fB",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x107b4717acbac98000"
+        },
+        "reward": "8712702240585612395"
+    },
+    {
+        "timestamp": "1659930291",
+        "tx": "0x84c537e9ec49eb103788a7975b77f0bfba108e6c9df24d4f10af21cde6c8f591",
+        "user": "0x049f3663E135616a6feF73A75c502F8ba56D8864",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x25f273933db5700000"
+        },
+        "reward": "20088609463026997724"
+    },
+    {
+        "timestamp": "1659930330",
+        "tx": "0xd3fc5e2c9c17971113245bae0d673ed7c435e4fbe51a70fa289d1e92164b7cb1",
+        "user": "0x049f3663E135616a6feF73A75c502F8ba56D8864",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x1b1ae4d6e2ef500000"
+        },
+        "reward": "14349299087547910573"
+    },
+    {
+        "timestamp": "1659930330",
+        "tx": "0x38e23667241953fa9e5b5369c9d8916910411228c03e27bf5f11412ff62d78ab",
+        "user": "0x049f3663E135616a6feF73A75c502F8ba56D8864",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x0f27d3b744f4bb8000"
+        },
+        "reward": "8023295790409713813"
+    },
+    {
+        "timestamp": "1659930374",
+        "tx": "0x20fe47a5b65265c4d51dce97ced3563d515ad6bf45481ee7d76fdba90d5172bd",
+        "user": "0x049f3663E135616a6feF73A75c502F8ba56D8864",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x1eeab5e6d774e78000"
+        },
+        "reward": "16367617205101654504"
+    },
+    {
+        "timestamp": "1659930409",
+        "tx": "0xe498ee6b872b231e9de8dddcd166d3282163649651541a97968cd2b1b2b9f0c8",
+        "user": "0x049f3663E135616a6feF73A75c502F8ba56D8864",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x1f711def073e900000"
+        },
+        "reward": "16645873837970460211"
+    },
+    {
+        "timestamp": "1659930409",
+        "tx": "0xb9b635d765aa1f4fcc1ba10ec2863005be49565235191b990cac68407c8f01a8",
+        "user": "0x049f3663E135616a6feF73A75c502F8ba56D8864",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x02e0d03a3383d08000"
+        },
+        "reward": "1523757551171320075"
+    },
+    {
+        "timestamp": "1659930462",
+        "tx": "0x7f6677e1a0138296ee34900545611c6182c6b5b5c3699842993dd7e80ce15ca0",
+        "user": "0x049f3663E135616a6feF73A75c502F8ba56D8864",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x05d5d1a7318bd28000"
+        },
+        "reward": "3089358810195242165"
+    },
+    {
+        "timestamp": "1659930462",
+        "tx": "0x64af9140e2c2137810c694a5dc5b0090e78db4687988068da6ad15a5b374c237",
+        "user": "0x049f3663E135616a6feF73A75c502F8ba56D8864",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x1a2ef8b4f4d1ac0000"
+        },
+        "reward": "13862378697004877006"
+    },
+    {
+        "timestamp": "1659934996",
+        "tx": "0x84f5dffe5453dd2279c0c57b2f4d54e25e7dd6540c554ff74ac87bba350c99be",
+        "user": "0xF2c06f90FB58844C09220e01E3116A2293Df6960",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0xbf1733b7bfe3f40000"
+        },
+        "reward": "101409128445394042689"
+    },
+    {
+        "timestamp": "1659935087",
+        "tx": "0x6268c5aea7a9b3ec4f7b987d92f542220e99a168732edb05cf2237c800511fa8",
+        "user": "0xF2c06f90FB58844C09220e01E3116A2293Df6960",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x29f361b0f21f230000"
+        },
+        "reward": "22263710919938851488"
+    },
+    {
+        "timestamp": "1659935087",
+        "tx": "0x4143d6e10f940f3df17b294eebbeea3996856ef93bce6981e2603bc73bb8762f",
+        "user": "0xF2c06f90FB58844C09220e01E3116A2293Df6960",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x2fb533e246299f0000"
+        },
+        "reward": "25319075497362378443"
+    },
+    {
+        "timestamp": "1659936612",
+        "tx": "0x9b659024a4013654731f694a9e62b32653458083035d38194c2aa668b2509fc7",
+        "user": "0x3B82B31bBE0DC3fE0f13D17f9a4d0455eF562e06",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x03635c9adc5dea000000"
+        },
+        "reward": "460684365486230108827"
+    },
+    {
+        "timestamp": "1659940309",
+        "tx": "0x2981c9b8bfffc1656de1f18f4bb1c466bb98e59b274b85bba2fce5fa2eb70768",
+        "user": "0x6d0b3Db2D2E848631a2e12AeA38F6C55099437F2",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x30ca024f987b900000"
+        },
+        "reward": "25963375751556431263"
+    },
+    {
+        "timestamp": "1659941258",
+        "tx": "0x4cbe21409f8bcceca31ec2c65df1b5ee2e4179770444e83501d7d14bebcee070",
+        "user": "0x77CA767F8234587a874764A1699e8e1ce48FAbB8",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x015b1269c3696bd78000"
+        },
+        "reward": "184787240396485913806"
+    },
+    {
+        "timestamp": "1659941258",
+        "tx": "0x47d7133122faadd516807ed434497e338745e8fd527d487eed4c8b1cb1e2303c",
+        "user": "0x77CA767F8234587a874764A1699e8e1ce48FAbB8",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x052028a18c1df58000"
+        },
+        "reward": "2728970855020532257"
+    },
+    {
+        "timestamp": "1659941258",
+        "tx": "0x0af2959025ebcdabe3491806afe7e3271de03cb63eb0c2a6bef99e43272be3c8",
+        "user": "0x77CA767F8234587a874764A1699e8e1ce48FAbB8",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x06b22ba4117b798000"
+        },
+        "reward": "3565057493218275046"
+    },
+    {
+        "timestamp": "1659941307",
+        "tx": "0x9477f59c195bc593f2f27f1544fca545bb7c696a8fa78303fbd95c76e45d58c4",
+        "user": "0x77CA767F8234587a874764A1699e8e1ce48FAbB8",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x07353b780826438000"
+        },
+        "reward": "3837731876255878377"
+    },
+    {
+        "timestamp": "1659941307",
+        "tx": "0x2127dfdaec29889653168e084523073a765d66719fbe81d1d55fd67a8cd32b04",
+        "user": "0x77CA767F8234587a874764A1699e8e1ce48FAbB8",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x02d70eab6d06b70000"
+        },
+        "reward": "1512140768462244896"
+    },
+    {
+        "timestamp": "1659941307",
+        "tx": "0x4b4d48838a232e634d7c1e7d5c98c0b700fbfbf875a47dd8354f4e654c0d2533",
+        "user": "0x77CA767F8234587a874764A1699e8e1ce48FAbB8",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x04406f5575c5e30000"
+        },
+        "reward": "2263737363437561886"
+    },
+    {
+        "timestamp": "1659941307",
+        "tx": "0x020f4a3db735d1d0d5d5fa773e866133e6bda5136970e747353a148a28188290",
+        "user": "0x77CA767F8234587a874764A1699e8e1ce48FAbB8",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x06a19d40e39a6f0000"
+        },
+        "reward": "3530714480681667670"
+    },
+    {
+        "timestamp": "1659943931",
+        "tx": "0x6e0faec36c2c4ebda5e07b735c93297fa69fd4ee39a88b7bd236b6f3895fc90d",
+        "user": "0x90B7f8eB3e7690AD5B093eF92Ad4055F2B61E693",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x010f0cf064dd59200000"
+        },
+        "reward": "144512466883645468725"
+    },
+    {
+        "timestamp": "1659944121",
+        "tx": "0x3e463df28f0f63d61f473705edb48f0ee43faa00d3eaab0ec08e82df7c789acc",
+        "user": "0x6E57ff9CEc63C54dFa6380f07396917844540468",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x01524dd567d77cf00000"
+        },
+        "reward": "180386906675714151340"
+    },
+    {
+        "timestamp": "1659945763",
+        "tx": "0x2cab1c79c58128eb4817255d7bfbd85d11c38c7e6e34ab82197a079d1db1933e",
+        "user": "0x9644E9ee42DdCBAb8Ae392780D13f24006d2267A",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x0404b474437c9b0000"
+        },
+        "reward": "2144462010399733052"
+    },
+    {
+        "timestamp": "1659963237",
+        "tx": "0xcb1bdad5fa8a7f25fc18aaf9853d2150f41d39a75efb3966542353f9d24da8ba",
+        "user": "0xb78196b3e667841047d1Bb1365AB8fB3d46aB1A8",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x048b355ae9c7b10000"
+        },
+        "reward": "2446807791360176090"
+    },
+    {
+        "timestamp": "1659965239",
+        "tx": "0x0abd43d6aeb9bd4ef1e57499dfee2401b51f3e4c27ac3965e87e851da3e1b70d",
+        "user": "0x8bE4F5D6C5970F2389686cAeA5b1B758ED5534A6",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x98de477669b5150000"
+        },
+        "reward": "82403551148783358643"
+    },
+    {
+        "timestamp": "1659965278",
+        "tx": "0x249d4402e4c9210700f27de54ff21a090498e4a95ce407389a01cf5cd29562ff",
+        "user": "0x8bE4F5D6C5970F2389686cAeA5b1B758ED5534A6",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x44c9a9ea06d4eb0000"
+        },
+        "reward": "37080735609693301089"
+    },
+    {
+        "timestamp": "1659965278",
+        "tx": "0x778e6af95f82e87dcab4e49ebdb53e9f923ebcb1c7c5c16ec269084691866b72",
+        "user": "0x8bE4F5D6C5970F2389686cAeA5b1B758ED5534A6",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x4803b617290a7e8000"
+        },
+        "reward": "38820147093325532186"
+    },
+    {
+        "timestamp": "1659965305",
+        "tx": "0x9d9fd298bcbbcf165721008fc4f4a65477568ecff48197531967e419c9d3e55a",
+        "user": "0x8bE4F5D6C5970F2389686cAeA5b1B758ED5534A6",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x02ce0cf55d4b7c8000"
+        },
+        "reward": "1512022850879570815"
+    },
+    {
+        "timestamp": "1659965305",
+        "tx": "0x54804abb4899c027d4dd7a7802cc2ceed2e0ddfcd5a23351e8280f2191eae1a4",
+        "user": "0x8bE4F5D6C5970F2389686cAeA5b1B758ED5534A6",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x0d09e2b1aba0f40000"
+        },
+        "reward": "7028695543061679761"
+    },
+    {
+        "timestamp": "1659965482",
+        "tx": "0xbc9496a1cf676e47268853fe94320fab9812e20aa5368b6f0578c0abfcfd8339",
+        "user": "0x6166D34fc1eAFf26972086459a90E4E974d56378",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x0c659049c1a2c4d60000"
+        },
+        "reward": "1710920779359177202153"
+    },
+    {
+        "timestamp": "1659965539",
+        "tx": "0x888473aff0bdcf0da2852be3a5cfd601c93395cfc7d45ac367d10ba01ef4e67d",
+        "user": "0x6166D34fc1eAFf26972086459a90E4E974d56378",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x410780b8dbaa4f8000"
+        },
+        "reward": "35059403338606636780"
+    },
+    {
+        "timestamp": "1659965600",
+        "tx": "0xb6cf1b071fb5c577aa63c3a99efc213969d22559a3743fc01085c90996b654c1",
+        "user": "0x6166D34fc1eAFf26972086459a90E4E974d56378",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x92618d5270efa30000"
+        },
+        "reward": "78921235034143199966"
+    },
+    {
+        "timestamp": "1659965600",
+        "tx": "0x0885e35ed438b3c31e0aa68278640bbd4af95567790c0f6e4037e8fd04ee07b3",
+        "user": "0x6166D34fc1eAFf26972086459a90E4E974d56378",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0xb8219cfe6b89a18000"
+        },
+        "reward": "99274246832104156979"
+    },
+    {
+        "timestamp": "1659965945",
+        "tx": "0x15a465df10b51bacc7ecf94d969ad5735c7474a9e780021e5996a7802d542deb",
+        "user": "0x4fa17ac5aF40d4791d9F8DeFe62d6b285D8b4695",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x48ca14946d6ded8000"
+        },
+        "reward": "39251279751434894336"
+    },
+    {
+        "timestamp": "1659965945",
+        "tx": "0xc2dbe06ab2943b0bb7cae8fe6bcea37523c71567ffc76cc531d9649cf6590613",
+        "user": "0x4fa17ac5aF40d4791d9F8DeFe62d6b285D8b4695",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x01bd3a2905b4150000"
+        },
+        "reward": "937837369015097097"
+    },
+    {
+        "timestamp": "1659965974",
+        "tx": "0xf2a601db28bae441200e3fbc9cbed26f53ae8a5eb63a39c26dd3e807b8a3f4a2",
+        "user": "0x4fa17ac5aF40d4791d9F8DeFe62d6b285D8b4695",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x035f1d797b68a50000"
+        },
+        "reward": "1818113732865663343"
+    },
+    {
+        "timestamp": "1659966055",
+        "tx": "0x9391e531afa09d1e37d13e8a040fe9db1489fcf94f40139562d02347266ce699",
+        "user": "0x4fa17ac5aF40d4791d9F8DeFe62d6b285D8b4695",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x043c4ca009f6d20000"
+        },
+        "reward": "2284123272492591240"
+    },
+    {
+        "timestamp": "1659966107",
+        "tx": "0xe315dbe40d519d930b487792180b4fe5dec93ab1454996deeb78956f730f66d3",
+        "user": "0x250fCEFAe5055f8888D03365Ba9E842bF7a7115C",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x0152782213b158540000"
+        },
+        "reward": "182532896361040421793"
+    },
+    {
+        "timestamp": "1659966113",
+        "tx": "0xd53cc46e4545eff65d16897db11304e2a83058f325651a534f4f21f221d446f4",
+        "user": "0x250fCEFAe5055f8888D03365Ba9E842bF7a7115C",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x06f3d714ff409f8000"
+        },
+        "reward": "3749421575570872142"
+    },
+    {
+        "timestamp": "1659966113",
+        "tx": "0x807ae16403ec0726de9a73d92ee6138e7ff2412378d4dcec3e852dff7abcde71",
+        "user": "0x250fCEFAe5055f8888D03365Ba9E842bF7a7115C",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x0fa03e9ccbf0cc0000"
+        },
+        "reward": "8426938349916591318"
+    },
+    {
+        "timestamp": "1659966113",
+        "tx": "0x552d6e12bfd557abca6dbc1b5585638f42a629af3f3eb9e83e1b28f0e6e032b4",
+        "user": "0x250fCEFAe5055f8888D03365Ba9E842bF7a7115C",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x13a1b02dce2b2f8000"
+        },
+        "reward": "10587143803601220003"
+    },
+    {
+        "timestamp": "1659966113",
+        "tx": "0xf1bcf556fca9657ce5aec001082452aecba054fdfbe52776f208ec7890738517",
+        "user": "0x250fCEFAe5055f8888D03365Ba9E842bF7a7115C",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x08243c4dc9280a8000"
+        },
+        "reward": "4390662679644692303"
+    },
+    {
+        "timestamp": "1659966207",
+        "tx": "0xbe1994478467592e2db44554025934789130f9e6b8685864ab28db905204ee4e",
+        "user": "0x03e517C7233a41ABAd99cA898AAd3AF284236a41",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x022bd9700e8a65d78000"
+        },
+        "reward": "299779053751519326826"
+    },
+    {
+        "timestamp": "1659966271",
+        "tx": "0x562822afbbc5e31e3beb8153ac9ef2f727b7092437a846ba8a50f77a4f5d06f1",
+        "user": "0x03e517C7233a41ABAd99cA898AAd3AF284236a41",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x0b6d21e24013490000"
+        },
+        "reward": "6162599981558706957"
+    },
+    {
+        "timestamp": "1659966271",
+        "tx": "0x726250973e93f0f5719f58ebce8d9bd9617131a07db07c6ad5ae8eb5dd6f460a",
+        "user": "0x03e517C7233a41ABAd99cA898AAd3AF284236a41",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x19a5032e2041838000"
+        },
+        "reward": "13831013600452515701"
+    },
+    {
+        "timestamp": "1659966305",
+        "tx": "0x073be429390a5941af2df14b3319c7d097402f1b706680afa2455bb487d41a1a",
+        "user": "0x03e517C7233a41ABAd99cA898AAd3AF284236a41",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x2041a88fe96e5b8000"
+        },
+        "reward": "17397343675117178384"
+    },
+    {
+        "timestamp": "1659966308",
+        "tx": "0x68d014a99f57e727c31cd6ef34b866b54978cfdd11998cd67da9aed41bdfe468",
+        "user": "0x03e517C7233a41ABAd99cA898AAd3AF284236a41",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x0ad78ebc5ac6200000"
+        },
+        "reward": "5847590255772960002"
+    },
+    {
+        "timestamp": "1659970749",
+        "tx": "0x718d33097044eee2867810f0bcb53ee18be660a685ba73940a1bc44bf6a8cea5",
+        "user": "0x1b0fc5cA8Ad31172DdF98455e1112BB42317c6AE",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x5150ae84a8cdf00000"
+        },
+        "reward": "43956790743433590385"
+    },
+    {
+        "timestamp": "1659970749",
+        "tx": "0xb81e1e91285cb75318ae1a3f67b529f1822b5348dbe03a9ce2004353ed23d09f",
+        "user": "0x1b0fc5cA8Ad31172DdF98455e1112BB42317c6AE",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x3ba1910bf341b00000"
+        },
+        "reward": "32234979878517966282"
+    },
+    {
+        "timestamp": "1659971100",
+        "tx": "0xbeb72af1f156831c9c86cf5288e35b9fd939d8b548bb84baaa369487ee4fb9a7",
+        "user": "0xA0F0Cdb449723721F12A139065E1b39d479720fB",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x0d8d726b7177a80000"
+        },
+        "reward": "7327447267665369958"
+    },
+    {
+        "timestamp": "1659971100",
+        "tx": "0xbaebe80eee6c2a2b41e349ed6aa5996804b13227b74fc8281d9be1a53c3142d3",
+        "user": "0xA0F0Cdb449723721F12A139065E1b39d479720fB",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x05c694c602d0718000"
+        },
+        "reward": "3122752856955486046"
+    },
+    {
+        "timestamp": "1659971100",
+        "tx": "0x8151ebac2f62ab9355f533fed435cacdd9736b39f6e24b1f1f66bcbd3d1abf0e",
+        "user": "0xA0F0Cdb449723721F12A139065E1b39d479720fB",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x090f21891ba44d8000"
+        },
+        "reward": "4897988161387310556"
+    },
+    {
+        "timestamp": "1659971100",
+        "tx": "0xa1d78fdeb779f40e8c62f4427c39d8da69c10b99a2de068579095d9fb8d2fc7f",
+        "user": "0xA0F0Cdb449723721F12A139065E1b39d479720fB",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x073eaeddec7a4e0000"
+        },
+        "reward": "3917077450559482811"
+    },
+    {
+        "timestamp": "1659971220",
+        "tx": "0xf7acc0fc477990a86ce0095b6d0a44425d490a64d6a1121f5849dbc9aeb47e0b",
+        "user": "0xA0F0Cdb449723721F12A139065E1b39d479720fB",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x0773fcd712c0948000"
+        },
+        "reward": "4029903678062827608"
+    },
+    {
+        "timestamp": "1659971220",
+        "tx": "0x64af1f1ffd715097a1b6e0937020220c5b4a7b544c49a4443ca8c8eb14c60805",
+        "user": "0xA0F0Cdb449723721F12A139065E1b39d479720fB",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x0730239f79edb20000"
+        },
+        "reward": "3886599324263873801"
+    },
+    {
+        "timestamp": "1659986412",
+        "tx": "0x330c96f65f21ae0fe3218895ec63dfaf8c292e4b0413345030d06002638b15fa",
+        "user": "0xFc3643Ead29ee8590AdDCc133202e1cCBBC4a3d1",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x340aad21b3b7000000"
+        },
+        "reward": "28357760833642852655"
+    },
+    {
+        "timestamp": "1659989029",
+        "tx": "0xe15321573d925fa9ddac84f0607c728964f1716eb6d8afb01993dff31e8e2ce0",
+        "user": "0xd9f84fB0a94d3594374EC295Dd90b54EebaADfef",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x054b40b1f852bda00000"
+        },
+        "reward": "739464153775732908690"
+    },
+    {
+        "timestamp": "1659989029",
+        "tx": "0xa0118c0a145833a4f0fef2f9a98acb1330cb409491b36e800bdfaac8e0c580a4",
+        "user": "0xd9f84fB0a94d3594374EC295Dd90b54EebaADfef",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x054b40b1f852bda00000"
+        },
+        "reward": "739464153775732908690"
+    },
+    {
+        "timestamp": "1659991377",
+        "tx": "0xa715737f18455ed0d224fe617991cf0b55de1cc73cb7929724732d970cedeff2",
+        "user": "0x06Fee2818ed2Bfce2635b03a231EbBC9Dd18860f",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x0fe1c215e8f838e00000"
+        },
+        "reward": "2221032410228575044319"
+    },
+    {
+        "timestamp": "1660030544",
+        "tx": "0xc0ef63eea3626884fabcb4168f6966c102bdd0c5318c3249163cc4ef834f27ea",
+        "user": "0x1b0fc5cA8Ad31172DdF98455e1112BB42317c6AE",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x3635c9adc5dea00000"
+        },
+        "reward": "30200925484593415450"
+    },
+    {
+        "timestamp": "1660045765",
+        "tx": "0x1206e80541ac004465ea822efe3d4c3d2347176e753d5e7b4fccb0168daeece8",
+        "user": "0x81276768BBe961b18Ce91263AaD2B712fbcCA721",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x043c33cc3bf152d38000"
+        },
+        "reward": "608582219630845588935"
+    },
+    {
+        "timestamp": "1660056105",
+        "tx": "0x8b8b53b1937f56e8b17330acda51234545e3d409d14fb5151408b89db79a9322",
+        "user": "0xf80691d91f3354f3C46D6574C24Ff7Ac4588266D",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x083f3339fdc6a00000"
+        },
+        "reward": "4652700298729445078"
+    },
+    {
+        "timestamp": "1660058200",
+        "tx": "0xeadf13c40e26798d7f975025627b82fdf9cd030a470aad89975dd6d39f8d3329",
+        "user": "0xD6278E5EeA2981B1D4Ad89f3d6C44670caD6E427",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x0ad78ebc5ac6200000"
+        },
+        "reward": "6123104377800526880"
+    },
+    {
+        "timestamp": "1660058200",
+        "tx": "0xeb855406e324db595dd1f72d89332f681b2258ac7483d1d718020c6f3c32f3ed",
+        "user": "0xD6278E5EeA2981B1D4Ad89f3d6C44670caD6E427",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x02b5e3af16b1880000"
+        },
+        "reward": "1530776094450131720"
+    },
+    {
+        "timestamp": "1660058200",
+        "tx": "0x67d64c2fd63edcfa9b8feebea28dde3e939a2599b64f494b55ae345e4739b985",
+        "user": "0xD6278E5EeA2981B1D4Ad89f3d6C44670caD6E427",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x8ac7230489e80000"
+        },
+        "reward": "306155218890026344"
+    },
+    {
+        "timestamp": "1660093137",
+        "tx": "0x3d713df6decd7750fcb67924b7059c946d2ddcef974d86a8ed130157dbda4504",
+        "user": "0x24CF63D40519D09Ef7826885d1A33F80c64cA9a8",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0xbc7c4e0fdb1a8e8000"
+        },
+        "reward": "108269526216322963474"
+    },
+    {
+        "timestamp": "1660093205",
+        "tx": "0x53268a9d70d93bc37cff3900683dbe0472490f9d32d00ff4eef4c2e231bcc297",
+        "user": "0x24CF63D40519D09Ef7826885d1A33F80c64cA9a8",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x6b760cbf48370a0000"
+        },
+        "reward": "61729643140763012509"
+    },
+    {
+        "timestamp": "1660093227",
+        "tx": "0x6d397779c9c0df602d5fcfd6ef1c54c37b2a8aa9061112d0514ac3b458a0ea29",
+        "user": "0x24CF63D40519D09Ef7826885d1A33F80c64cA9a8",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x5d2fd57f6123d50000"
+        },
+        "reward": "53530536133000734870"
+    },
+    {
+        "timestamp": "1660096831",
+        "tx": "0x7b7e1331b4d9858f0b1f59beeafc3096eefd0c4b25cbb14f2c9a55f7e83ac8ee",
+        "user": "0x24CF63D40519D09Ef7826885d1A33F80c64cA9a8",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x0413bc0b06905a8000"
+        },
+        "reward": "2346118178019596158"
+    },
+    {
+        "timestamp": "1660096831",
+        "tx": "0x433ba42a963f7cb657a32f9d738cb87208725160b0fbb256ea2d65e790b3ba53",
+        "user": "0x24CF63D40519D09Ef7826885d1A33F80c64cA9a8",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x14b577b484dbbf8000"
+        },
+        "reward": "11916698151862728504"
+    },
+    {
+        "timestamp": "1660108831",
+        "tx": "0x1648b6491e40f39a403aa9f630e48023d499ab7fe82bbc59a2e350109ed8ac0e",
+        "user": "0xA0F0Cdb449723721F12A139065E1b39d479720fB",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x20789633f1035a8000"
+        },
+        "reward": "18792879397955865076"
+    },
+    {
+        "timestamp": "1660108868",
+        "tx": "0x0aa9dde649a00ce86a2c41a585a0f085ad5ce97fba37274c1339c2823eff996a",
+        "user": "0xA0F0Cdb449723721F12A139065E1b39d479720fB",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x378250405275c28000"
+        },
+        "reward": "32126874268162012768"
+    },
+    {
+        "timestamp": "1660115311",
+        "tx": "0x7562a09a9e9931eee250dff628b05ef92d9f53e347b2e5c182fec2ec68222baa",
+        "user": "0x5a3CC4FfDe3112c246E86d888F637cE30a0aaFCf",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x6ba91b2e4a37b38000"
+        },
+        "reward": "62502354998437551649"
+    },
+    {
+        "timestamp": "1660121107",
+        "tx": "0x1e022135e511251296ea1ea6eebbc27d3c6de90a06d2b956624e6fbb02d85b6a",
+        "user": "0xe3E9858DD484A544d59187ac35175e9f560F1e9D",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x28a857425466f80000"
+        },
+        "reward": "23668929600478040758"
+    },
+    {
+        "timestamp": "1660121155",
+        "tx": "0x55c90b45fa15281f4e1a37d1efce1b456b2ccf93bc2b3072ca719faade6886e6",
+        "user": "0xe3E9858DD484A544d59187ac35175e9f560F1e9D",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x0f32a6d52301898000"
+        },
+        "reward": "8847679177422824403"
+    },
+    {
+        "timestamp": "1660150187",
+        "tx": "0x4aa414ca328576876a523319cf4588feaf5fd1bc26946aecbea3800e206383ad",
+        "user": "0x1Ccc5914dad16B432644F832890d8Cc40Df72A2D",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x026f583db961e0ac0000"
+        },
+        "reward": "367894708855320111144"
+    },
+    {
+        "timestamp": "1660153295",
+        "tx": "0xdd00f5c374e15d7884e3ca5592903232a17d9cfaec8e1ba83a903b8644d8852a",
+        "user": "0x71A2DD44FD3eA050f7131cc00E64Cd530ee3bD0a",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x02351bee2f8a33dd8000"
+        },
+        "reward": "334010076596267902554"
+    },
+    {
+        "timestamp": "1660153581",
+        "tx": "0x102a89dcfa599636dd2552cb29e90083c3ba86700ae977587fabde16c320fe41",
+        "user": "0x2b3188099dae25E1054ef620b76EEF524516b436",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x5150ae84a8cdf00000"
+        },
+        "reward": "48068095151750754079"
+    },
+    {
+        "timestamp": "1660163691",
+        "tx": "0x9314fb0d1afa1e17cd71298ab6249690c68a5119108528a89813f51dd6d3e962",
+        "user": "0x9D52ed746d5993E252865D24eD39A49F00Bd9586",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x2086ac351052600000"
+        },
+        "reward": "19318174631033911776"
+    },
+    {
+        "timestamp": "1660196724",
+        "tx": "0xd5ad15fb2f702c7d4f3f16b16143d47b8fb6c8f9b1174c7304e310f2cf3dd99b",
+        "user": "0x42e469a75f557d2e4eBfd8735126111E567Bec40",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x1c42c83f6c476a8000"
+        },
+        "reward": "17043110461866668802"
+    },
+    {
+        "timestamp": "1660196916",
+        "tx": "0x1acc81fbea5f7e1d71a5f80e299ef7635d0ae1d8d9b27e7949782b7e7dabce97",
+        "user": "0xE392FC3c2Fc3E06412A02bf79e650Ca6856c3465",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0xa80d24677efef00000"
+        },
+        "reward": "101354624219282861831"
+    },
+    {
+        "timestamp": "1660198504",
+        "tx": "0x269acb0b56f4c3ceb9bf0155bc34606de04b0178462f3aefb78daec96ce485ef",
+        "user": "0xc266672ab58f57C945fC5fe5cD89B2Ae591c6124",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x1b1ae4d6e2ef500000"
+        },
+        "reward": "16359423041771910487"
+    },
+    {
+        "timestamp": "1660198504",
+        "tx": "0x313715b53e1b6ea3194fc3eee20a99b19d61599580607e07a577aaa49f6601b1",
+        "user": "0xc266672ab58f57C945fC5fe5cD89B2Ae591c6124",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x1b1ae4d6e2ef500000"
+        },
+        "reward": "16359423041771910487"
+    },
+    {
+        "timestamp": "1660198504",
+        "tx": "0x7e933312adacf9563098351d670381344a673590ee83f30b0bf701feb5ec5bce",
+        "user": "0xc266672ab58f57C945fC5fe5cD89B2Ae591c6124",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x1b1ae4d6e2ef500000"
+        },
+        "reward": "16359423041771910487"
+    },
+    {
+        "timestamp": "1660198504",
+        "tx": "0x5e9fcf007c9f5915e0b7efd864f64d1eb9fed279b3d066ad14ffd6f440dbbb7a",
+        "user": "0xc266672ab58f57C945fC5fe5cD89B2Ae591c6124",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x1b1ae4d6e2ef500000"
+        },
+        "reward": "16359423041771910487"
+    },
+    {
+        "timestamp": "1660203911",
+        "tx": "0xe9af07b3368086423c12e86f69d550b432b18b03c1de81e40c1f39736df61bbe",
+        "user": "0xbd84c6D1d1Ede85e06E18e42155F39fd3Fc82d90",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x041eb63d55b1b00000"
+        },
+        "reward": "2492792662837350684"
+    },
+    {
+        "timestamp": "1660204208",
+        "tx": "0xbd8b52fde8352665aa5e45ea68ac14e1e0764bd5df38432b67c9ce6c86d3c3c7",
+        "user": "0xd98682149De98aB813DB999093a357eDf670DF02",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x03f514193abb840000"
+        },
+        "reward": "2394717976494734637"
+    },
+    {
+        "timestamp": "1660207776",
+        "tx": "0xa11ae5d26b0cccc36b56a8348a9ad23a0051991d8d1b78aabee42726d5121af9",
+        "user": "0xE528D09B200349403ed4f469D39341f74835b4fe",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x02544faa778090e00000"
+        },
+        "reward": "361436288567756439861"
+    },
+    {
+        "timestamp": "1660208017",
+        "tx": "0xa2636b3b996071df9a37e7b4a5b4295232ce34b3508c847b99e8e2cf8b1204ed",
+        "user": "0x72Df35D3BF214134172F2EbA75C6dDE981ad870B",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x3e37feba8cc9688000"
+        },
+        "reward": "37716178962703394311"
+    },
+    {
+        "timestamp": "1660208017",
+        "tx": "0xea290ff35f8f63f33d0e718058819783c1432a2b7a61731ad812092899bb4a9e",
+        "user": "0x72Df35D3BF214134172F2EbA75C6dDE981ad870B",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x4c9afac0f8280000"
+        },
+        "reward": "181395244254650460"
+    },
+    {
+        "timestamp": "1660208017",
+        "tx": "0x19f4c36e8d6a654b91c7a45e5ac61cd3aff3a8db4542affa59dbaf4c3c9a575b",
+        "user": "0x72Df35D3BF214134172F2EbA75C6dDE981ad870B",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x019e1cf9e6a1a80000"
+        },
+        "reward": "980585885608472777"
+    },
+    {
+        "timestamp": "1660208017",
+        "tx": "0x2f32e41ed1decc67c2e7f15d980a96ad7cf34b2bd4629dc564141c632ce34083",
+        "user": "0x72Df35D3BF214134172F2EbA75C6dDE981ad870B",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x0337376c36e7658000"
+        },
+        "reward": "1949308785134349754"
+    },
+    {
+        "timestamp": "1660208079",
+        "tx": "0x5b8d98e55b7dbdc71b4b8b6b2371ed6d3119863c774fa80855bebb5e07e88a94",
+        "user": "0x72Df35D3BF214134172F2EbA75C6dDE981ad870B",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x6c6b935b8bbd400000"
+        },
+        "reward": "65724773492819365369"
+    },
+    {
+        "timestamp": "1660216937",
+        "tx": "0xe94113a067a50fa2ae0a7c39d1ec35cfc74a6d3a8a9f55c3865c922616135de9",
+        "user": "0x6cFe9755269786F6681518c00BD22801f98f9e57",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x040d3d94cbc120218000"
+        },
+        "reward": "631320214110831180505"
+    },
+    {
+        "timestamp": "1660217108",
+        "tx": "0x93b9446ddceb9c40b78dc0bd3131c403fb3ef23d3f18228b46b235eadeaba70e",
+        "user": "0x6cFe9755269786F6681518c00BD22801f98f9e57",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x023934c5a09da1900000"
+        },
+        "reward": "346476293293977029705"
+    },
+    {
+        "timestamp": "1660220809",
+        "tx": "0xa4f0ae2fa6b257f743f830e5114f04ed61be8c09c82828047ffbab007903aaa2",
+        "user": "0x6B5e7f211e9E870F0139400bF91F70A03153d730",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x0e7247e488611dec0000"
+        },
+        "reward": "2254931969565346699555"
+    },
+    {
+        "timestamp": "1660221002",
+        "tx": "0x3558990228c45e3eef6533464f806030acb219b41f8df3e5ae25de34a7b5fc39",
+        "user": "0x6B5e7f211e9E870F0139400bF91F70A03153d730",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x027e650fdbf6487e8000"
+        },
+        "reward": "389278926740764228370"
+    },
+    {
+        "timestamp": "1660227315",
+        "tx": "0x767bd76e636d4e9ad2550bb2f0b708337bdf70c2c014f1d3c904d6554e01b985",
+        "user": "0x1b0fc5cA8Ad31172DdF98455e1112BB42317c6AE",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x233c8fe42703e80000"
+        },
+        "reward": "21547992254521595605"
+    },
+    {
+        "timestamp": "1660247228",
+        "tx": "0xa4ee9eab424272cb276c7aa78b3f5468261f4b895ef0353e2bb0413c62627451",
+        "user": "0x7c22Bab47407Fb92E49A419F12dFA59f9E6abD0d",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x0666244b1526821b0000"
+        },
+        "reward": "1010783027587320188048"
+    },
+    {
+        "timestamp": "1660255563",
+        "tx": "0x73fb2b83385f8586d60bce9d91571576aa9ed2d4cde542402449c38c88c784f6",
+        "user": "0xA0F0Cdb449723721F12A139065E1b39d479720fB",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x0d5f38549774d48000"
+        },
+        "reward": "8281721371023082358"
+    },
+    {
+        "timestamp": "1660255563",
+        "tx": "0x48e7d5cd6bf5e1abdef4d4a33b3561976cdc6ff32fb4c443ea2aed6227d4a2cf",
+        "user": "0xA0F0Cdb449723721F12A139065E1b39d479720fB",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x0b2aa4d52254638000"
+        },
+        "reward": "6915854606995332473"
+    },
+    {
+        "timestamp": "1660255589",
+        "tx": "0x78143cb3f6b23cda842737357adcf794b8f4bca4300d7f2304c95761e67ad1d6",
+        "user": "0xA0F0Cdb449723721F12A139065E1b39d479720fB",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x0b3e99a283e7668000"
+        },
+        "reward": "6964215195832789722"
+    },
+    {
+        "timestamp": "1660255589",
+        "tx": "0xedb197d8369bcf649a19dde89e1953cf9b2c034a3494f2e059497a37ada9f646",
+        "user": "0xA0F0Cdb449723721F12A139065E1b39d479720fB",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x0fa12917726bf90000"
+        },
+        "reward": "9680032493534216878"
+    },
+    {
+        "timestamp": "1660255589",
+        "tx": "0x80f58bb4a9e21a36c7a235df29abdc32d1e3499d0089675296b1839cc0d1fc6f",
+        "user": "0xA0F0Cdb449723721F12A139065E1b39d479720fB",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x071944c0352fda0000"
+        },
+        "reward": "4396529113963659870"
+    },
+    {
+        "timestamp": "1660257117",
+        "tx": "0xe6c4b7ddd80bc70c284759e812fd041b8de432c3a90e47875675f8e94f64b15b",
+        "user": "0xA0F0Cdb449723721F12A139065E1b39d479720fB",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x12a74375e96f430000"
+        },
+        "reward": "11560706704370514288"
+    },
+    {
+        "timestamp": "1660266622",
+        "tx": "0x258160e22cc9f3efdf0011f942ad51498da7e09d8155bb2361239976473236ea",
+        "user": "0xC3350aD1d08F85aCab2025657Fbee18C1C98CCE1",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x3635c9adc5dea00000"
+        },
+        "reward": "33740016096399880294"
+    },
+    {
+        "timestamp": "1660266622",
+        "tx": "0x3bcb43b62336066a9bcf716f6533a153efa08c94d6c1a7e6a57c73b5fef9dcda",
+        "user": "0xC3350aD1d08F85aCab2025657Fbee18C1C98CCE1",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x30ca024f987b900000"
+        },
+        "reward": "30366014486759892265"
+    },
+    {
+        "timestamp": "1660266622",
+        "tx": "0x5535643b8321b8f997f2d56abd3830cc833764f17f6d7341eb84500fef582221",
+        "user": "0xC3350aD1d08F85aCab2025657Fbee18C1C98CCE1",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x3635c9adc5dea00000"
+        },
+        "reward": "33740016096399880294"
+    },
+    {
+        "timestamp": "1660266622",
+        "tx": "0x85aae631388d1b4100008df7b5e9ba03d3c8a47565125698195d35ebfcfdd264",
+        "user": "0xC3350aD1d08F85aCab2025657Fbee18C1C98CCE1",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x3635c9adc5dea00000"
+        },
+        "reward": "33740016096399880294"
+    },
+    {
+        "timestamp": "1660266622",
+        "tx": "0xd2bf8eac8f89fa6b6b28a9426c015ff7e1711196fbbe8f2c55cf1e99e03ef022",
+        "user": "0xC3350aD1d08F85aCab2025657Fbee18C1C98CCE1",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x056bc75e2d63100000"
+        },
+        "reward": "3374001609639988029"
+    },
+    {
+        "timestamp": "1660292460",
+        "tx": "0x403d0c1496ca15c5849cd977b2ab871f2c4c434b987aaf62bc6e2552dacf8f17",
+        "user": "0xBcbE7E9a54b0FB501A91D7065d539B3efAA11522",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x1b1ae4d6e2ef500000"
+        },
+        "reward": "17063679256927257895"
+    },
+    {
+        "timestamp": "1660313645",
+        "tx": "0x8b0c2648ac936426d6905e62beb2a822c25b72ea7cfb76a144ec0d0ad5fe13bd",
+        "user": "0x4AdE11Fd5e8A66bF5399D0337Bb5ACeEd14FBDDB",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x01236efcbcbb340000"
+        },
+        "reward": "723343885219047065"
+    },
+    {
+        "timestamp": "1660326267",
+        "tx": "0x6cf5f206427f3976fbae321b48f735140b45d53bd352736e930843e31915b2ae",
+        "user": "0xEC1F066D8ba2335504f6C51a8587F00eec0AD0fC",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x18abd2a742ce998000"
+        },
+        "reward": "15762112730731445449"
+    },
+    {
+        "timestamp": "1660330421",
+        "tx": "0x768c440a6397d2b56373c259baf5cefd83b4409e5758651fda4f420717deac0d",
+        "user": "0x2b3188099dae25E1054ef620b76EEF524516b436",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x5150ae84a8cdf00000"
+        },
+        "reward": "52044658726873310457"
+    },
+    {
+        "timestamp": "1660330437",
+        "tx": "0xba6274c2fb83420a03481351cbad361c0dd1dc514797f9437ae787e88d7057d0",
+        "user": "0xEC1F066D8ba2335504f6C51a8587F00eec0AD0fC",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x473a62df858de70000"
+        },
+        "reward": "45588868665313691465"
+    },
+    {
+        "timestamp": "1660356565",
+        "tx": "0x16364b6f308e6633dad8c32eddd9b5a6e291a90b546c057cf3aaa176881d2162",
+        "user": "0xFE1028E5D69065d1A88842903CB278E43687E17A",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x878678326eac900000"
+        },
+        "reward": "87720922183596097557"
+    },
+    {
+        "timestamp": "1660356577",
+        "tx": "0x5284e2a72cb67e06bb05aad45502033acd3c07bc5de8890e0cef7a8c070455cc",
+        "user": "0xFE1028E5D69065d1A88842903CB278E43687E17A",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x878678326eac900000"
+        },
+        "reward": "87721371919354424017"
+    },
+    {
+        "timestamp": "1660356892",
+        "tx": "0x8358a0a14a720d9fa3fd4897610015641ac224286cbec7315eacad48bc8be03d",
+        "user": "0xFE1028E5D69065d1A88842903CB278E43687E17A",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x878678326eac900000"
+        },
+        "reward": "87733177483010493583"
+    },
+    {
+        "timestamp": "1660356936",
+        "tx": "0x51bbaefc7b1d22dd9061bf570a33623e1c33d53b92d8dbd5eccd7afdae13f0c6",
+        "user": "0xFE1028E5D69065d1A88842903CB278E43687E17A",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x5150ae84a8cdf00000"
+        },
+        "reward": "52640895908474614361"
+    },
+    {
+        "timestamp": "1660383718",
+        "tx": "0x483f5632e28badc4619933f145ba0c6eefd8a26a3f3d6177f9d562859e3d1b9d",
+        "user": "0xF03F38Fd0F2f966E88c71ce5534F60e69cEF137b",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x022b1c8c1227a00000"
+        },
+        "reward": "1419816988331988706"
+    },
+    {
+        "timestamp": "1660389480",
+        "tx": "0xce42362e14dbaa4c6a5f92b0448ae8609ef5b39dc9b004416e2d61e17c35060b",
+        "user": "0x48214cd3057a21234963D7Ec95F7E1db6bb91DE1",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x016154d366a58f188000"
+        },
+        "reward": "231915544389708117671"
+    },
+    {
+        "timestamp": "1660391100",
+        "tx": "0xb04ef2171d5355c3c04044d6ba1243c01d1d2760d58b48fd3fc63826d061ed85",
+        "user": "0x1b0fc5cA8Ad31172DdF98455e1112BB42317c6AE",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x2e141ea081ca080000"
+        },
+        "reward": "30265176234147127900"
+    },
+    {
+        "timestamp": "1660473505",
+        "tx": "0x6f48c8898aa797bfe7455e8c9887c37f4f470eab69bcbf4429b3c58a5902f2bb",
+        "user": "0x4765697e4E357148F0819B961Bd7EC4837D1020a",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x406d7cb4a865068000"
+        },
+        "reward": "43785350097052603806"
+    },
+    {
+        "timestamp": "1660568547",
+        "tx": "0xfd9650ee51dc13dcd4d36334ecd60bc4064b885af8b22258ce73532129da6c53",
+        "user": "0xbB1b4d9229b7D13ea71D858d5cD90Bb86c14FDAF",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x9c71bdc5e8fa8000"
+        },
+        "reward": "431375230226422892"
+    },
+    {
+        "timestamp": "1660571476",
+        "tx": "0x44e91f8b9f29ca987b43ce1f89d15bfda83de2a5f29a3bd7abf07cb092918826",
+        "user": "0xB13a509B8E3Dd88f4a5239c1cC4a749111CCa5a7",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x3635c9adc5dea00000"
+        },
+        "reward": "38310140925361698141"
+    },
+    {
+        "timestamp": "1660572045",
+        "tx": "0x34b70863f2046cc4df42ab64d4f6b009c388509b69940a2f9791f612eb725466",
+        "user": "0xA4A4391e36EA795760c06D32E4cB0B1968c87f35",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x1b1ae4d6e2ef500000"
+        },
+        "reward": "19159335456788978329"
+    },
+    {
+        "timestamp": "1660572045",
+        "tx": "0x4a07421359c9a229b5ccc1479816ed9759910d2d99021a95fb32fdbd3a5b1d24",
+        "user": "0xA4A4391e36EA795760c06D32E4cB0B1968c87f35",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x1b1ae4d6e2ef500000"
+        },
+        "reward": "19159335456788978329"
+    },
+    {
+        "timestamp": "1660572045",
+        "tx": "0x8f170ed5ca74c9dacb1978f9915828ccd0e008353fb0ac341465cf31184f58a6",
+        "user": "0xA4A4391e36EA795760c06D32E4cB0B1968c87f35",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x1b1ae4d6e2ef500000"
+        },
+        "reward": "19159335456788978329"
+    },
+    {
+        "timestamp": "1660572045",
+        "tx": "0xa66512383c2ee37e454cb8fc949fa84fc95823acb896a1b7e998c632b99e4bbc",
+        "user": "0xA4A4391e36EA795760c06D32E4cB0B1968c87f35",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x1b268990f0f5dd8000"
+        },
+        "reward": "19191484821685470235"
+    },
+    {
+        "timestamp": "1660572453",
+        "tx": "0xcfe73aed7647fbab86dd2d68f53f5b987ab7a033fa6dc05084c7dd658109d1e2",
+        "user": "0xA607fBDCb2C9D02eD3d64c73410cc7dC4C32695F",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x06af8af87bcaed8a8000"
+        },
+        "reward": "1210005246905021573486"
+    },
+    {
+        "timestamp": "1660580860",
+        "tx": "0xc61081ee2409791be62e1d72dfad64d1041d1be0e55314688bdd87ec61c956c5",
+        "user": "0x9a290AF64601F34debadc26526a1A52F7a554E1b",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x3635c9adc5dea00000"
+        },
+        "reward": "38450818270566214725"
+    },
+    {
+        "timestamp": "1660586862",
+        "tx": "0xf28a1c540236c287b5b08de91ea4910ca1c7168e54ea3e666c428940ac2ba6c8",
+        "user": "0x5f99E102d9E61C67ECE3b558EAaEd7A802fBa296",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x41a455f07b990000"
+        },
+        "reward": "182297962263830818"
+    },
+    {
+        "timestamp": "1660586978",
+        "tx": "0x9380249c662db2fcf4d618e8609cdd76ea9ea6392e6e040af19be1bb21f6324d",
+        "user": "0x5f99E102d9E61C67ECE3b558EAaEd7A802fBa296",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x0605e0b358850000"
+        },
+        "reward": "16727459922170321"
+    },
+    {
+        "timestamp": "1660737305",
+        "tx": "0x221de59c8ac87496b65d80c721244045d61616486b1f0b63a161ed22311045d7",
+        "user": "0x5673c3968229A050aEe44FeC67d1D82BFCcbAeF9",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x19b21248a3ef280000"
+        },
+        "reward": "19337358649488236905"
+    },
+    {
+        "timestamp": "1660750723",
+        "tx": "0xa5e33e1c70e03b72c2667a2c99ddcf459fa448b102f03eed6a44a3ac0f09ec4a",
+        "user": "0x21c0BA32dcC87c840F08d197A3317eC56Aefdf03",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x01f2e0f38a11be0000"
+        },
+        "reward": "1473769757990707736"
+    },
+    {
+        "timestamp": "1660753836",
+        "tx": "0xf151cfb8ec798867452031e5751f1f0e16d2304b55c8ba30a6be1656236edd53",
+        "user": "0x8929d48261dD431AB92630bd23dC2328b2EcFecF",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x43c33c193756480000"
+        },
+        "reward": "51304918360386005381"
+    },
+    {
+        "timestamp": "1660820497",
+        "tx": "0xc7754db09f57637dd0b12f09b73b50b0abac8ea1c47bcc9c0aa023de8962c849",
+        "user": "0xa647A3006Da3bfBeaDA20B967E5f8FBd3641D762",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x6f05b59d3b200000"
+        },
+        "reward": "336346100276017135"
+    },
+    {
+        "timestamp": "1660820541",
+        "tx": "0xc8ea471166cca1c586626224546d41b362fed3caf961b53f91304d8ee63a078c",
+        "user": "0xa647A3006Da3bfBeaDA20B967E5f8FBd3641D762",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x210b02e28a348000"
+        },
+        "reward": "100106578631882443"
+    },
+    {
+        "timestamp": "1660832993",
+        "tx": "0xe478e7171d6cd2f9921f92a343ca45b38534918845c801418cde44b52af23b9e",
+        "user": "0x7bc3cd4A42CB163228cA08d68186256Bf36e7B0f",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x01969368974c05b00000"
+        },
+        "reward": "316729443517777924258"
+    },
+    {
+        "timestamp": "1660832993",
+        "tx": "0xc26f8a095c5148dc44a56cbe4ad7d3058480ce360bbc616a0935764470ace579",
+        "user": "0x7bc3cd4A42CB163228cA08d68186256Bf36e7B0f",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x010f0cf064dd59200000"
+        },
+        "reward": "211152962345185282839"
+    },
+    {
+        "timestamp": "1660836490",
+        "tx": "0x407bb03f4cbed9a4f7d1bf8dc5229d6b19352102fe5d89fa35173ffcb19d0212",
+        "user": "0xd0dB7f650EbF84CaE67E827dCFFd839082A70F02",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x2945c53e3a030000"
+        },
+        "reward": "125749691568449017"
+    },
+    {
+        "timestamp": "1660836490",
+        "tx": "0x8c0c3379c314b33fead68edcebe5a5b358f33d88220d840ae307925d2fc3bc70",
+        "user": "0xd0dB7f650EbF84CaE67E827dCFFd839082A70F02",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x22f549275d358000"
+        },
+        "reward": "106510918984842997"
+    },
+    {
+        "timestamp": "1660858806",
+        "tx": "0xabef980c7eceb949b331f1accb2a3980bbfbb6aa033092c2222c8828fc6eecfb",
+        "user": "0x63A9b7277Fcb38F4484957D74D9dA44d381D4E23",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x15af1d78b58c400000"
+        },
+        "reward": "17047024042677234672"
+    },
+    {
+        "timestamp": "1660858806",
+        "tx": "0xd863531f73aacda3007d7b3ba010209b6a46e02bce3068b1f04a7716d18e9e97",
+        "user": "0x63A9b7277Fcb38F4484957D74D9dA44d381D4E23",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x0bed1d0263d9f00000"
+        },
+        "reward": "9375863223472479069"
+    },
+    {
+        "timestamp": "1660902901",
+        "tx": "0x8747f62f9e687126e86e8a569f1295ecf0359c0c43aa5e05fcdf677ee55656eb",
+        "user": "0x3B82B31bBE0DC3fE0f13D17f9a4d0455eF562e06",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x0743681f2ecfba700000"
+        },
+        "reward": "1484455867340732863106"
+    },
+    {
+        "timestamp": "1660918356",
+        "tx": "0x4dac7b4c236a50903f2e7274c6301d5b4a14310b3478d5f5701ffed8e1ebacc5",
+        "user": "0x5Fa6e0e05800093f90d371086aAAD3cBbA362c2A",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x010f0cf064dd59200000"
+        },
+        "reward": "217551427934855545601"
+    },
+    {
+        "timestamp": "1660918356",
+        "tx": "0x340f9c727d27e6679b60051264f40975c089065799ab2e5940887bb87a91562d",
+        "user": "0x5Fa6e0e05800093f90d371086aAAD3cBbA362c2A",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x017b7883c06916600000"
+        },
+        "reward": "304571999108797763842"
+    },
+    {
+        "timestamp": "1660918356",
+        "tx": "0xc23a1fea1ffbd25ae07ddb481cdcc0b3f65745f6a7fbbefc64c69ccb80db1b00",
+        "user": "0x5Fa6e0e05800093f90d371086aAAD3cBbA362c2A",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x6c6b935b8bbd400000"
+        },
+        "reward": "87020571173942218240"
+    },
+    {
+        "timestamp": "1660918378",
+        "tx": "0x5e7185bcb7237ffa097cfecb2937870fc518bcb9ea832135b05c654e9e7d8d5c",
+        "user": "0x5Fa6e0e05800093f90d371086aAAD3cBbA362c2A",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x3635c9adc5dea00000"
+        },
+        "reward": "43510615393193881857"
+    },
+    {
+        "timestamp": "1660926764",
+        "tx": "0xc9eac228d665a3ce781bcb2b99f41545ab327c1ee818278f7796735012500aa5",
+        "user": "0xAea6D987D521B0e61FD4af5164Ab743E00eeC94f",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x377b63727746d70000"
+        },
+        "reward": "44660127139167670384"
+    },
+    {
+        "timestamp": "1660938064",
+        "tx": "0xc35b8b420befe87fb2e6df99409f83c6a9bf7c2a9173c6a2ef9a9d4d755ebec4",
+        "user": "0xF2c06f90FB58844C09220e01E3116A2293Df6960",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x03959e9e65698dff0000"
+        },
+        "reward": "741503743265698811229"
+    },
+    {
+        "timestamp": "1660938152",
+        "tx": "0x7e85dec87fab5b4bcb7dc67837f1ccffc0146b8af63457d05ade1e72d46b957b",
+        "user": "0xF2c06f90FB58844C09220e01E3116A2293Df6960",
+        "amountWithdrawn": {
+            "type": "BigNumber",
+            "hex": "0x0364fec53ab87e120000"
+        },
+        "reward": "702232813630623090340"
+    }
+]

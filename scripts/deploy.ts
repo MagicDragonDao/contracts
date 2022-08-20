@@ -30,7 +30,10 @@ export async function deploy(): Promise<void> {
 
     // Deploy the contracts
     const factory = await ethers.getContractFactory("AtlasMineStakerUpgradeable");
-    const staker = <AtlasMineStakerUpgradeable>await factory.deploy();
+    const staker = <AtlasMineStakerUpgradeable>await factory.deploy({
+        gasLimit: 75_000_000,
+    });
+
     await staker.deployed();
 
     console.log("Staker implementation deployed to:", staker.address);

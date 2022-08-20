@@ -11,7 +11,7 @@ export async function main(): Promise<void> {
     const CHUNK_SIZE = 20;
 
     const minef = await ethers.getContractFactory("AtlasMine");
-    const stakerf = await ethers.getContractFactory("AtlasMineStaker");
+    const stakerf = await ethers.getContractFactory("AtlasMineStakerUpgradeable");
 
     const mine = <AtlasMine>await minef.attach(MINE_ADDR);
     const staker = <AtlasMineStakerUpgradeable>await stakerf.attach(STAKER_ADDR);
@@ -25,25 +25,25 @@ export async function main(): Promise<void> {
     console.log("Have this many deposits:", depositIds.length);
     console.log();
 
-    for (let i = 0; i < depositIds.length; i += CHUNK_SIZE) {
-        const start = i;
-        const end = i + CHUNK_SIZE;
+    // for (let i = 0; i < depositIds.length; i += CHUNK_SIZE) {
+    //     const start = i;
+    //     const end = i + CHUNK_SIZE;
 
-        const chunk = depositIds.slice(start, end);
+    //     const chunk = depositIds.slice(start, end);
 
-        try {
-            const tx = await staker.accrue(chunk);
-            const receipt = await tx.wait();
+    //     try {
+    //         const tx = await staker.accrue(chunk);
+    //         const receipt = await tx.wait();
 
-            console.log(`Accrued rewards for deposits ${start}-${end - 1}`);
-            console.log("Tx ID:", receipt.transactionHash);
-            console.log();
-        } catch (e) {
-            console.error("Got error accuring:");
-            console.error(e.message);
-            console.log();
-        }
-    }
+    //         console.log(`Accrued rewards for deposits ${start}-${end - 1}`);
+    //         console.log("Tx ID:", receipt.transactionHash);
+    //         console.log();
+    //     } catch (e) {
+    //         console.error("Got error accuring:");
+    //         console.error(e.message);
+    //         console.log();
+    //     }
+    // }
 }
 
 // We recommend this pattern to be able to use async/await everywhere
