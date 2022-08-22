@@ -221,7 +221,7 @@ contract AtlasMineStakerUpgradeable is
      * @param _amount               The amount to withdraw.
      *
      */
-    function withdraw(uint256 depositId, uint256 _amount) public virtual override whenNotAccruing {
+    function withdraw(uint256 depositId, uint256 _amount) public virtual override nonReentrant whenNotAccruing {
         UserStake storage s = userStake[msg.sender][depositId];
         require(s.amount > 0, "No deposit");
         require(block.timestamp >= s.unlockAt, "Deposit locked");
