@@ -538,7 +538,7 @@ contract AtlasMineStakerUpgradeable is
      *         If unlockAll is set to true in the Atlas Mine, this can withdraw
      *         all stake.
      */
-    function unstakeAllFromMine() external override onlyOwner {
+    function unstakeAllFromMine() external override onlyOwner whenNotAccruing {
         uint256 totalStakes = stakes.length;
         for (uint256 i = nextActiveStake; i < totalStakes; i++) {
             Stake memory s = stakes[i];
