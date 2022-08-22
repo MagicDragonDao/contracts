@@ -128,6 +128,13 @@ contract AtlasMineStakerUpgradeable is
     bool private _resetCalled;
     /// @notice The next stake index with an active deposit
     uint256 public nextActiveStake;
+    /// @notice The defined accrual windows in terms of UTC hours.
+    ///         Must be an even-length array of increasing order
+    uint256[] public accrualWindows;
+    /// @notice Whether the accRewardsPerShare reset has been called (upgrade #3)
+    bool private _rewardsResetCalled;
+    /// @notice Whether the accRewardsPerShare reset has been called (upgrade #3)
+    uint256 private accrueIncentiveBps;
 
     // ========================================== INITIALIZER ===========================================
 
@@ -184,11 +191,9 @@ contract AtlasMineStakerUpgradeable is
      *
      * @param _amount               The amount of tokens to deposit.
      */
-    function deposit(uint256 _amount) public virtual override nonReentrant {
+    function deposit(uint256 _amount) public virtual override nonReentrant whenNotAccruing {
         require(!schedulePaused, "new staking paused");
         require(_amount > 0, "Deposit amount 0");
-
-        _updateRewards();
 
         // Add user stake
         uint256 newDepositId = ++currentId[msg.sender];
@@ -197,7 +202,7 @@ contract AtlasMineStakerUpgradeable is
 
         s.amount = _amount;
         s.unlockAt = block.timestamp + locktime + 1 days;
-        s.rewardDebt = ((_amount * accRewardsPerShare) / ONE).toInt256();
+        s.rewardDebt = _accumulatedRewards(s.amount);
 
         // Update global accounting
         totalStaked += _amount;
@@ -220,13 +225,10 @@ contract AtlasMineStakerUpgradeable is
      * @param _amount               The amount to withdraw.
      *
      */
-    function withdraw(uint256 depositId, uint256 _amount) public virtual override nonReentrant {
+    function withdraw(uint256 depositId, uint256 _amount) public virtual override nonReentrant whenNotAccruing {
         UserStake storage s = userStake[msg.sender][depositId];
         require(s.amount > 0, "No deposit");
         require(block.timestamp >= s.unlockAt, "Deposit locked");
-
-        // Distribute tokens
-        _updateRewards();
 
         magic.safeTransfer(msg.sender, _withdraw(s, depositId, _amount));
     }
@@ -237,12 +239,11 @@ contract AtlasMineStakerUpgradeable is
      *         distribute rewards for all stakes via 'withdraw'.
      *
      */
-    function withdrawAll() public virtual nonReentrant usesBuffer {
-        // Distribute tokens
-        _updateRewards();
-
+    function withdrawAll() public virtual nonReentrant whenNotAccruing usesBuffer {
         uint256[] memory depositIds = allUserDepositIds[msg.sender].values();
-        for (uint256 i = 0; i < depositIds.length; i++) {
+        uint256 numDeposits = depositIds.length;
+
+        for (uint256 i = 0; i < numDeposits; i++) {
             UserStake storage s = userStake[msg.sender][depositIds[i]];
 
             if (s.amount > 0 && s.unlockAt > 0 && s.unlockAt <= block.timestamp) {
@@ -279,17 +280,18 @@ contract AtlasMineStakerUpgradeable is
         }
 
         // Update user accounting
-        int256 accumulatedRewards = ((s.amount * accRewardsPerShare) / ONE).toInt256();
+        int256 accumulatedRewards = _accumulatedRewards(s.amount);
         uint256 reward;
 
         if (s.rewardDebt < accumulatedRewards) {
-            reward = (accumulatedRewards - s.rewardDebt).toUint256();
+            // Reduce by 1 wei to work around off-by-one error in atlas mine
+            reward = (accumulatedRewards - s.rewardDebt - 1).toUint256();
         }
 
         payout = _amount + reward;
 
         s.amount -= _amount;
-        s.rewardDebt = ((s.amount * accRewardsPerShare) / ONE).toInt256();
+        s.rewardDebt = _accumulatedRewards(s.amount);
 
         // Update global accounting
         totalStaked -= _amount;
@@ -321,10 +323,7 @@ contract AtlasMineStakerUpgradeable is
      * @param depositId             The ID of the deposit to claim rewards from.
      *
      */
-    function claim(uint256 depositId) public virtual override nonReentrant {
-        // Distribute tokens
-        _updateRewards();
-
+    function claim(uint256 depositId) public virtual override nonReentrant whenNotAccruing {
         UserStake storage s = userStake[msg.sender][depositId];
 
         require(s.amount > 0, "No deposit");
@@ -337,12 +336,11 @@ contract AtlasMineStakerUpgradeable is
      *         Will apply to both locked and unlocked deposits.
      *
      */
-    function claimAll() public virtual nonReentrant usesBuffer {
-        // Distribute tokens
-        _updateRewards();
-
+    function claimAll() public virtual nonReentrant usesBuffer whenNotAccruing {
         uint256[] memory depositIds = allUserDepositIds[msg.sender].values();
-        for (uint256 i = 0; i < depositIds.length; i++) {
+        uint256 numDeposits = depositIds.length;
+
+        for (uint256 i = 0; i < numDeposits; i++) {
             UserStake storage s = userStake[msg.sender][depositIds[i]];
 
             if (s.amount > 0) {
@@ -365,10 +363,11 @@ contract AtlasMineStakerUpgradeable is
      */
     function _claim(UserStake storage s, uint256 depositId) internal returns (uint256 reward) {
         // Update accounting
-        int256 accumulatedRewards = ((s.amount * accRewardsPerShare) / ONE).toInt256();
+        int256 accumulatedRewards = _accumulatedRewards(s.amount);
 
         if (s.rewardDebt < accumulatedRewards) {
-            reward = (accumulatedRewards - s.rewardDebt).toUint256();
+            // Reduce by 1 wei to work around off-by-one error in atlas mine
+            reward = (accumulatedRewards - s.rewardDebt - 1).toUint256();
         }
 
         s.rewardDebt = accumulatedRewards;
@@ -397,7 +396,9 @@ contract AtlasMineStakerUpgradeable is
         uint256 totalStake;
 
         uint256[] memory depositIds = allUserDepositIds[msg.sender].values();
-        for (uint256 i = 0; i < depositIds.length; i++) {
+        uint256 numDeposits = depositIds.length;
+
+        for (uint256 i = 0; i < numDeposits; i++) {
             UserStake storage s = userStake[msg.sender][depositIds[i]];
 
             totalStake += s.amount;
@@ -432,6 +433,24 @@ contract AtlasMineStakerUpgradeable is
 
         _stakeInMine(amountToStake);
         emit MineStake(amountToStake, unlockAt);
+    }
+
+    /**
+     * @notice Harvest rewards for a subset of deposit IDs, and accrue harvested
+     *         rewards to users. The contract keeps track of the offset to ensure
+     *         that only chunk size needs to be specified and rewards are not redundantly
+     *         harvested during the same accrual period.
+     *
+     * @param depositIds           The deposit IDs to harvest rewards from.
+     */
+    function accrue(uint256[] calldata depositIds) public virtual override whenAccruing {
+        require(depositIds.length != 0, "Must accrue nonzero deposits");
+
+        uint256 accrueIncentive = _updateRewards(depositIds);
+
+        if (accrueIncentive > 0) {
+            magic.transfer(msg.sender, accrueIncentive);
+        }
     }
 
     // ======================================= HOARD OPERATIONS ========================================
@@ -534,9 +553,6 @@ contract AtlasMineStakerUpgradeable is
      *         all stake.
      */
     function unstakeAllFromMine() external override onlyOwner {
-        // Unstake everything eligible
-        _updateRewards();
-
         uint256 totalStakes = stakes.length;
         for (uint256 i = nextActiveStake; i < totalStakes; i++) {
             Stake memory s = stakes[i];
@@ -546,7 +562,7 @@ contract AtlasMineStakerUpgradeable is
                 break;
             }
 
-            // Withdraw position - auto-harvest
+            // Withdraw position (does not harvest)
             mine.withdrawPosition(s.depositId, s.amount);
         }
 
@@ -561,7 +577,6 @@ contract AtlasMineStakerUpgradeable is
      * @param target                The amount of tokens to reclaim from the mine.
      */
     function unstakeToTarget(uint256 target) external override onlyOwner {
-        _updateRewards();
         _unstakeToTarget(target);
     }
 
@@ -675,22 +690,65 @@ contract AtlasMineStakerUpgradeable is
     }
 
     /**
-     * @notice Must be used when migrating to a new contract that changes the accounting
-     *         logic of unstaked deposits. Can be used to reset value to one that would
-     *         be in place in the cast that newly-introduced logic was always in place.
+     * @notice Used to set windows during which accrual happens, and new deposits/withdrawls
+     *         are paused.
      *
-     * @dev    Cannot be used in normal operation, will only be called once as part of
-     *         an "upgradeAndCall" contract upgrade.
-     *
-     * @param _unstakedDeposits    The new value of unstakedDeposits to set.
+     * @param windows               The list of hourly windows in pairs of tuples, e.g. [0, 1, 12, 13]
      */
-    function resetUnstakedAndStake(uint256 _unstakedDeposits) external {
-        require(!_resetCalled, "reset already called");
-        _resetCalled = true;
+    function setAccrualWindows(uint256[] calldata windows) external override onlyOwner {
+        require(windows.length % 2 == 0, "Invalid window length");
+        require(windows.length < 5, "Too many windows");
 
-        unstakedDeposits = _unstakedDeposits;
+        for (uint256 i = 0; i < windows.length; i++) {
+            // Must be 0-23, and monotonically increasing
+            if (i < windows.length - 1) {
+                require(windows[i] < 24, "Invalid window value");
+            } else {
+                // Allow 24 as an ending value
+                require(windows[i] < 25, "Invalid window value");
+            }
 
-        stakeScheduled();
+            if (i > 0) {
+                require(windows[i] > windows[i - 1], "Invalid window ordering");
+            }
+        }
+
+        accrualWindows = windows;
+
+        emit SetAccrualWindows(windows);
+    }
+
+    /**
+     * @notice Must be used when upgrading to a new contract to set aside rewards for those
+     *         who have deposited.
+     *
+     * @dev    Cannot be used in normal operation, will only be called once after the
+     *         initial reward accrual post-upgrade.
+     *
+     *
+     * @param _amountToReserve         The amount of rewards to reserve.
+     */
+    function reserveWithdrawerRewards(uint256 _amountToReserve) external onlyOwner {
+        require(!_rewardsResetCalled, "reset already called");
+        _rewardsResetCalled = true;
+
+        feeReserve += _amountToReserve;
+        totalRewardsEarned -= _amountToReserve;
+
+        accRewardsPerShare -= (_amountToReserve * ONE) / totalStaked;
+    }
+
+    /**
+     * @notice Used to set a reward for calling accrue and helping the mine harvest.
+     *
+     * @param _reward               The new accrual reward, in bps.
+     */
+    function setAccrueIncentive(uint256 _reward) external onlyOwner {
+        require(_reward <= 500, "reward too high");
+
+        accrueIncentiveBps = _reward;
+
+        emit SetAccrualIncentive(_reward);
     }
 
     // ======================================== VIEW FUNCTIONS =========================================
@@ -756,7 +814,9 @@ contract AtlasMineStakerUpgradeable is
      */
     function userTotalStake(address user) external view override returns (uint256 totalStake) {
         uint256[] memory depositIds = allUserDepositIds[user].values();
-        for (uint256 i = 0; i < depositIds.length; i++) {
+        uint256 numDeposits = depositIds.length;
+
+        for (uint256 i = 0; i < numDeposits; i++) {
             UserStake storage s = userStake[user][depositIds[i]];
             totalStake += s.amount;
         }
@@ -775,8 +835,16 @@ contract AtlasMineStakerUpgradeable is
     function pendingRewards(address user, uint256 depositId) public view override returns (uint256 reward) {
         UserStake storage s = userStake[user][depositId];
 
-        int256 accumulatedRewards = ((s.amount * accRewardsPerShare) / ONE).toInt256();
-        reward = (accumulatedRewards - s.rewardDebt).toUint256();
+        if (s.amount == 0) return 0;
+
+        int256 accumulatedRewards = _accumulatedRewards(s.amount);
+
+        if (accumulatedRewards <= s.rewardDebt) {
+            return 0;
+        }
+
+        // Reduce by 1 wei to work around off-by-one error in atlas mine
+        reward = (accumulatedRewards - s.rewardDebt - 1).toUint256();
     }
 
     /**
@@ -790,9 +858,14 @@ contract AtlasMineStakerUpgradeable is
      */
     function pendingRewardsAll(address user) external view override returns (uint256 reward) {
         uint256[] memory depositIds = allUserDepositIds[user].values();
+        uint256 numDeposits = depositIds.length;
 
-        for (uint256 i = 0; i < depositIds.length; i++) {
-            reward += pendingRewards(user, depositIds[i]);
+        for (uint256 i = 0; i < numDeposits; i++) {
+            UserStake storage s = userStake[user][depositIds[i]];
+
+            if (s.amount > 0) {
+                reward += pendingRewards(user, depositIds[i]);
+            }
         }
     }
 
@@ -873,43 +946,64 @@ contract AtlasMineStakerUpgradeable is
 
     /**
      * @dev Harvest rewards from the AtlasMine and send them back to
-     *      this contract.
+     *      this contract. Cannot harvest entire set of positions due to
+     *      gas limits, so positions need to be specified.
+     *
+     * @param depositIds            The deposits to harvest rewards for.
      *
      * @return earned               The amount of rewards earned for depositors, minus the fee.
      * @return feeEearned           The amount of fees earned for the contract operator.
      */
-    function _harvestMine() internal returns (uint256, uint256) {
+    function _harvestMine(uint256[] memory depositIds)
+        internal
+        returns (
+            uint256,
+            uint256,
+            uint256
+        )
+    {
         uint256 preclaimBalance = magic.balanceOf(address(this));
+        uint256 numDeposits = depositIds.length;
 
-        try mine.harvestAll() {
-            uint256 postclaimBalance = magic.balanceOf(address(this));
-
-            uint256 earned = postclaimBalance - preclaimBalance;
-
-            // Reserve the 'fee' amount of what is earned
-            uint256 feeEarned = (earned * fee) / FEE_DENOMINATOR;
-            feeReserve += feeEarned;
-
-            emit MineHarvest(earned - feeEarned, feeEarned);
-
-            return (earned - feeEarned, feeEarned);
-        } catch {
-            // Failed because of reward debt calculation - should be 0
-            return (0, 0);
+        for (uint256 i = 0; i < numDeposits; i++) {
+            // Might fail because of reward debt calculation
+            try mine.harvestPosition(depositIds[i]) {} catch {
+                // SafeCast error
+            }
         }
+
+        uint256 postclaimBalance = magic.balanceOf(address(this));
+
+        uint256 earned = postclaimBalance - preclaimBalance;
+
+        // Reserve the 'fee' amount of what is earned
+        uint256 feeEarned = (earned * fee) / FEE_DENOMINATOR;
+        feeReserve += feeEarned;
+
+        uint256 accrueIncentive = (earned * accrueIncentiveBps) / FEE_DENOMINATOR;
+
+        earned -= (feeEarned + accrueIncentive);
+
+        emit MineHarvest(earned, feeEarned, depositIds);
+
+        return (earned, feeEarned, accrueIncentive);
     }
 
     /**
      * @dev Harvest rewards from the mine so that stakers can claim.
      *      Recalculate how many rewards are distributed to each share.
+     *
+     * @param depositIds            The deposits to harvest rewards for.
      */
-    function _updateRewards() internal {
-        if (totalStaked == 0) return;
+    function _updateRewards(uint256[] memory depositIds) internal returns (uint256) {
+        if (totalStaked == 0) return 0;
 
-        (uint256 newRewards, ) = _harvestMine();
+        (uint256 newRewards, , uint256 accrueIncentive) = _harvestMine(depositIds);
         totalRewardsEarned += newRewards;
 
         accRewardsPerShare += (newRewards * ONE) / totalStaked;
+
+        return accrueIncentive;
     }
 
     /**
@@ -984,6 +1078,36 @@ contract AtlasMineStakerUpgradeable is
     }
 
     /**
+     * @dev Determine if the current block timestamp falls in an accrual window.
+     *      During accrual windows deposits/withdraws/claims are enabled, and reward
+     *      updating is enabled.
+     *
+     * @return inWindow             Whether the current time falls in an accrual window.
+     */
+    function _isAccrualWindow() internal view returns (bool inWindow) {
+        require(accrualWindows.length > 0, "Accrual windows not set");
+        /// time elapsed in day / hours
+        uint256 currentHour = (block.timestamp % 86_400) / 3_600;
+
+        for (uint256 i = 0; i < accrualWindows.length - 1; i += 2) {
+            if (currentHour >= accrualWindows[i] && currentHour < accrualWindows[i + 1]) {
+                inWindow = true;
+                break;
+            }
+        }
+    }
+
+    /**
+     * @dev Calculate the current accumulated rewards for a given amount of stake.
+     *      Reduces the awards by 1 wei due to an off-by-one issue in the atlas mine.
+     *
+     * @param stakeAmount           The amount of stake to accumulate rewards for.
+     */
+    function _accumulatedRewards(uint256 stakeAmount) internal view returns (int256) {
+        return ((stakeAmount * accRewardsPerShare) / ONE).toInt256();
+    }
+
+    /**
      * @dev For methods only callable by the hoard - Treasure staking/unstaking.
      */
     modifier onlyHoard() {
@@ -999,5 +1123,23 @@ contract AtlasMineStakerUpgradeable is
         _;
 
         require(tokenBuffer == 0, "Buffer not clear");
+    }
+
+    /**
+     * @dev For methods that affect staking, when an accrual window is not active.
+     */
+    modifier whenNotAccruing() {
+        require(!_isAccrualWindow(), "In accrual window");
+
+        _;
+    }
+
+    /**
+     * @dev For methods accrue rewards, when staking is not active.
+     */
+    modifier whenAccruing() {
+        require(_isAccrualWindow(), "Not accruing");
+
+        _;
     }
 }

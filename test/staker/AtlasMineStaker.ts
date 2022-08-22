@@ -1,14 +1,13 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { ethers, waffle } from "hardhat";
-import { BigNumberish } from "ethers";
+import { BigNumberish, ContractTransaction } from "ethers";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect, should } from "chai";
 
 const { loadFixture } = waffle;
 
 import { deploy, deployUpgradeable, increaseTime } from "../utils";
-import type { AtlasMineStaker } from "../../src/types/AtlasMineStaker";
-import type { AtlasMineStakerUpgradeable } from "../../src/types/AtlasMineStakerUpgradeable";
+import type { AtlasMineStakerUpgradeable as AtlasMineStaker } from "../../src/types/AtlasMineStakerUpgradeable";
 import type { MasterOfCoin } from "../../src/types/MasterOfCoin";
 import type { MockLegionMetadataStore } from "../../src/types/MockLegionMetadataStore";
 import type { AtlasMine } from "../../src/types/AtlasMine";
@@ -23,9 +22,11 @@ import {
     withdrawSingle,
     withdrawExactDeposit,
     claimSingle,
+    accrue,
     rollSchedule,
     rollLock,
     rollTo,
+    rollToDepositWindow,
     expectRoundedEqual,
     setup5050Scenario,
     setup7525Scenario,
@@ -40,14 +41,19 @@ import {
     claimWithRoundedRewardCheck,
     rollToPartialWindow,
     TOTAL_REWARDS,
+    ACCRUAL_WINDOWS,
     shuffle,
     ONE_DAY_SEC,
+    PROGRAM_DAYS,
+    rollToNearestAccrual,
+    rollToNextAccrual,
 } from "./helpers";
 
 const ether = ethers.utils.parseEther;
 
 describe("Atlas Mine Staking (Pepe Pool)", () => {
     let ctx: TestContext;
+    const USER_INITIAL_BALANCE = ether("100000");
 
     const fixture = async (): Promise<TestContext> => {
         const signers = await ethers.getSigners();
@@ -76,28 +82,24 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
             0, // 0 == AtlasMine.Lock.twoWeeks
         ]);
 
-        // const staker = <AtlasMineStaker>await deploy("AtlasMineStaker", admin, [
-        //     magic.address,
-        //     mine.address,
-        //     0, // 0 == AtlasMine.Lock.twoWeeks
-        // ]);
+        // Devote first half of day to accruing
+        await staker.setAccrualWindows(ACCRUAL_WINDOWS);
 
         // Distribute coins and set up staking program
         await magic.mint(admin.address, ether("10000"));
-        await magic.mint(masterOfCoin.address, ether("200000"));
+        await magic.mint(masterOfCoin.address, TOTAL_REWARDS.mul(2));
 
         const DAY_SEC = 86400;
         // Put start time in the future - we will fast-forward
         const start = Math.floor(Date.now() / 1000) + 10_000_000;
-        const end = start + 200 * DAY_SEC;
+        const end = start + PROGRAM_DAYS * DAY_SEC;
 
         // 0.01 MAGIC per second, 864 per day
-        // 200 day staking period == 172800 total MAGIC rewards
         await masterOfCoin.addStream(mine.address, TOTAL_REWARDS, start, end, false);
 
         // Give 100000 MAGIC to each user and approve the staker contract
-        const stakerFunding = users.map(u => magic.mint(u.address, ether("100000")));
-        const stakerApprove = users.map(u => magic.connect(u).approve(staker.address, ether("100000")));
+        const stakerFunding = users.map(u => magic.mint(u.address, USER_INITIAL_BALANCE));
+        const stakerApprove = users.map(u => magic.connect(u).approve(staker.address, USER_INITIAL_BALANCE));
         await Promise.all(stakerFunding.concat(stakerApprove));
 
         return {
@@ -134,9 +136,7 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
 
             const proxyFactory = await ethers.getContractFactory("TransparentUpgradeableProxy");
             const proxy = await proxyFactory.deploy(impl.address, proxyAdmin.address, Buffer.from(""));
-            const staker = <AtlasMineStakerUpgradeable>(
-                await ethers.getContractAt("AtlasMineStakerUpgradeable", proxy.address)
-            );
+            const staker = <AtlasMineStaker>await ethers.getContractAt("AtlasMineStakerUpgradeable", proxy.address);
 
             await expect(staker.initialize(ZERO_ADDRESS, mine.address, 0)).to.be.revertedWith(
                 "Invalid magic token address",
@@ -154,9 +154,7 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
 
             const proxyFactory = await ethers.getContractFactory("TransparentUpgradeableProxy");
             const proxy = await proxyFactory.deploy(impl.address, proxyAdmin.address, Buffer.from(""));
-            const staker = <AtlasMineStakerUpgradeable>(
-                await ethers.getContractAt("AtlasMineStakerUpgradeable", proxy.address)
-            );
+            const staker = <AtlasMineStaker>await ethers.getContractAt("AtlasMineStakerUpgradeable", proxy.address);
 
             await expect(staker.initialize(magic.address, ZERO_ADDRESS, 0)).to.be.revertedWith(
                 "Invalid mine contract address",
@@ -165,6 +163,10 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
     });
 
     describe("Staking", () => {
+        beforeEach(async () => {
+            await rollToDepositWindow();
+        });
+
         describe("stake", () => {
             it("does not allow a user to stake if their specified amount is 0", async () => {
                 const {
@@ -216,8 +218,11 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 await stakeSingle(staker, user1, ether("10"));
                 await rollSchedule(staker);
 
-                // Fast-forward through stake
+                // Fast-forward through stake and mine a block
                 await rollLock();
+                await ethers.provider.send("evm_mine", []);
+
+                await rollToDepositWindow();
 
                 const lastDepositId = await staker.currentId(user1.address);
                 await expect(
@@ -232,11 +237,14 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                     start,
                 } = ctx;
 
-                const firstStakeTs = await rollTo(start + ONE_DAY_SEC);
+                await rollTo(start + ONE_DAY_SEC);
+                const firstStakeTs = await rollToDepositWindow();
+
                 await stakeSingle(staker, user, ether("10"));
                 const firstDepositId = await staker.currentId(user.address);
 
                 await rollSchedule(staker, firstStakeTs);
+                await rollToDepositWindow();
 
                 await expect(withdrawExactDeposit(staker, user, firstDepositId)).to.be.revertedWith("Deposit locked");
 
@@ -261,16 +269,21 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
 
                 // Stake more than rewards to force a withdraw
                 // With 2 stakers, each will earn 7000 MAGIC over lock period
+                const stakeTime = await rollToDepositWindow();
                 const amount = ether("20000");
                 await stakeMultiple(staker, [
                     [user1, amount],
                     [user2, amount],
                 ]);
 
-                await rollSchedule(staker);
+                await rollSchedule(staker, stakeTime);
 
                 // Fast-forward and try to withdraw - other 10 should stay
-                await rollLock();
+                await rollLock(stakeTime);
+                await ethers.provider.send("evm_mine", []);
+
+                await accrue(staker);
+                await rollToDepositWindow();
 
                 // No rewards because program hasn't started yet
                 await expect(withdrawSingle(staker, user1))
@@ -278,7 +291,7 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                     .withArgs(user1.address, 1, amount, 0);
 
                 // User returned all funds
-                expect(await magic.balanceOf(user1.address)).to.eq(ether("100000"));
+                expect(await magic.balanceOf(user1.address)).to.eq(USER_INITIAL_BALANCE);
 
                 // Check that rest of stake is still in AtlasMine, not staker
                 const depositId = await mine.currentId(staker.address);
@@ -293,6 +306,7 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                     staker,
                     magic,
                     start,
+                    end,
                 } = ctx;
 
                 const amount = ether("20000");
@@ -308,12 +322,14 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 const tx = await staker.stakeScheduled();
                 await tx.wait();
 
-                await rollLock(start);
+                await rollToPartialWindow(start, end, 0.5);
+                await accrue(staker);
+                await rollToDepositWindow();
 
-                // Fast-forward in scenarios - 1.3mm seconds should pass,
-                // so 13k MAGIC to pool. First user stake should get half
+                // Fast-forwarded halfway through program
                 const depositId = 1;
-                const withdrawTx = await staker.connect(user1).withdraw(depositId, amount);
+                const expectedReward = TOTAL_REWARDS.div(4);
+                const withdrawTx = <ContractTransaction>await staker.connect(user1).withdraw(depositId, amount);
                 const receipt = await withdrawTx.wait();
 
                 const withdrawEvent = receipt.events?.find(e => e.event === "UserWithdraw");
@@ -321,10 +337,14 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 expect(withdrawEvent?.args?.[0]).to.eq(user1.address);
                 expect(withdrawEvent?.args?.[1]).to.eq(depositId);
                 expect(withdrawEvent?.args?.[2]).to.eq(amount);
-                expectRoundedEqual(withdrawEvent?.args?.[3], ether("6500"));
+                // Should get 1/4 of rewards for a single stake over half the reward lifetime
+                expectRoundedEqual(withdrawEvent?.args?.[3], expectedReward);
 
                 // User returned a single stake + reward
-                expectRoundedEqual(await magic.balanceOf(user1.address), ether("86500"));
+                expectRoundedEqual(
+                    await magic.balanceOf(user1.address),
+                    USER_INITIAL_BALANCE.sub(amount).add(expectedReward),
+                );
             });
 
             it("withdraws the entire deposit if the specified amount is larger than the deposit amount", async () => {
@@ -333,6 +353,7 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                     staker,
                     magic,
                     start,
+                    end,
                 } = ctx;
 
                 const amount = ether("20000");
@@ -348,14 +369,19 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 const tx = await staker.stakeScheduled();
                 await tx.wait();
 
-                await rollLock(start);
+                await rollToPartialWindow(start, end, 0.5);
+                await accrue(staker);
+                await rollToDepositWindow();
 
                 // Fast-forward in scenarios - 1.3mm seconds should pass,
                 // so 13k MAGIC to pool. First user stake should get half
                 const depositId = 1;
+                const expectedReward = TOTAL_REWARDS.div(4);
 
                 // Same as last test, but 100x the amount
-                const withdrawTx = await staker.connect(user1).withdraw(depositId, amount.mul(100));
+                const withdrawTx = <ContractTransaction>(
+                    await staker.connect(user1).withdraw(depositId, amount.mul(100))
+                );
                 const receipt = await withdrawTx.wait();
 
                 const withdrawEvent = receipt.events?.find(e => e.event === "UserWithdraw");
@@ -363,10 +389,13 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 expect(withdrawEvent?.args?.[0]).to.eq(user1.address);
                 expect(withdrawEvent?.args?.[1]).to.eq(depositId);
                 expect(withdrawEvent?.args?.[2]).to.eq(amount);
-                expectRoundedEqual(withdrawEvent?.args?.[3], ether("6500"));
+                expectRoundedEqual(withdrawEvent?.args?.[3], expectedReward);
 
                 // User returned a single stake + reward
-                expectRoundedEqual(await magic.balanceOf(user1.address), ether("86500"));
+                expectRoundedEqual(
+                    await magic.balanceOf(user1.address),
+                    USER_INITIAL_BALANCE.sub(amount).add(expectedReward),
+                );
             });
 
             it("withdrawal distributes the correct amount of pro rata rewards", async () => {
@@ -378,13 +407,11 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
 
                 const { stakes } = await setup5050Scenario(ctx);
 
-                // Fast-forward in scenarios - 1.3mm seconds should pass,
-                // so 13k MAGIC to pool. User 1 deposited half
-
-                await withdrawWithRoundedRewardCheck(staker, user1, stakes[user1.address], ether("6500"));
+                const expectedReward = TOTAL_REWARDS.div(2);
+                await withdrawWithRoundedRewardCheck(staker, user1, stakes[user1.address], expectedReward);
 
                 // User returned all funds + reward
-                expectRoundedEqual(await magic.balanceOf(user1.address), ether("106500"));
+                expectRoundedEqual(await magic.balanceOf(user1.address), USER_INITIAL_BALANCE.add(expectedReward));
             });
 
             it("withdrawal distributes the correct amount of pro rata rewards (multiple deposit times)", async () => {
@@ -396,13 +423,15 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
 
                 const { stakes } = await setup7525Scenario(ctx);
 
-                await withdrawWithRoundedRewardCheck(staker, user1, stakes[user1.address], TOTAL_REWARDS.div(4).mul(3));
+                const user1ExpectedReward = TOTAL_REWARDS.div(4).mul(3);
+                const user2ExpectedReward = TOTAL_REWARDS.div(4);
 
-                await withdrawWithRoundedRewardCheck(staker, user2, stakes[user2.address], TOTAL_REWARDS.div(4));
+                await withdrawWithRoundedRewardCheck(staker, user1, stakes[user1.address], user1ExpectedReward);
+                await withdrawWithRoundedRewardCheck(staker, user2, stakes[user2.address], user2ExpectedReward);
 
                 // User returned all funds + reward
-                expectRoundedEqual(await magic.balanceOf(user1.address), ether("229600"));
-                expectRoundedEqual(await magic.balanceOf(user2.address), ether("143200"));
+                expectRoundedEqual(await magic.balanceOf(user1.address), USER_INITIAL_BALANCE.add(user1ExpectedReward));
+                expectRoundedEqual(await magic.balanceOf(user2.address), USER_INITIAL_BALANCE.add(user2ExpectedReward));
             });
         });
 
@@ -429,11 +458,13 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 await tx.wait();
 
                 await rollLock(start);
+                await accrue(staker);
+                await rollToDepositWindow();
 
                 // Fast-forward in scenarios - 1.3mm seconds should pass,
                 // so 13k MAGIC to pool. First user stake should get half
                 const depositId = 1;
-                const claimTx = await staker.connect(user1).claim(depositId);
+                const claimTx = <ContractTransaction>await staker.connect(user1).claim(depositId);
                 const receipt = await claimTx.wait();
 
                 const claimEvent = receipt.events?.find(e => e.event === "UserClaim");
@@ -453,12 +484,16 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                     magic,
                 } = ctx;
 
-                await setup5050Scenario(ctx);
+                const { stakes } = await setup5050Scenario(ctx);
 
-                await claimWithRoundedRewardCheck(staker, user, ether("6500"));
+                const expectedReward = TOTAL_REWARDS.div(2);
+                await claimWithRoundedRewardCheck(staker, user, expectedReward);
 
                 // User returned all funds + reward
-                expectRoundedEqual(await magic.balanceOf(user.address), ether("86500"));
+                expectRoundedEqual(
+                    await magic.balanceOf(user.address),
+                    USER_INITIAL_BALANCE.sub(stakes[user.address]).add(expectedReward),
+                );
             });
 
             it("distributes the correct amount of pro rata rewards (multiple deposit times)", async () => {
@@ -468,17 +503,23 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                     magic,
                 } = ctx;
 
-                await setup7525Scenario(ctx);
+                const { stakes } = await setup7525Scenario(ctx);
 
-                const totalRewards = TOTAL_REWARDS;
+                const user1ExpectedReward = TOTAL_REWARDS.div(4).mul(3);
+                const user2ExpectedReward = TOTAL_REWARDS.div(4);
 
-                await claimWithRoundedRewardCheck(staker, user1, totalRewards.div(4).mul(3));
-
-                await claimWithRoundedRewardCheck(staker, user2, totalRewards.div(4));
+                await claimWithRoundedRewardCheck(staker, user1, user1ExpectedReward);
+                await claimWithRoundedRewardCheck(staker, user2, user2ExpectedReward);
 
                 // Reward distribued to user
-                expectRoundedEqual(await magic.balanceOf(user1.address), ether("209600"));
-                expectRoundedEqual(await magic.balanceOf(user2.address), ether("123200"));
+                expectRoundedEqual(
+                    await magic.balanceOf(user1.address),
+                    USER_INITIAL_BALANCE.sub(stakes[user1.address]).add(user1ExpectedReward),
+                );
+                expectRoundedEqual(
+                    await magic.balanceOf(user2.address),
+                    USER_INITIAL_BALANCE.sub(stakes[user2.address]).add(user2ExpectedReward),
+                );
             });
 
             it("should not allow a user to claim twice", async () => {
@@ -489,7 +530,8 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
 
                 await setup5050Scenario(ctx);
 
-                await claimWithRoundedRewardCheck(staker, user, ether("6500"));
+                const expectedReward = TOTAL_REWARDS.div(2);
+                await claimWithRoundedRewardCheck(staker, user, expectedReward);
                 // Claim again, get very small rewards - 1 second passed
                 await claimWithRoundedRewardCheck(staker, user, 0);
             });
@@ -504,6 +546,9 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 } = ctx;
 
                 const firstStakeTs = await rollTo(start + ONE_DAY_SEC);
+                await ethers.provider.send("evm_mine", []);
+                await rollToDepositWindow();
+
                 await stakeSingle(staker, user, ether("10"));
                 await rollSchedule(staker, firstStakeTs);
 
@@ -519,6 +564,9 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
 
                 // Stake, and roll the schedule
                 const firstStakeTs = await rollTo(start + ONE_DAY_SEC);
+                await ethers.provider.send("evm_mine", []);
+                await rollToDepositWindow();
+
                 await stakeSingle(staker, user1, ether("1000"));
 
                 expect(await staker.totalPendingStake()).to.equal(ether("1000"));
@@ -528,6 +576,8 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 expect(await staker.totalPendingStake()).to.equal(0);
 
                 const nextStakeTs = await rollLock(firstStakeTs);
+                await ethers.provider.send("evm_mine", []);
+                await rollToDepositWindow();
 
                 // Make some new deposits > original stake, without rolling schedule
                 await stakeMultiple(staker, [
@@ -548,6 +598,297 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 await rollSchedule(staker, nextStakeTs);
 
                 expect(await staker.totalPendingStake()).to.equal(0);
+            });
+        });
+
+        describe("accrue", () => {
+            it("does not allow deposits during an accrual window", async () => {
+                const {
+                    users: [user],
+                    staker,
+                    start,
+                } = ctx;
+
+                await rollToNearestAccrual(start + ONE_DAY_SEC);
+
+                await expect(stakeSingle(staker, user, 0)).to.be.revertedWith("In accrual window");
+            });
+
+            it("does now allow accruing during a deposit window", async () => {
+                const {
+                    users: [user],
+                    staker,
+                    mine,
+                    start,
+                } = ctx;
+
+                const firstStakeTs = await rollTo(start + ONE_DAY_SEC);
+                await ethers.provider.send("evm_mine", []);
+                await rollToDepositWindow();
+
+                await stakeSingle(staker, user, ether("10"));
+                await rollSchedule(staker, firstStakeTs);
+                await rollToDepositWindow();
+
+                const depositIds = await mine.getAllUserDepositIds(staker.address);
+                expect(depositIds.length).to.be.gt(0);
+
+                await expect(staker.accrue(depositIds)).to.be.revertedWith("Not accruing");
+            });
+
+            it("does not allow accrual if an accrual window is not set", async () => {
+                const {
+                    users: [user],
+                    staker,
+                    mine,
+                    start,
+                } = ctx;
+
+                const firstStakeTs = await rollTo(start + ONE_DAY_SEC);
+                await ethers.provider.send("evm_mine", []);
+                await rollToDepositWindow();
+
+                await stakeSingle(staker, user, ether("10"));
+                await rollSchedule(staker, firstStakeTs);
+
+                const depositIds = await mine.getAllUserDepositIds(staker.address);
+                expect(depositIds.length).to.be.gt(0);
+
+                await staker.setAccrualWindows([]);
+
+                await expect(staker.accrue(depositIds)).to.be.revertedWith("Accrual windows not set");
+            });
+
+            it("does not allow accrual if deposits are not specified", async () => {
+                const {
+                    users: [user],
+                    staker,
+                    start,
+                } = ctx;
+
+                const firstStakeTs = await rollTo(start + ONE_DAY_SEC);
+                await ethers.provider.send("evm_mine", []);
+                await rollToDepositWindow();
+
+                await stakeSingle(staker, user, ether("10"));
+                await rollSchedule(staker, firstStakeTs);
+
+                const currentTime = (await ethers.provider.getBlock("latest")).timestamp;
+                await rollToNearestAccrual(currentTime + ONE_DAY_SEC);
+
+                await expect(staker.accrue([])).to.be.revertedWith("Must accrue nonzero deposits");
+            });
+
+            it("accrues rewards", async () => {
+                const {
+                    users: [user],
+                    staker,
+                    magic,
+                    mine,
+                    start,
+                    end,
+                } = ctx;
+
+                const amount = ether("20000");
+                await stakeSingle(staker, user, amount);
+
+                // Go to start of rewards program
+                await rollTo(start);
+
+                // Make a tx to deposit
+                const tx = await staker.stakeScheduled();
+                await tx.wait();
+
+                const timestamp = await rollToPartialWindow(start, end, 0.5);
+                await rollToNearestAccrual(timestamp);
+
+                // Fast-forward in scenarios - 1/2 program should pass
+                const expectedAccrual = TOTAL_REWARDS.div(2);
+
+                const depositIds = await mine.getAllUserDepositIds(staker.address);
+                expect(depositIds.length).to.be.gt(0);
+
+                const accrueTx = await staker.accrue(depositIds);
+                const receipt = await accrueTx.wait();
+
+                const harvestEvent = receipt.events?.find(e => e.event === "MineHarvest");
+                expect(harvestEvent).to.not.be.undefined;
+                expectRoundedEqual(harvestEvent?.args?.[0], expectedAccrual);
+                expect(harvestEvent?.args?.[1]).to.eq(0);
+                expect(harvestEvent?.args?.[2]).to.deep.eq(depositIds);
+
+                // Staker should now have 13000 magic
+                expectRoundedEqual(await magic.balanceOf(staker.address), expectedAccrual);
+            });
+
+            it("accrues rewards, sending an incentive to the accruer", async () => {
+                const {
+                    users: [user, accruer],
+                    staker,
+                    magic,
+                    mine,
+                    start,
+                    end,
+                } = ctx;
+
+                // 1% of rewards go to person calling accrue
+                await staker.setAccrueIncentive(100);
+                const accruerBalanceBefore = await magic.balanceOf(accruer.address);
+
+                const amount = ether("20000");
+                await stakeSingle(staker, user, amount);
+
+                // Go to start of rewards program
+                await rollTo(start);
+
+                // Make a tx to deposit
+                const tx = await staker.stakeScheduled();
+                await tx.wait();
+
+                const timestamp = await rollToPartialWindow(start, end, 0.5);
+                await rollToNearestAccrual(timestamp);
+
+                // Fast-forward in scenarios - 1/2 program should pass
+                const expectedAccrual = TOTAL_REWARDS.div(2);
+                const expectedHarvestedRewards = expectedAccrual.div(100).mul(99);
+
+                const depositIds = await mine.getAllUserDepositIds(staker.address);
+                expect(depositIds.length).to.be.gt(0);
+
+                const accrueTx = await staker.connect(accruer).accrue(depositIds);
+                const receipt = await accrueTx.wait();
+
+                const harvestEvent = receipt.events?.find(e => e.event === "MineHarvest");
+                expect(harvestEvent).to.not.be.undefined;
+                expectRoundedEqual(harvestEvent?.args?.[0], expectedHarvestedRewards);
+                expect(harvestEvent?.args?.[1]).to.eq(0);
+                expect(harvestEvent?.args?.[2]).to.deep.eq(depositIds);
+                const accruerBalanceAfter = await magic.balanceOf(accruer.address);
+
+                // Staker should now have 13000 magic
+                expectRoundedEqual(await magic.balanceOf(staker.address), expectedHarvestedRewards);
+                expectRoundedEqual(accruerBalanceAfter.sub(accruerBalanceBefore), expectedAccrual.div(100));
+            });
+
+            it("deposits at different times during the same deposit window receive the same rewards", async () => {
+                const {
+                    users: [user1, user2],
+                    staker,
+                    mine,
+                    magic,
+                    start,
+                    end,
+                } = ctx;
+
+                // Set 3 hour staking wait so we can stake twice in the same window
+                const THREE_HOURS = 3600 * 3;
+                await staker.setMinimumStakingWait(THREE_HOURS);
+
+                const amount = ether("20000");
+
+                await rollTo(start);
+                await ethers.provider.send("evm_mine", []);
+                const firstDepositTs = await rollToDepositWindow();
+                const secondDepositTs = firstDepositTs + 3600 * 7;
+
+                await stakeSingle(staker, user1, amount);
+                await rollTo(firstDepositTs + THREE_HOURS + 1);
+                await staker.stakeScheduled();
+
+                // Move forward 6 hours - still in same deposit window
+                await rollTo(secondDepositTs);
+
+                await stakeSingle(staker, user2, amount);
+                await staker.stakeScheduled();
+
+                // Move forward to unlock time and accrue
+                const timestamp = await rollToPartialWindow(start, end, 0.5);
+                await rollToNearestAccrual(timestamp);
+
+                // 1/2 time passed, rewards split equally
+                const expectedAccrual = TOTAL_REWARDS.div(4);
+
+                const depositIds = await mine.getAllUserDepositIds(staker.address);
+                expect(depositIds.length).to.be.gt(0);
+                await staker.accrue(depositIds);
+
+                // Both reward claims should be equal
+                const preclaimBalanceUser1 = await magic.balanceOf(user1.address);
+                const preclaimBalanceUser2 = await magic.balanceOf(user2.address);
+
+                await rollToDepositWindow();
+                await claimSingle(staker, user1);
+                await claimSingle(staker, user2);
+
+                const postclaimBalanceUser1 = await magic.balanceOf(user1.address);
+                const postclaimBalanceUser2 = await magic.balanceOf(user2.address);
+
+                const rewardsUser1 = postclaimBalanceUser1.sub(preclaimBalanceUser1);
+                const rewardsUser2 = postclaimBalanceUser2.sub(preclaimBalanceUser2);
+
+                expectRoundedEqual(rewardsUser1, expectedAccrual);
+                expectRoundedEqual(rewardsUser2, expectedAccrual);
+
+                // Should get _exactly_ the same
+                expect(rewardsUser1).to.eq(rewardsUser2);
+            });
+
+            it("accrues the same amount of rewards whether over one or multiple txs", async () => {
+                const {
+                    users: [user],
+                    staker,
+                    magic,
+                    mine,
+                    start,
+                    end,
+                } = ctx;
+
+                // Set 3 hour staking wait so we can stake twice in the same window
+                const THREE_HOURS = 3600 * 3;
+                await staker.setMinimumStakingWait(THREE_HOURS);
+
+                const amount = ether("20000");
+
+                await rollTo(start);
+                await ethers.provider.send("evm_mine", []);
+                const firstDepositTs = await rollToDepositWindow();
+                const secondDepositTs = firstDepositTs + 3600 * 7;
+
+                await stakeSingle(staker, user, amount);
+                await rollTo(firstDepositTs + THREE_HOURS + 1);
+                await staker.stakeScheduled();
+
+                // Move forward 6 hours - still in same deposit window
+                await rollTo(secondDepositTs);
+
+                await stakeSingle(staker, user, amount);
+                await staker.stakeScheduled();
+
+                // Move forward to unlock time and accrue
+                const timestamp = await rollToPartialWindow(start, end, 0.5);
+                await rollToNearestAccrual(timestamp);
+
+                // Fast-forward in scenarios - 1.3mm seconds should pass,
+                // so 13k MAGIC to pool
+                const depositIds = await mine.getAllUserDepositIds(staker.address);
+                expect(depositIds.length).to.eq(2);
+
+                const expectedAccrual = TOTAL_REWARDS.div(2);
+
+                // Staker should now have rewards
+                await staker.accrue(depositIds);
+                expectRoundedEqual(await magic.balanceOf(staker.address), expectedAccrual);
+
+                // Fast forward again
+                // Should still be in accrual since we move forward exatly one day
+                const currentTime = (await ethers.provider.getBlock("latest")).timestamp;
+                const unlockTime2 = await rollLock(currentTime);
+                await rollToNearestAccrual(unlockTime2);
+
+                // Accrue again, staker should have another 13000
+                await staker.accrue([depositIds[0]]);
+                await staker.accrue([depositIds[1]]);
+                expectRoundedEqual(await magic.balanceOf(staker.address), expectedAccrual);
             });
         });
     });
@@ -676,17 +1017,19 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
             expect(await mine.boosts(staker.address)).to.eq(ether("13.16"));
 
             // Set up another staker and stake without boosts
-            const staker2 = <AtlasMineStaker>await deploy("AtlasMineStaker", admin, [
+            const staker2 = <AtlasMineStaker>await deployUpgradeable("AtlasMineStakerUpgradeable", admin, [
                 magic.address,
                 mine.address,
                 0, // 0 == AtlasMine.Lock.twoWeeks
             ]);
+            await staker2.setAccrualWindows(ACCRUAL_WINDOWS);
 
             expect(await mine.boosts(staker2.address)).to.eq(0);
 
             const amount = ether("10");
             await magic.connect(user).approve(staker2.address, amount);
 
+            await rollToDepositWindow();
             await Promise.all([stakeSingle(staker, user, amount), stakeSingle(staker2, user, amount)]);
 
             // Stake in mine from both stakers
@@ -696,6 +1039,9 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
 
             // Go to the end
             await rollTo(end);
+            await accrue(staker);
+            await accrue(staker2);
+            await rollToDepositWindow();
 
             // Claim rewards
             // In addition to NFT boost, both have lock boosts, so total is:
@@ -872,6 +1218,10 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
     });
 
     describe("View Functions", () => {
+        beforeEach(async () => {
+            await rollToDepositWindow();
+        });
+
         it("returns the correct amount of user stake", async () => {
             const {
                 users: [user1, user2],
@@ -911,7 +1261,7 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
 
         it("returns the correct pending rewards for a single deposit", async () => {
             const {
-                users: [user1, user2],
+                users: [user1],
                 staker,
                 start,
             } = ctx;
@@ -930,9 +1280,7 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
             await tx.wait();
 
             await rollLock(start);
-
-            // Deposit one more time to update reards
-            await stakeSingle(staker, user2, amount);
+            await accrue(staker);
 
             // Fast-forward in scenarios - 1.3mm seconds should pass,
             // so 13k MAGIC to pool. First user stake should get half
@@ -943,7 +1291,7 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
 
         it("returns the correct pending rewards for a user", async () => {
             const {
-                users: [user1, user2],
+                users: [user1],
                 staker,
                 start,
             } = ctx;
@@ -962,9 +1310,7 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
             await tx.wait();
 
             await rollLock(start);
-
-            // Deposit one more time to update reards
-            await stakeSingle(staker, user2, amount);
+            await accrue(staker);
 
             // Fast-forward in scenarios - 1.3mm seconds should pass,
             // so 13k MAGIC to pool, all to user1
@@ -1057,17 +1403,19 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
             // Roll through part of rewards period, but before lock
             // 1_000_000 seconds is equal to 10000 MAGIC distributed
             await rollTo(start + 1_000_000);
-            await ethers.provider.send("evm_mine", []);
+            await accrue(staker);
 
             // Should not be able to withdraw anything, staked and locked - but nonzero rewards
             expectRoundedEqual(await staker.totalWithdrawableMagic(), ether("10000"));
 
             // Roll to end of rewards period, stake unlocked
             await rollTo(end);
-            await ethers.provider.send("evm_mine", []);
+            await accrue(staker);
 
             // Should get all principal plus rewards, even if unclaimed
             expectRoundedEqual(await staker.totalWithdrawableMagic(), TOTAL_REWARDS.add(ether("10")));
+
+            await rollToDepositWindow();
 
             await staker.connect(admin).unstakeAllFromMine();
 
@@ -1154,10 +1502,11 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 } = ctx;
 
                 await staker.connect(admin).setFee(200);
-                await setup5050Scenario(ctx);
+                await rollToDepositWindow();
+                const { stakes } = await setup5050Scenario(ctx);
 
-                // Expected rewards
-                const rewardAfterFee = ether("6500")
+                // Expected rewards - half of total pot minus fee
+                const rewardAfterFee = TOTAL_REWARDS.div(2)
                     .div(10_000)
                     .mul(10_000 - 200);
 
@@ -1165,7 +1514,10 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
 
                 // User returned all funds + reward
                 // Here, they should only get 98% of rewards
-                expectRoundedEqual(await magic.balanceOf(user.address), ether("80000").add(rewardAfterFee));
+                expectRoundedEqual(
+                    await magic.balanceOf(user.address),
+                    USER_INITIAL_BALANCE.sub(stakes[user.address]).add(rewardAfterFee),
+                );
             });
 
             it("does not allow a non-owner to withdraw collected fees", async () => {
@@ -1188,13 +1540,14 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 } = ctx;
 
                 await staker.connect(admin).setFee(200);
+                await rollToDepositWindow();
                 await setup5050Scenario(ctx);
 
                 // Expected rewards
-                const rewardAfterFee = ether("6500")
+                const rewardAfterFee = TOTAL_REWARDS.div(2)
                     .div(10_000)
                     .mul(10_000 - 200);
-                const fee = ether("6500").div(10_000).mul(200);
+                const fee = TOTAL_REWARDS.div(10_000).mul(200);
 
                 await claimWithRoundedRewardCheck(staker, user, rewardAfterFee);
 
@@ -1203,7 +1556,7 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 const preclaimBalance = await magic.balanceOf(admin.address);
                 await staker.connect(admin).withdrawFees();
                 const postclaimBalance = await magic.balanceOf(admin.address);
-                expectRoundedEqual(postclaimBalance.sub(preclaimBalance), fee.mul(2));
+                expectRoundedEqual(postclaimBalance.sub(preclaimBalance), fee);
             });
 
             it("does not allow a non-owner to add a hoard address", async () => {
@@ -1234,7 +1587,7 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 );
             });
 
-            it("does not allow a non-owner to change the staking wait to less than 3 hours", async () => {
+            it("does not allow an owner to change the staking wait to less than 3 hours", async () => {
                 const { admin, staker } = ctx;
 
                 await expect(staker.connect(admin).setMinimumStakingWait(3600)).to.be.revertedWith(
@@ -1251,6 +1604,9 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 } = ctx;
 
                 const firstStakeTs = await rollTo(start + ONE_DAY_SEC);
+                await ethers.provider.send("evm_mine", []);
+                await rollToDepositWindow();
+
                 await stakeSingle(staker, user, ether("10"));
                 await rollSchedule(staker, firstStakeTs);
 
@@ -1262,6 +1618,178 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
 
                 await increaseTime(14400);
                 await expect(staker.stakeScheduled()).to.not.be.reverted;
+            });
+
+            it("does not allow a non-owner to set the accrual incentive", async () => {
+                const {
+                    users: [user],
+                    staker,
+                } = ctx;
+
+                await expect(staker.connect(user).setAccrueIncentive(500)).to.be.revertedWith(
+                    "Ownable: caller is not the owner",
+                );
+            });
+
+            it("does not allow an owner to set the accrual incentive over the max", async () => {
+                const { admin, staker } = ctx;
+
+                await expect(staker.connect(admin).setAccrueIncentive(10000)).to.be.revertedWith("reward too high");
+            });
+
+            it("allows an owner to change the accrual incentive", async () => {
+                const { admin, staker } = ctx;
+
+                await expect(staker.connect(admin).setAccrueIncentive(200))
+                    .to.emit(staker, "SetAccrualIncentive")
+                    .withArgs(200);
+            });
+
+            describe("setAccrualWindows", () => {
+                it("does not allow a non-owner to set accrual windows", async () => {
+                    const {
+                        users: [user],
+                        staker,
+                    } = ctx;
+
+                    await expect(staker.connect(user).setAccrualWindows([0, 1])).to.be.revertedWith(
+                        "Ownable: caller is not the owner",
+                    );
+                });
+
+                it("does not allow an owner to set invalid accrual windows (wrong length)", async () => {
+                    const { admin, staker } = ctx;
+
+                    await expect(staker.connect(admin).setAccrualWindows([0, 1, 12])).to.be.revertedWith(
+                        "Invalid window length",
+                    );
+                });
+
+                it("does not allow an owner to set invalid accrual windows (too many)", async () => {
+                    const { admin, staker } = ctx;
+
+                    await expect(staker.connect(admin).setAccrualWindows([0, 1, 12, 13, 20, 21])).to.be.revertedWith(
+                        "Too many windows",
+                    );
+                });
+
+                it("does not allow an owner to set invalid accrual windows (wrong length)", async () => {
+                    const { admin, staker } = ctx;
+
+                    await expect(staker.connect(admin).setAccrualWindows([0, 1, 12])).to.be.revertedWith(
+                        "Invalid window length",
+                    );
+                });
+
+                it("does not allow an owner to set invalid accrual windows (wrong values)", async () => {
+                    const { admin, staker } = ctx;
+
+                    await expect(staker.connect(admin).setAccrualWindows([0, 25])).to.be.revertedWith(
+                        "Invalid window value",
+                    );
+
+                    await expect(staker.connect(admin).setAccrualWindows([18, 26])).to.be.revertedWith(
+                        "Invalid window value",
+                    );
+
+                    await expect(staker.connect(admin).setAccrualWindows([24, 3])).to.be.revertedWith(
+                        "Invalid window value",
+                    );
+                });
+
+                it("does not allow an owner to set invalid accrual windows (wrong order)", async () => {
+                    const { admin, staker } = ctx;
+
+                    await expect(staker.connect(admin).setAccrualWindows([12, 9])).to.be.revertedWith(
+                        "Invalid window ordering",
+                    );
+
+                    await expect(staker.connect(admin).setAccrualWindows([0, 10, 6, 12])).to.be.revertedWith(
+                        "Invalid window ordering",
+                    );
+
+                    await expect(staker.connect(admin).setAccrualWindows([0, 8, 20, 8])).to.be.revertedWith(
+                        "Invalid window ordering",
+                    );
+                });
+
+                it("allows an owner to set accrual windows", async () => {
+                    const {
+                        users: [user],
+                        admin,
+                        staker,
+                    } = ctx;
+
+                    const WINDOW_START = 12;
+                    const window = [WINDOW_START, WINDOW_START + 1];
+
+                    await expect(staker.connect(admin).setAccrualWindows(window))
+                        .to.emit(staker, "SetAccrualWindows")
+                        .withArgs(window);
+
+                    // Try to deposit
+                    await rollToDepositWindow(window);
+
+                    await expect(staker.connect(user).deposit(ether("1"))).to.not.be.reverted;
+
+                    let timestamp = (await ethers.provider.getBlock("latest")).timestamp;
+                    let currentHour = Math.floor((timestamp % 86_400) / 3_600);
+
+                    expect(currentHour).to.not.eq(WINDOW_START);
+
+                    // Move to accrual window
+                    await rollSchedule(staker, timestamp);
+
+                    const tx = await accrue(staker, undefined, window);
+                    await tx?.wait();
+
+                    timestamp = (await ethers.provider.getBlock("latest")).timestamp;
+                    currentHour = Math.floor((timestamp % 86_400) / 3_600);
+
+                    expect(currentHour).to.eq(WINDOW_START);
+
+                    // Deposit should fail
+                    await expect(staker.connect(user).deposit(ether("1"))).to.be.revertedWith("In accrual window");
+                });
+
+                it("allows an owner to use 24 as an ending accrual window", async () => {
+                    const {
+                        users: [user],
+                        admin,
+                        staker,
+                    } = ctx;
+
+                    const WINDOW_START = 23;
+                    const window = [WINDOW_START, WINDOW_START + 1];
+
+                    await expect(staker.connect(admin).setAccrualWindows(window))
+                        .to.emit(staker, "SetAccrualWindows")
+                        .withArgs(window);
+
+                    // Try to deposit
+                    await rollToDepositWindow(window);
+
+                    await expect(staker.connect(user).deposit(ether("1"))).to.not.be.reverted;
+
+                    let timestamp = (await ethers.provider.getBlock("latest")).timestamp;
+                    let currentHour = Math.floor((timestamp % 86_400) / 3_600);
+
+                    expect(currentHour).to.not.eq(WINDOW_START);
+
+                    // Move to accrual window
+                    await rollSchedule(staker, timestamp);
+
+                    const tx = await accrue(staker, undefined, window);
+                    await tx?.wait();
+
+                    timestamp = (await ethers.provider.getBlock("latest")).timestamp;
+                    currentHour = Math.floor((timestamp % 86_400) / 3_600);
+
+                    expect(currentHour).to.eq(WINDOW_START);
+
+                    // Deposit should fail
+                    await expect(staker.connect(user).deposit(ether("1"))).to.be.revertedWith("In accrual window");
+                });
             });
         });
 
@@ -1287,6 +1815,7 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                     end,
                 } = ctx;
 
+                await rollToDepositWindow();
                 await stakeMultiple(staker, [
                     [user1, ether("1")],
                     [user2, ether("9")],
@@ -1300,11 +1829,11 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
 
                 // Roll to end of rewards period, stake unlocked
                 await rollTo(end);
-                await ethers.provider.send("evm_mine", []);
 
                 // Contract should not hold any MAGIC - all staked or pending claim
                 expectRoundedEqual(await magic.balanceOf(staker.address), 0);
 
+                await accrue(staker);
                 await staker.connect(admin).unstakeToTarget(ether("5"));
 
                 // Staker should now hold all total rewards plus unstaked 5 units
@@ -1332,6 +1861,7 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                     end,
                 } = ctx;
 
+                await rollToDepositWindow();
                 await stakeMultiple(staker, [
                     [user1, ether("1")],
                     [user2, ether("9")],
@@ -1345,11 +1875,11 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
 
                 // Roll to end of rewards period, stake unlocked
                 await rollTo(end);
-                await ethers.provider.send("evm_mine", []);
 
                 // Contract should not hold any MAGIC - all staked or pending claim
                 expectRoundedEqual(await magic.balanceOf(staker.address), 0);
 
+                await accrue(staker);
                 await staker.connect(admin).unstakeAllFromMine();
 
                 // Staker should now hold all total rewards plus all unstaked deposits (10 unites)
@@ -1359,6 +1889,10 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
     });
 
     describe("Emergency Flows", () => {
+        beforeEach(async () => {
+            await rollToDepositWindow();
+        });
+
         it("does not allow a non-owner to pause the stake schedule", async () => {
             const {
                 users: [user],
@@ -1416,7 +1950,24 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
             } = ctx;
 
             // Do regular staking
-            const { stakes } = await setup5050Scenario(ctx, start);
+            const amount = ether("20000");
+            const txs = await stakeMultiple(staker, [
+                [user1, amount],
+                [user2, amount],
+            ]);
+
+            // Wait for all deposits to finish
+            await Promise.all(txs.map(t => t.wait()));
+
+            // Go to start of rewards program
+            await rollTo(start);
+
+            // Make a tx to deposit
+            const tx = await staker.stakeScheduled();
+            await tx.wait();
+
+            // Roll to lock, accrue rewards, and move past accrual window for tests
+            await rollLock(start);
 
             // Cannot unstake
             expect(await staker.totalWithdrawableMagic()).to.eq(0);
@@ -1429,7 +1980,7 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
             await staker.connect(admin).emergencyUnstakeAllFromMine();
 
             // Should have made all stake withdrawable with no rewards collected
-            const totalStaked = stakes[user1.address].add(stakes[user2.address]);
+            const totalStaked = amount.mul(2);
             expectRoundedEqual(await magic.balanceOf(staker.address), totalStaked);
         });
 
@@ -1621,7 +2172,6 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
         it("scenario 1", async () => {
             const { magic, staker } = ctx;
             const { actions, rewards } = setupAdvancedScenario1(ctx);
-            // const { actions, rewards } = setupAdvancedScenario4(ctx);
 
             await runScenario(ctx, actions);
 
@@ -1672,14 +2222,14 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 // Adjust if midstream claims/withdraws have been made
                 const adjustedExpectedReward = ethers.BigNumber.from(expectedReward).sub(claims[signer.address] || 0);
 
-                await claimWithRoundedRewardCheck(staker, signer, adjustedExpectedReward);
+                // Increased tolerance here, but not in final adjusted reward
+                await claimWithRoundedRewardCheck(staker, signer, adjustedExpectedReward, 8);
                 const postclaimBalance = await magic.balanceOf(signer.address);
 
                 expectRoundedEqual(postclaimBalance.sub(preclaimBalance), expectedReward);
 
                 // Withdraw funds to make sure we can
                 if ((await staker.userTotalStake(signer.address)).gt(0)) {
-                    // await staker.connect(signer).withdrawAll();
                     await expect(staker.connect(signer).withdrawAll()).to.not.be.reverted;
                 }
 
@@ -1708,7 +2258,8 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 // Adjust if midstream claims/withdraws have been made
                 const adjustedExpectedReward = ethers.BigNumber.from(expectedReward).sub(claims[signer.address] || 0);
 
-                await claimWithRoundedRewardCheck(staker, signer, adjustedExpectedReward);
+                // Increased tolerance here, but not in final adjusted reward
+                await claimWithRoundedRewardCheck(staker, signer, adjustedExpectedReward, 8);
                 const postclaimBalance = await magic.balanceOf(signer.address);
 
                 expectRoundedEqual(postclaimBalance.sub(preclaimBalance), expectedReward);
@@ -1737,6 +2288,12 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
 
             const claims = await runScenario(ctx, actions);
 
+            // for (const r of rewards) {
+            //     console.log("Signer", r.signer.address, r.expectedReward);
+            // }
+
+            // console.log();
+
             // Now check all expected rewards and user balance
             const shuffledRewards = shuffle(rewards);
             for (const reward of shuffledRewards) {
@@ -1746,7 +2303,10 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 // Adjust if midstream claims/withdraws have been made
                 const adjustedExpectedReward = ethers.BigNumber.from(expectedReward).sub(claims[signer.address] || 0);
 
-                await claimWithRoundedRewardCheck(staker, signer, adjustedExpectedReward);
+                // console.log("Checking", signer.address, expectedReward, adjustedExpectedReward);
+
+                // Increased tolerance here, but not in final adjusted reward
+                await claimWithRoundedRewardCheck(staker, signer, adjustedExpectedReward, 8);
 
                 const postclaimBalance = await magic.balanceOf(signer.address);
 
@@ -1768,11 +2328,13 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
             const { magic, admin, staker, mine, users, legions } = ctx;
 
             // Set up another staker and stake without boosts
-            const staker2 = <AtlasMineStaker>await deploy("AtlasMineStaker", admin, [
+            const staker2 = <AtlasMineStaker>await deployUpgradeable("AtlasMineStakerUpgradeable", admin, [
                 magic.address,
                 mine.address,
                 0, // 0 == AtlasMine.Lock.twoWeeks
             ]);
+
+            await staker2.setAccrualWindows(ACCRUAL_WINDOWS);
 
             const stakerApprove = users.map(u => magic.connect(u).approve(staker2.address, ether("100000")));
             await Promise.all(stakerApprove);
@@ -1800,6 +2362,7 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
             const shuffledRewards = shuffle(rewards);
             for (const reward of shuffledRewards) {
                 const { signer, expectedReward } = reward;
+
                 const preclaimBalance = preclaimBalances[signer.address];
 
                 // Claim from both stakers
@@ -1816,7 +2379,7 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 }
 
                 const postclaimBalance = await magic.balanceOf(signer.address);
-                expectRoundedEqual(postclaimBalance.sub(preclaimBalance), expectedReward, 5);
+                expectRoundedEqual(postclaimBalance.sub(preclaimBalance), expectedReward, 8);
 
                 // Withdraw funds to make sure we can
                 if ((await staker.userTotalStake(signer.address)).gt(0)) {

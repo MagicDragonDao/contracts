@@ -6,7 +6,7 @@ import { BigNumberish, ContractTransaction } from "ethers";
 import { setNextBlockTimestamp } from "../utils";
 
 import type { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
-import type { AtlasMineStaker } from "../../src/types/AtlasMineStaker";
+import type { AtlasMineStakerUpgradeable as AtlasMineStaker } from "../../src/types/AtlasMineStakerUpgradeable";
 import type { MasterOfCoin } from "../../src/types/MasterOfCoin";
 import type { MockLegionMetadataStore } from "../../src/types/MockLegionMetadataStore";
 import type { AtlasMine } from "../../src/types/AtlasMine";
@@ -17,8 +17,11 @@ import type { TestERC721 } from "../../src/types/TestERC721";
 chai.use(solidity);
 
 export const ether = ethers.utils.parseEther;
-export const TOTAL_REWARDS = ether("172800");
+export const TOTAL_REWARDS_PER_DAY = ether("864");
+export const ACCRUAL_WINDOWS = [0, 12];
 export const ONE_DAY_SEC = 86400;
+export const PROGRAM_DAYS = 1000;
+export const TOTAL_REWARDS = TOTAL_REWARDS_PER_DAY.mul(PROGRAM_DAYS);
 
 /////////////////////////////////////////////////////////////////////////////////
 ///                                  TYPES                                    ///
@@ -139,6 +142,7 @@ export const claimWithRoundedRewardCheck = async (
     staker: AtlasMineStaker,
     user: SignerWithAddress,
     expectedReward: BigNumberish,
+    pctWithin?: number,
 ): Promise<ContractTransaction> => {
     const claimTx = await claimSingle(staker, user);
     const receipt = await claimTx.wait();
@@ -154,13 +158,48 @@ export const claimWithRoundedRewardCheck = async (
         reward = reward.add(event?.args?.[2]);
     }
 
-    expectRoundedEqual(reward, expectedReward);
+    expectRoundedEqual(reward, expectedReward, pctWithin);
 
     return claimTx;
 };
 
 export const claimSingle = async (staker: AtlasMineStaker, user: SignerWithAddress): Promise<ContractTransaction> => {
     return staker.connect(user).claimAll();
+};
+
+export const accrue = async (
+    staker: AtlasMineStaker,
+    depositIds?: BigNumberish[],
+    windows = ACCRUAL_WINDOWS,
+): Promise<ContractTransaction | null> => {
+    const mineAddr = await staker.mine();
+    const mineFactory = await ethers.getContractFactory("AtlasMine");
+    const mine = await mineFactory.attach(mineAddr);
+
+    let tx: ContractTransaction;
+
+    if (!depositIds) {
+        depositIds = await mine.getAllUserDepositIds(staker.address);
+    }
+
+    if (depositIds?.length == 0) {
+        return null;
+    }
+
+    try {
+        tx = await staker.accrue(depositIds!);
+    } catch (e: unknown) {
+        if ((<Error>e).message.includes("Not accruing")) {
+            // Roll the window
+            await rollToNextAccrual(windows);
+
+            tx = await staker.accrue(depositIds!);
+        } else {
+            throw e;
+        }
+    }
+
+    return tx;
 };
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -179,7 +218,9 @@ export const rollSchedule = async (
 
 // TODO: Assumes 2-week lock. Make flexible if we test different locks
 // Move forward 1.3mm seconds, or approximately 15 days
-export const rollLock = async (start = Math.floor(Date.now() / 1000)): Promise<number> => {
+export const rollLock = async (start?: number): Promise<number> => {
+    start = start || (await ethers.provider.getBlock("latest")).timestamp;
+
     const nextTimestamp = start + 1_300_000;
     await setNextBlockTimestamp(nextTimestamp);
 
@@ -200,16 +241,102 @@ export const rollTo = async (time: number): Promise<number> => {
     return time;
 };
 
+export const rollToDepositWindow = async (windows = ACCRUAL_WINDOWS): Promise<number> => {
+    const currentTime = (await ethers.provider.getBlock("latest")).timestamp;
+    const currentDaySecs = currentTime % 86_400;
+    const currentDayHrs = currentDaySecs / 3_600;
+    const [accrualWindowStart, accrualWindowEnd] = windows;
+
+    if (currentDayHrs < accrualWindowStart && currentDayHrs >= accrualWindowEnd) {
+        // Already in deposit window
+        await setNextBlockTimestamp(currentTime + 1);
+        return currentTime + 1;
+    }
+
+    const startOfDay = currentTime - currentDaySecs;
+    const timeUntilWindowEnd = accrualWindowEnd * 3_600 + 1;
+    let nextWindowEnd = startOfDay + timeUntilWindowEnd;
+
+    // If past window, need to go to next day
+    if (nextWindowEnd <= currentTime) nextWindowEnd += 86_401;
+
+    await setNextBlockTimestamp(nextWindowEnd);
+
+    return nextWindowEnd;
+};
+export const rollToNextAccrual = async (windows = ACCRUAL_WINDOWS): Promise<number> => {
+    // Roll the window
+    const currentTime = (await ethers.provider.getBlock("latest")).timestamp;
+    const currentDaySecs = currentTime % 86_400;
+    const [accrualWindowStart, accrualWindowEnd] = windows;
+
+    const startOfDay = currentTime - currentDaySecs;
+    const timeUntilWindowStart = accrualWindowStart * 3_600 + 1;
+    const timeUntilWindowEnd = accrualWindowEnd * 3_600 + 1;
+    const nextWindowStart = startOfDay + timeUntilWindowStart;
+    const nextWindowEnd = startOfDay + timeUntilWindowEnd;
+
+    let nextWindow: number;
+
+    if (currentTime >= nextWindowStart && currentTime <= nextWindowEnd) {
+        // If in window, just increment by 1
+        nextWindow = currentTime + 1;
+    } else if (currentTime < nextWindowStart) {
+        // If before window start, roll to the window
+        nextWindow = nextWindowStart + 1;
+    } else {
+        // If after window, roll to next day's window
+        const nextDay = startOfDay + 86_400;
+        nextWindow = nextDay + timeUntilWindowStart + 1;
+    }
+
+    await setNextBlockTimestamp(nextWindow);
+
+    return nextWindow;
+};
+
+export const rollToNearestAccrual = async (time: number, windows = ACCRUAL_WINDOWS): Promise<number> => {
+    // Like rollTo, but adjusts so that we are in the closest accrual window
+    // to the target time.
+    let adjustedTime: number;
+
+    const targetTimeDaySecs = time % 86_400;
+    const targetTimeHr = targetTimeDaySecs / 3_600;
+    const [accrualWindowStart, accrualWindowEnd] = windows;
+
+    if (targetTimeHr >= accrualWindowStart && targetTimeHr <= accrualWindowEnd) {
+        // Already in window
+        adjustedTime = time;
+    }
+
+    let hrsToNextWindow = accrualWindowStart - targetTimeHr;
+    if (hrsToNextWindow < 0) hrsToNextWindow += 24;
+
+    let hrsFromLastWindow = targetTimeHr - accrualWindowEnd;
+    if (hrsFromLastWindow < 0) hrsFromLastWindow += 24;
+
+    if (hrsToNextWindow >= hrsFromLastWindow) {
+        // add time
+        adjustedTime = time + hrsToNextWindow * 3_600 + 1;
+    } else {
+        // remove time
+        adjustedTime = time - hrsFromLastWindow * 3_600 - 1;
+    }
+
+    return rollTo(adjustedTime);
+};
+
 /////////////////////////////////////////////////////////////////////////////////
 ///                                MATCHERS                                   ///
 /////////////////////////////////////////////////////////////////////////////////
 
-export const expectRoundedEqual = (num: BigNumberish, target: BigNumberish, pctWithin = 2): void => {
+export const expectRoundedEqual = (num: BigNumberish, target: BigNumberish, pctWithin = 5): void => {
     num = ethers.BigNumber.from(num);
     target = ethers.BigNumber.from(target);
 
     // Tolerable precision is 0.1%. Precision is lost in the magic mine in both
-    // calculating NFT reward boosts and timing per second
+    // calculating NFT reward boosts, timing per second, and needing to go through
+    // accrual windows
     const precision = 100;
     const denom = ether("1").div(precision);
 
@@ -236,6 +363,7 @@ export const setup5050Scenario = async (ctx: TestContext, rollUntil?: number) =>
         users: [user1, user2],
         staker,
         start,
+        end: programEnd,
     } = ctx;
 
     const end = rollUntil || start;
@@ -258,7 +386,10 @@ export const setup5050Scenario = async (ctx: TestContext, rollUntil?: number) =>
     const tx = await staker.stakeScheduled();
     await tx.wait();
 
-    const timestamp = await rollLock(end);
+    // Roll to lock, accrue rewards, and move past accrual window for tests
+    await rollTo(programEnd);
+    await accrue(staker);
+    const timestamp = await rollToDepositWindow();
 
     // We now have unlocked coins among two stakers who deposited equal
     // amounts at the same time
@@ -295,6 +426,8 @@ export const setup7525Scenario = async (ctx: TestContext) => {
     // Fast-forward to halfway through the lock time and have other
     // user also make a deposit
     const ts = await rollToPartialWindow(start, end, 0.5);
+    await accrue(staker);
+    await rollToDepositWindow();
 
     tx = await stakeSingle(staker, user2, amount);
     await tx.wait();
@@ -305,6 +438,8 @@ export const setup7525Scenario = async (ctx: TestContext) => {
     // User1 should have 75% of rewards
     // User2 should have 25%
     await rollTo(end);
+    await accrue(staker);
+    await rollToDepositWindow();
 
     // We now have unlocked coins among two stakers who deposited equal
     // amounts at the same time
@@ -1150,15 +1285,41 @@ export const runScenario = async (
     const { staker: globalStaker, end } = ctx;
     const claims: { [user: string]: BigNumberish } = {};
 
+    const allStakers = { [globalStaker.address]: globalStaker };
+
     // Run through scenario from beginning of program until end
     for (const batch of actions) {
         const { timestamp, actions: batchActions } = batch;
 
         // Make deposit, then roll to stake
-        await rollTo(timestamp);
+        await setNextBlockTimestamp(timestamp);
+        await ethers.provider.send("evm_mine", []);
+        await rollToNextAccrual();
+
+        // Make sure any accrual happens for previous time
+        const actionStakers = batchActions.reduce(
+            (stakers, a) => {
+                if (a.staker && !stakers[a.staker.address]) {
+                    stakers[a.staker.address] = a.staker;
+                }
+
+                return stakers;
+            },
+            { [globalStaker.address]: globalStaker },
+        );
+
+        Object.assign(allStakers, actionStakers);
+
+        const accruals = Object.values(actionStakers).map(staker => accrue(staker));
+        await Promise.all(accruals);
+
+        // After accruing, go to deposit window
+        await rollToDepositWindow();
+
         let tx: ContractTransaction;
 
-        for (const a of batchActions) {
+        // Shuffle actions to ensure rewards not time-based per batch
+        for (const a of shuffle(batchActions)) {
             const { signer, amount, action } = a;
             const staker = a.staker ?? globalStaker;
 
@@ -1274,13 +1435,21 @@ export const runScenario = async (
     }
 
     // Now roll to end - all staking should be processed
-    await rollTo(end);
+    await setNextBlockTimestamp(end);
+    await ethers.provider.send("evm_mine", []);
+    await rollToNextAccrual();
+
+    // Accrue last time and then re-enable deposits
+    const accruals = Object.values(allStakers).map(staker => accrue(staker));
+    await Promise.all(accruals);
+
+    await rollToDepositWindow();
 
     return claims;
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const shuffle = (array: any[]) => {
+export const shuffle = function shuffle<T>(array: T[]): T[] {
     let currentIndex = array.length,
         randomIndex;
 
