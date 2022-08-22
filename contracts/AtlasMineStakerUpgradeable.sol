@@ -1010,11 +1010,13 @@ contract AtlasMineStakerUpgradeable is
      * @return inWindow             Whether the current time falls in an accrual window.
      */
     function _isAccrualWindow() internal view returns (bool inWindow) {
-        require(accrualWindows.length > 0, "Accrual windows not set");
+        uint256 numAccrualWindows = accrualWindows.length;
+
+        require(numAccrualWindows > 0, "Accrual windows not set");
         /// time elapsed in day / hours
         uint256 currentHour = (block.timestamp % 86_400) / 3_600;
 
-        for (uint256 i = 0; i < accrualWindows.length - 1; i += 2) {
+        for (uint256 i = 0; i < numAccrualWindows - 1; i += 2) {
             if (currentHour >= accrualWindows[i] && currentHour < accrualWindows[i + 1]) {
                 inWindow = true;
                 break;
