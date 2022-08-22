@@ -1754,6 +1754,15 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 );
             });
 
+            it("does not allow an owner to unstake all possible stake during an accrual window", async () => {
+                const { admin, staker } = ctx;
+
+                // Set accrual window for every hr
+                await staker.connect(admin).setAccrualWindows([0, 24]);
+
+                await expect(staker.connect(admin).unstakeAllFromMine()).to.be.revertedWith("In accrual window");
+            });
+
             it("allows an owner to unstake all possible stake", async () => {
                 const {
                     admin,
@@ -1783,6 +1792,8 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 expectRoundedEqual(await magic.balanceOf(staker.address), 0);
 
                 await accrue(staker);
+                await rollToDepositWindow();
+
                 await staker.connect(admin).unstakeAllFromMine();
 
                 // Staker should now hold all total rewards plus all unstaked deposits (10 unites)
