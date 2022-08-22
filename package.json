@@ -91,6 +91,7 @@
         "@openzeppelin/contracts-upgradeable": "^4.5.2",
         "@openzeppelin/hardhat-upgrades": "^1.16.1",
         "csv-writer": "^1.6.0",
+        "ethers-multisend": "^2.2.0",
         "hardhat-contract-sizer": "^2.5.1",
         "treasure-staking": "https://github.com/ghoul-sol/treasure-staking"
     }

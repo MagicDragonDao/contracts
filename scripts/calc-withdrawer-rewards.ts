@@ -27,8 +27,41 @@ const START_BLOCK = 17787057;
 const depositHwm = "19491849143700000000000000";
 
 export async function main(): Promise<void> {
-    const harvested = await simulateHarvest();
-    await determineWithdrawerRewards(harvested);
+    await logSubmittedReimbursements();
+}
+
+export async function logSubmittedReimbursements(): Promise<void> {
+    const submissions = fs.readFileSync("./form_answers.csv", "utf-8");
+    const lines = submissions.split("\n");
+    const addresses = lines
+        .map(l => {
+            const tokens = l.split(",");
+            return tokens[tokens.length - 2];
+        })
+        .slice(2)
+        .filter((v, i, a) => a.findIndex(t => t === v) === i);
+
+    let totalAmount = ethers.BigNumber.from(0);
+    const output: string[] = [];
+
+    const rewards = fs.readFileSync("users.csv", "utf-8");
+    const rewardLines = rewards.split("\n").slice(1);
+
+    rewardLines.forEach(l => {
+        const tokens = l.split(",");
+        const [address, amount] = tokens;
+
+        if (addresses.includes(address)) {
+            console.log(`${address} ${amount}`);
+            output.push(`,${address},${amount},,MAGIC`);
+            totalAmount = totalAmount.add(ethers.utils.parseEther(amount));
+        }
+    });
+
+    console.log();
+    console.log("Total amount:", ethers.utils.formatEther(totalAmount));
+
+    fs.writeFileSync("reimbursements.csv", output.join("\n"));
 }
 
 export async function determineWithdrawerRewards(totalRewards: BigNumberish): Promise<void> {

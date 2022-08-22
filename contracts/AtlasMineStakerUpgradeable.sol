@@ -861,7 +861,7 @@ contract AtlasMineStakerUpgradeable is
         uint256 numDeposits = depositIds.length;
 
         for (uint256 i = 0; i < numDeposits; i++) {
-            UserStake storage s = userStake[user][depositId];
+            UserStake storage s = userStake[user][depositIds[i]];
 
             if (s.amount > 0) {
                 reward += pendingRewards(user, depositIds[i]);
