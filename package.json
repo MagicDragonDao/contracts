@@ -1,5 +1,5 @@
 {
-    "name": "@millenarian/magic-deagon-contracts",
+    "name": "@millenarian/magic-dragon-contracts",
     "description": "Template for writing Solidity smart contracts",
     "version": "1.0.0",
     "devDependencies": {
@@ -92,6 +92,6 @@
         "@openzeppelin/contracts-upgradeable": "^4.5.2",
         "@openzeppelin/hardhat-upgrades": "^1.16.1",
         "hardhat-contract-sizer": "^2.5.1",
-        "treasure-staking": "https://github.com/ghoul-sol/treasure-staking"
+        "treasure-staking": "git+https://github.com/ghoul-sol/treasure-staking#7b906b29e2373673bc242c301869c6bd46fb4919"
     }
 }

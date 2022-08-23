@@ -149,6 +149,10 @@ const config: HardhatUserConfig = {
                 settings: compilerSettings,
             },
             {
+                version: "0.8.14",
+                settings: compilerSettings,
+            },
+            {
                 version: "0.8.10",
                 settings: compilerSettings,
             },
@@ -172,6 +176,7 @@ const config: HardhatUserConfig = {
             "treasure-staking/contracts/AtlasMine.sol",
             "treasure-staking/contracts/MasterOfCoin.sol",
             "treasure-staking/contracts/interfaces/ILegionMetadataStore.sol",
+            "treasure-staking/contracts/harvester/Middleman.sol",
         ],
     },
     etherscan: {
