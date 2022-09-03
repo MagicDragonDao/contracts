@@ -88,6 +88,8 @@ contract DragonDepositorUpgradeable is
 
         magic = _magic;
         drMagic = _drMagic;
+
+        mintRatio = 1e18;
     }
 
     // ======================================== USER OPERATIONS ========================================
@@ -125,10 +127,10 @@ contract DragonDepositorUpgradeable is
         require(!paused, "new deposits paused");
         require(_amount > 0, "Deposit amount 0");
 
-        uint256 toMint = _amount * mintRatio;
+        uint256 toMint = (_amount * mintRatio) / RATIO_DENOM;
 
         magic.safeTransferFrom(msg.sender, address(this), _amount);
-        drMagic.mint(msg.sender, toMint);
+        drMagic.mint(user, toMint);
 
         emit Deposit(user, _amount, toMint);
     }
