@@ -52,7 +52,7 @@ contract BasicDragonStash is IRewardStash, Ownable {
      *
      * @return rewards                          The amount of rewards sent.
      */
-    function requestRewards() external override returns (uint256 rewards) {
+    function requestRewards() external virtual override returns (uint256 rewards) {
         require(msg.sender == stashPuller, "Not puller");
 
         rewards = token.balanceOf(address(this));
@@ -69,7 +69,7 @@ contract BasicDragonStash is IRewardStash, Ownable {
      *
      * @param _puller                           The new stash puller.
      */
-    function setPuller(address _puller) external onlyOwner {
+    function setPuller(address _puller) external virtual onlyOwner {
         stashPuller = _puller;
 
         emit SetPuller(stashPuller);
@@ -82,7 +82,7 @@ contract BasicDragonStash is IRewardStash, Ownable {
      * @param token_                            The token to rescue.
      * @param to                                The recipient of rescued tokens.
      */
-    function rescue(IERC20 token_, address to) external onlyOwner {
+    function rescue(IERC20 token_, address to) external virtual onlyOwner {
         require(token_ != token, "Cannot rescue stash token");
 
         token_.safeTransfer(to, token_.balanceOf(address(this)));

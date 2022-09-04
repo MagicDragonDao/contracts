@@ -13,8 +13,6 @@ import "./interfaces/IMasterChefV2.sol";
 import "./interfaces/IRewardStash.sol";
 
 // TODO:
-// - Write basic rewards distributor for multisig
-// - Write smoothed rewards distributor for multisig
 // - Write tests
 // - Check uint256/int256 conversions and zero cases
 // - Figure out if pullRewards should happen every time
@@ -35,7 +33,8 @@ import "./interfaces/IRewardStash.sol";
  * be one deployment for any staking pool rewarding MAGIC, and one deployment for any
  * staking pool rewarding MDD.
  *
- * MasterChef reference implementation from https://github.com/sushiswap/sushiswap/blob/archieve/canary/contracts/MasterChefV2.sol
+ * MasterChef reference implementation:
+ * https://github.com/sushiswap/sushiswap/blob/archieve/canary/contracts/MasterChefV2.sol
  */
 contract DragonFireBreather is Initializable, AccessControl, IMiniChefV2 {
     using SafeERC20 for IERC20;
