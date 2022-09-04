@@ -21,6 +21,7 @@ contract StreamingDragonStash is BasicDragonStash {
     // ============================================ EVENTS ==============================================
 
     event StreamStarted(uint256 amount, uint256 duration);
+    event StreamStopped();
 
     // ============================================ STATE ===============================================
 
@@ -56,19 +57,29 @@ contract StreamingDragonStash is BasicDragonStash {
      */
     function requestRewards() external override returns (uint256 rewards) {
         require(msg.sender == stashPuller, "Not puller");
+        require(streamStart != 0, "No stream");
 
-        uint256 elapsed = block.timestamp - lastPull;
-        lastPull = block.timestamp;
+        uint256 lastActiveTimestamp = block.timestamp <= streamEnd ? block.timestamp : streamEnd;
+        rewards = (rewardsPerSecond * (lastActiveTimestamp - lastPull)) / ONE;
 
-        rewards = (rewardsPerSecond * elapsed) / ONE;
+        if (rewards > 0) {
+            lastPull = lastActiveTimestamp;
 
-        token.transfer(msg.sender, rewards);
+            token.safeTransfer(msg.sender, rewards);
 
-        emit SendRewards(msg.sender, rewards);
+            emit SendRewards(msg.sender, rewards);
+        }
     }
 
     // ======================================== ADMIN OPERATIONS ========================================
 
+    /**
+     * @notice Start a reward stream for amount tokens over duration seconds. If a stream is active,
+     *         takes the leftover rewards and re-dsitributes them. Requires contract to be funded.
+     *
+     * @param amount                            The amount of rewards to distribute.
+     * @param duration                          The length of time to distribute rewards.
+     */
     function startStream(uint256 amount, uint256 duration) external onlyOwner {
         require(duration > 0, "No duration");
 
@@ -88,5 +99,24 @@ contract StreamingDragonStash is BasicDragonStash {
         lastPull = block.timestamp;
 
         emit StreamStarted(amount, duration);
+    }
+
+    /**
+     * @notice Stop the reward stream and return the leftover tokens to the owner.
+     *         Can be used in case of migration to a new stash or accounting issue.
+     */
+    function stopStream() external onlyOwner {
+        require(block.timestamp <= streamEnd, "Stream over");
+
+        uint256 remaining = streamEnd - block.timestamp;
+        uint256 leftover = remaining * rewardsPerSecond;
+
+        rewardsPerSecond = 0;
+        streamStart = 0;
+        streamEnd = 0;
+
+        token.transfer(msg.sender, leftover);
+
+        emit StreamStopped();
     }
 }
