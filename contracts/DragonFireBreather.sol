@@ -14,7 +14,6 @@ import "./interfaces/IRewardStash.sol";
 
 // TODO:
 // - Write tests
-// - Check uint256/int256 conversions and zero cases
 // - Figure out if pullRewards should happen every time
 
 /**
@@ -170,7 +169,7 @@ contract DragonFireBreather is Initializable, AccessControl, IMiniChefV2 {
         // Effects
         user.amount += amount;
 
-        int256 accumulatedRewards = ((amount * pool.accRewardsPerShare) / ONE).toInt256();
+        int256 accumulatedRewards = _accumulatedRewards(amount, pool.accRewardsPerShare);
         user.rewardDebt += accumulatedRewards;
 
         // Interactions
@@ -200,7 +199,7 @@ contract DragonFireBreather is Initializable, AccessControl, IMiniChefV2 {
         UserInfo storage user = userInfo[pid][msg.sender];
 
         // Effects
-        user.rewardDebt -= ((amount * pool.accRewardsPerShare) / ONE).toInt256();
+        user.rewardDebt -= _accumulatedRewards(amount, pool.accRewardsPerShare);
         user.amount -= amount;
 
         // Interactions
@@ -224,23 +223,24 @@ contract DragonFireBreather is Initializable, AccessControl, IMiniChefV2 {
         PoolInfo memory pool = poolInfo[pid];
         UserInfo storage user = userInfo[pid][msg.sender];
 
-        int256 accumulatedRewards = ((user.amount * pool.accRewardsPerShare) / ONE).toInt256();
+        int256 accumulatedRewards = _accumulatedRewards(user.amount, pool.accRewardsPerShare);
         int256 pendingReward = accumulatedRewards - user.rewardDebt;
+        uint256 reward = pendingReward > 0 ? pendingReward.toUint256() : 0;
 
         // Effects
         user.rewardDebt = accumulatedRewards;
 
         // Interactions
-        if (pendingReward > 0) {
-            rewardToken.safeTransfer(to, pendingReward.toUint256());
+        if (reward > 0) {
+            rewardToken.safeTransfer(to, reward);
         }
 
         IRewarder _rewarder = rewarder[pid];
         if (address(_rewarder) != address(0)) {
-            _rewarder.onReward(pid, msg.sender, to, pendingReward.toUint256(), user.amount);
+            _rewarder.onReward(pid, msg.sender, to, reward, user.amount);
         }
 
-        emit Harvest(msg.sender, pid, pendingReward.toUint256());
+        emit Harvest(msg.sender, pid, reward);
     }
 
     /**
@@ -258,12 +258,12 @@ contract DragonFireBreather is Initializable, AccessControl, IMiniChefV2 {
         PoolInfo memory pool = poolInfo[pid];
         UserInfo storage user = userInfo[pid][msg.sender];
 
-        int256 accumulatedRewards = ((user.amount * pool.accRewardsPerShare) / ONE).toInt256();
+        int256 accumulatedRewards = _accumulatedRewards(user.amount, pool.accRewardsPerShare);
         int256 pendingReward = accumulatedRewards - user.rewardDebt;
 
         // Effects
         user.amount -= amount;
-        user.rewardDebt = ((user.amount * pool.accRewardsPerShare) / ONE).toInt256();
+        user.rewardDebt = _accumulatedRewards(user.amount, pool.accRewardsPerShare);
 
         uint256 reward = pendingReward > 0 ? pendingReward.toUint256() : 0;
 
@@ -328,7 +328,7 @@ contract DragonFireBreather is Initializable, AccessControl, IMiniChefV2 {
         PoolInfo memory pool = poolInfo[_pid];
         UserInfo memory user = userInfo[_pid][_user];
 
-        int256 accumulatedRewards = ((user.amount * pool.accRewardsPerShare) / ONE).toInt256();
+        int256 accumulatedRewards = _accumulatedRewards(user.amount, pool.accRewardsPerShare);
         int256 pending = accumulatedRewards - user.rewardDebt;
 
         return pending > 0 ? pending.toUint256() : 0;
@@ -408,5 +408,16 @@ contract DragonFireBreather is Initializable, AccessControl, IMiniChefV2 {
 
             emit LogUpdatePool(i, uint64(block.number), totalStaked, pool.accRewardsPerShare);
         }
+    }
+
+    /**
+     * @dev Calculate the current accumulated rewards for a given amount of stake.
+     *      Reduces the awards by 1 wei due to an off-by-one issue in the atlas mine.
+     *
+     * @param stakeAmount                       The amount of stake to accumulate rewards for.
+     * @param accRewardsPerShare                The pool's accRewardsPerShare value.
+     */
+    function _accumulatedRewards(uint256 stakeAmount, uint256 accRewardsPerShare) internal pure returns (int256) {
+        return ((stakeAmount * accRewardsPerShare) / ONE).toInt256();
     }
 }
