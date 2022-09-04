@@ -13,7 +13,6 @@ import "./interfaces/IMasterChefV2.sol";
 import "./interfaces/IRewardStash.sol";
 
 // TODO:
-// - Write staking operations
 // - Write basic rewards distributor for multisig
 // - Write smoothed rewards distributor for multisig
 // - Write tests

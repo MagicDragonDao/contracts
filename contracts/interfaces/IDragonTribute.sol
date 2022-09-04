@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-interface IDragonDepositor {
+interface IDragonTribute {
     // ============= Events ==============
 
     event Deposit(address indexed user, uint256 amountDeposited, uint256 amountMinted);

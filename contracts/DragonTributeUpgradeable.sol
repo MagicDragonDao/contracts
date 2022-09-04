@@ -8,10 +8,10 @@ import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol"
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 
 import "./interfaces/IERC20Mintable.sol";
-import "./interfaces/IDragonDepositor.sol";
+import "./interfaces/IDragonTribute.sol";
 
 /**
- * @title DragonDepositor
+ * @title DragonTribute
  * @author kvk0x
  *
  * The Dragon Depositor contract allows the transmutation of MAGIC into drMAGIC,
@@ -20,8 +20,8 @@ import "./interfaces/IDragonDepositor.sol";
  * This contract allows users to deposit MAGIC, for which they will be minted
  * drMAGIC at a predefined ratio.
  */
-contract DragonDepositorUpgradeable is
-    IDragonDepositor,
+contract DragonTributeUpgradeable is
+    IDragonTribute,
     Initializable,
     AccessControlUpgradeable,
     ReentrancyGuardUpgradeable
