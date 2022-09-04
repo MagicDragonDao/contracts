@@ -47,6 +47,7 @@ interface IMiniChefV2 {
     struct UserInfo {
         uint256 amount;
         int256 rewardDebt;
+        bool autoPull;
     }
 
     struct PoolInfo {

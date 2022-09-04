@@ -13,8 +13,13 @@ import "./interfaces/IMasterChefV2.sol";
 import "./interfaces/IRewardStash.sol";
 
 // TODO:
-// - Write tests
 // - Figure out if pullRewards should happen every time
+//
+// Tests
+// - mint/burn tests for drMAGIC
+// - tests for tribute
+// - reward stash tests
+// - masterchef/integration tests
 
 /**
  * @title DragonFireBreather

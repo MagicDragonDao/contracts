@@ -2,7 +2,7 @@
 import { ethers, waffle } from "hardhat";
 import { BigNumberish, ContractTransaction } from "ethers";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { expect, should } from "chai";
+import { expect } from "chai";
 
 const { loadFixture } = waffle;
 
