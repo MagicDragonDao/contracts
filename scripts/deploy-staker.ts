@@ -5,8 +5,6 @@ import { SECTION_SEPARATOR } from "./constants";
 import type { AtlasMineStakerUpgradeable } from "../src/types/AtlasMineStakerUpgradeable";
 import type { ERC20 } from "../src/types/ERC20";
 
-import AMAbi from "../artifacts/contracts/AtlasMineStakerUpgradeable.sol/AtlasMineStakerUpgradeable.json";
-
 export async function main(): Promise<void> {
     await deploy();
     // await approveMagic();
