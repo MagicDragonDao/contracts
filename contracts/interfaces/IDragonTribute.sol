@@ -13,7 +13,7 @@ interface IDragonTribute {
 
     function deposit(uint256 _amount) external;
 
-    function depositFor(address user, uint256 _amount) external;
+    function depositFor(uint256 _amount, address user) external;
 
     // ============= Owner Operations ==============
 

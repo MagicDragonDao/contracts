@@ -94,8 +94,8 @@ contract DragonTributeUpgradeable is
      *
      * @param _amount               The amount of MAGIC to deposit.
      */
-    function deposit(uint256 _amount) external virtual override nonReentrant {
-        _deposit(msg.sender, _amount);
+    function deposit(uint256 _amount) external virtual override {
+        _deposit(_amount, msg.sender);
     }
 
     /**
@@ -103,11 +103,11 @@ contract DragonTributeUpgradeable is
      *         Can mint to another address besides depositor. Depositor must always
      *         directly provide MAGIC,
      *
-     * @param user                  The address to receive the minted drMAGIC.
      * @param _amount               The amount of MAGIC to deposit.
+     * @param user                  The address to receive the minted drMAGIC.
      */
-    function depositFor(address user, uint256 _amount) external virtual override {
-        _deposit(user, _amount);
+    function depositFor(uint256 _amount, address user) external virtual override {
+        _deposit(_amount, user);
     }
 
     /**
@@ -115,11 +115,11 @@ contract DragonTributeUpgradeable is
      *      mint, collects the specified MAGIC, and mints the drMAGIc to the specified
      *      user.
      *
-     * @param user                  The address to receive the minted drMAGIC.
      * @param _amount               The amount of MAGIC to deposit.
+     * @param user                  The address to receive the minted drMAGIC.
      */
-    function _deposit(address user, uint256 _amount) internal nonReentrant {
-        require(mintRatio > 0, "new deposits paused");
+    function _deposit(uint256 _amount, address user) internal nonReentrant {
+        require(mintRatio > 0, "New deposits paused");
         require(_amount > 0, "Deposit amount 0");
 
         uint256 toMint = (_amount * mintRatio) / RATIO_DENOM;
