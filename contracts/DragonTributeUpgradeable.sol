@@ -51,14 +51,9 @@ contract DragonTributeUpgradeable is
 
     /// @notice The denominator for the expressed deposit ratio
     uint256 public constant RATIO_DENOM = 1e18;
-    /// @notice The ratio of drMAGIC minted per MAGIC deposited. 1e18 represnts a 1-1 ratio.
+    /// @notice The ratio of drMAGIC minted per MAGIC deposited. 1e18 represents a 1-1 ratio.
+    ///         A mintRatio of 0 pauses the contract.
     uint256 public mintRatio;
-
-    // ============== Admin Operations State State ================
-
-    /// @notice Whether the depositor is accepting new deposits. For emergencies
-    ///         or to prevent new minting of drMAGIC.
-    bool public paused;
 
     // ========================================== INITIALIZER ===========================================
 
@@ -124,7 +119,7 @@ contract DragonTributeUpgradeable is
      * @param _amount               The amount of MAGIC to deposit.
      */
     function _deposit(address user, uint256 _amount) internal nonReentrant {
-        require(!paused, "new deposits paused");
+        require(mintRatio > 0, "new deposits paused");
         require(_amount > 0, "Deposit amount 0");
 
         uint256 toMint = (_amount * mintRatio) / RATIO_DENOM;
@@ -144,12 +139,15 @@ contract DragonTributeUpgradeable is
      *
      * @param _amount               The amount of MAGIC to withdraw.
      */
-    function withdrawMagic(uint256 _amount) external virtual override onlyRole(WITHDRAW_ROLE) {
+    function withdrawMagic(uint256 _amount, address to) external virtual override onlyRole(WITHDRAW_ROLE) {
         require(_amount > 0, "Withdraw amount 0");
 
-        magic.safeTransfer(msg.sender, _amount);
+        uint256 magicBal = magic.balanceOf(address(this));
+        if (magicBal < _amount) _amount = magicBal;
 
-        emit WithdrawMagic(msg.sender, _amount);
+        magic.safeTransfer(to, _amount);
+
+        emit WithdrawMagic(msg.sender, to, _amount);
     }
 
     /**
@@ -161,22 +159,8 @@ contract DragonTributeUpgradeable is
      * @param _ratio               The ratio of drMAGIC to mint per MAGIC deposited.
      */
     function setMintRatio(uint256 _ratio) external override onlyRole(ADMIN_ROLE) {
-        require(_ratio > 0, "Ratio 0");
-
         mintRatio = _ratio;
 
         emit SetMintRatio(_ratio);
-    }
-
-    /**
-     * @notice Pause the contract, preventing new minting of drMAGIC. Can be used in case of bugs,
-     *         or limiting access to drMAGIC if managing supply. Can only be called by admin.
-     *
-     * @param _paused               Whether deposits should be paused.
-     */
-    function setPaused(bool _paused) external override onlyRole(ADMIN_ROLE) {
-        paused = _paused;
-
-        emit SetPaused(_paused);
     }
 }
