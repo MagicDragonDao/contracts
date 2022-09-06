@@ -64,13 +64,15 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
         const treasures = <TestERC1155>await deploy("TestERC1155", admin, []);
         const legions = <TestERC721>await deploy("TestERC721", admin, []);
 
-        const masterOfCoin = <MasterOfCoin>await deploy("MasterOfCoin", admin, []);
+        const masterOfCoin = <MasterOfCoin>await deploy("MasterOfCoinV1", admin, []);
         await masterOfCoin.init(magic.address);
 
         const metadataStore = <MockLegionMetadataStore>await deploy("MockLegionMetadataStore", admin, []);
 
-        const mine = <AtlasMine>await deploy("AtlasMine", admin, []);
-        await mine.init(magic.address, masterOfCoin.address);
+        const mine = <AtlasMine>(
+            await deployUpgradeable("AtlasMine", admin, [magic.address, masterOfCoin.address], "init")
+        );
+
         await mine.setTreasure(treasures.address);
         await mine.setLegion(legions.address);
         await mine.setLegionMetadataStore(metadataStore.address);
@@ -2288,12 +2290,6 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
 
             const claims = await runScenario(ctx, actions);
 
-            // for (const r of rewards) {
-            //     console.log("Signer", r.signer.address, r.expectedReward);
-            // }
-
-            // console.log();
-
             // Now check all expected rewards and user balance
             const shuffledRewards = shuffle(rewards);
             for (const reward of shuffledRewards) {
@@ -2302,8 +2298,6 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
 
                 // Adjust if midstream claims/withdraws have been made
                 const adjustedExpectedReward = ethers.BigNumber.from(expectedReward).sub(claims[signer.address] || 0);
-
-                // console.log("Checking", signer.address, expectedReward, adjustedExpectedReward);
 
                 // Increased tolerance here, but not in final adjusted reward
                 await claimWithRoundedRewardCheck(staker, signer, adjustedExpectedReward, 8);

@@ -20,6 +20,7 @@ export async function deployUpgradeable<T extends Contract>(
     contractName: string,
     deployer: Signer,
     params: any[],
+    initFn = "initialize",
 ): Promise<T> {
     const impl = await deploy(contractName, deployer, []);
 
@@ -31,7 +32,7 @@ export async function deployUpgradeable<T extends Contract>(
     const proxy = await proxyFactory.deploy(impl.address, proxyAdmin.address, Buffer.from(""));
     const contract = <T>await ethers.getContractAt(contractName, proxy.address);
 
-    await contract.initialize(...params);
+    await contract[initFn](...params);
 
     return contract;
 }
