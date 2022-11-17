@@ -1,9 +1,12 @@
 import hre from "hardhat";
+import chai, { expect } from "chai";
 import { ethers } from "hardhat";
-import { Artifact } from "hardhat/types";
-import { Contract, Signer } from "ethers";
+import { solidity } from "ethereum-waffle";
+import { Contract, Signer, BigNumberish } from "ethers";
 
-const { deployContract } = hre.waffle;
+chai.use(solidity);
+
+export const ether = ethers.utils.parseEther;
 
 /**
  * Deploy a contract with the given artifact name
@@ -44,3 +47,31 @@ export async function increaseTime(seconds: number): Promise<void> {
 export async function setNextBlockTimestamp(epoch: number): Promise<void> {
     await ethers.provider.send("evm_setNextBlockTimestamp", [epoch]);
 }
+
+/////////////////////////////////////////////////////////////////////////////////
+///                                MATCHERS                                   ///
+/////////////////////////////////////////////////////////////////////////////////
+
+export const expectRoundedEqual = (num: BigNumberish, target: BigNumberish, pctWithin = 5): void => {
+    num = ethers.BigNumber.from(num);
+    target = ethers.BigNumber.from(target);
+
+    // Tolerable precision is 0.1%. Precision is lost in the magic mine in both
+    // calculating NFT reward boosts, timing per second, and needing to go through
+    // accrual windows
+    const precision = 100;
+    const denom = ether("1").div(precision);
+
+    if (target.eq(0)) {
+        expect(num).to.be.lte(ether("1"));
+    } else if (num.eq(0)) {
+        expect(target).to.be.lte(ether("1"));
+    } else {
+        // Expect it to be less than 2% diff
+        const lowerBound = target.div(denom).mul(denom.div(100).mul(100 - pctWithin));
+        const upperBound = target.div(denom).mul(denom.div(100).mul(100 + pctWithin));
+
+        expect(num).to.be.gte(lowerBound);
+        expect(num).to.be.lte(upperBound);
+    }
+};

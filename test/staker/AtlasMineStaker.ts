@@ -6,7 +6,7 @@ import { expect } from "chai";
 
 const { loadFixture } = waffle;
 
-import { deploy, deployUpgradeable, increaseTime } from "../utils";
+import { deploy, deployUpgradeable, increaseTime, expectRoundedEqual, ether } from "../utils";
 import type { AtlasMineStakerUpgradeable as AtlasMineStaker } from "../../src/types/AtlasMineStakerUpgradeable";
 import type { MasterOfCoin } from "../../src/types/MasterOfCoin";
 import type { MockLegionMetadataStore } from "../../src/types/MockLegionMetadataStore";
@@ -27,7 +27,6 @@ import {
     rollLock,
     rollTo,
     rollToDepositWindow,
-    expectRoundedEqual,
     setup5050Scenario,
     setup7525Scenario,
     setupAdvancedScenario1,
@@ -48,8 +47,6 @@ import {
     rollToNearestAccrual,
     rollToNextAccrual,
 } from "./helpers";
-
-const ether = ethers.utils.parseEther;
 
 describe("Atlas Mine Staking (Pepe Pool)", () => {
     let ctx: TestContext;
