@@ -16,8 +16,6 @@ import "./interfaces/IRewardStash.sol";
 // - Figure out if pullRewards should happen every time
 //
 // Tests
-// - mint/burn tests for drMAGIC
-// - tests for tribute
 // - reward stash tests
 // - masterchef/integration tests
 

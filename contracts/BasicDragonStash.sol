@@ -21,6 +21,7 @@ contract BasicDragonStash is IRewardStash, Ownable {
     // ============================================ EVENTS ==============================================
 
     event SetPuller(address puller);
+    event Rescue(address indexed token, uint256 amount, address to);
 
     // ============================================ STATE ===============================================
 
@@ -38,7 +39,8 @@ contract BasicDragonStash is IRewardStash, Ownable {
      * @param _puller                           The address that will draw the token.
      */
     constructor(IERC20 _token, address _puller) Ownable() {
-        require(address(_token) != address(0), "No puller");
+        require(address(_token) != address(0), "No token");
+        require(_puller != address(0), "No puller");
 
         token = _token;
         stashPuller = _puller;
@@ -57,9 +59,11 @@ contract BasicDragonStash is IRewardStash, Ownable {
 
         rewards = token.balanceOf(address(this));
 
-        token.transfer(msg.sender, rewards);
+        if (rewards > 0) {
+            token.transfer(msg.sender, rewards);
 
-        emit SendRewards(msg.sender, rewards);
+            emit SendRewards(msg.sender, rewards);
+        }
     }
 
     // ======================================== ADMIN OPERATIONS ========================================
@@ -85,6 +89,9 @@ contract BasicDragonStash is IRewardStash, Ownable {
     function rescue(IERC20 token_, address to) external virtual onlyOwner {
         require(token_ != token, "Cannot rescue stash token");
 
-        token_.safeTransfer(to, token_.balanceOf(address(this)));
+        uint256 balance = token_.balanceOf(address(this));
+        token_.safeTransfer(to, balance);
+
+        emit Rescue(address(token_), balance, to);
     }
 }

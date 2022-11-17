@@ -12,16 +12,17 @@ import "./BasicDragonStash.sol";
  * @author kvk0x
  *
  * A dragon stash contract implementing IRewardStash,
- * that sends its entire balance when rewards are requested,
- * and is set up with a single recipient.
+ * that sends a prorated portion of its balance when
+ * rewards are requested, and allows the contract admin
+ * to set the emission rate.
  */
 contract StreamingDragonStash is BasicDragonStash {
     using SafeERC20 for IERC20;
 
     // ============================================ EVENTS ==============================================
 
-    event StreamStarted(uint256 amount, uint256 duration);
-    event StreamStopped();
+    event StartStream(uint256 amount, uint256 duration);
+    event StopStream();
 
     // ============================================ STATE ===============================================
 
@@ -98,7 +99,7 @@ contract StreamingDragonStash is BasicDragonStash {
         streamEnd = block.timestamp + duration;
         lastPull = block.timestamp;
 
-        emit StreamStarted(amount, duration);
+        emit StartStream(amount, duration);
     }
 
     /**
@@ -109,7 +110,7 @@ contract StreamingDragonStash is BasicDragonStash {
         require(block.timestamp <= streamEnd, "Stream over");
 
         uint256 remaining = streamEnd - block.timestamp;
-        uint256 leftover = remaining * rewardsPerSecond;
+        uint256 leftover = (remaining * rewardsPerSecond) / ONE;
 
         rewardsPerSecond = 0;
         streamStart = 0;
@@ -117,6 +118,6 @@ contract StreamingDragonStash is BasicDragonStash {
 
         token.transfer(msg.sender, leftover);
 
-        emit StreamStopped();
+        emit StopStream();
     }
 }
