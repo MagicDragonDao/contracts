@@ -232,6 +232,40 @@ describe("DragonStash", () => {
             expect(await magic.balanceOf(puller.address)).to.eq(amount);
         });
 
+        it("allows the puller to collect rewards across multiple stream periods", async () => {
+            const { streamingStash, admin, magic, puller } = ctx;
+            await magic.mint(streamingStash.address, amount);
+            const total = amount.mul(2);
+
+            await streamingStash.connect(admin).startStream(amount, STREAM_DURATION);
+
+            // Move halfway through the stream and start a new stream
+            // Amount should now be 1.5x (since half left over)
+            await ethers.provider.send("evm_increaseTime", [STREAM_DURATION / 2]);
+            await streamingStash.connect(admin).startStream(amount, STREAM_DURATION);
+
+            // Move halfway again and claim rewards - should get 5/8 of total rewards,
+            // 2/8 of total from the first half, and 3/8 of total from second half
+            // (1/2 time at a total 6/8 reward)
+            await ethers.provider.send("evm_increaseTime", [STREAM_DURATION / 2]);
+
+            await expect(streamingStash.connect(puller).requestRewards())
+                .to.emit(streamingStash, "SendRewards")
+                .withArgs(puller.address, total.div(8).mul(5).toString());
+
+            expect(await magic.balanceOf(puller.address)).to.eq(total.div(8).mul(5));
+
+            // Advance to the end of the stream - should get rest of the half
+            await ethers.provider.send("evm_increaseTime", [STREAM_DURATION]);
+
+            await expect(streamingStash.connect(puller).requestRewards())
+                .to.emit(streamingStash, "SendRewards")
+                .withArgs(puller.address, total.div(8).mul(3).toString());
+
+            expect(await magic.balanceOf(puller.address)).to.eq(total);
+            expect(await streamingStash.lastPull()).to.eq(await streamingStash.streamEnd());
+        });
+
         it("does not allow a non-owner to start a new stream", async () => {
             const { streamingStash, other } = ctx;
 
@@ -253,7 +287,7 @@ describe("DragonStash", () => {
                 .to.emit(streamingStash, "StartStream")
                 .withArgs(amount, STREAM_DURATION);
 
-            const expectedRps = ethers.BigNumber.from(amount).mul(ethers.utils.parseEther("1")).div(STREAM_DURATION);
+            const expectedRps = amount.mul(ethers.utils.parseEther("1")).div(STREAM_DURATION);
             expect(await streamingStash.rewardsPerSecond()).to.eq(expectedRps);
 
             const lastBlock = await ethers.provider.getBlock("latest");
@@ -271,7 +305,30 @@ describe("DragonStash", () => {
             );
         });
 
-        it("adds leftover rewards from old stream to new stream");
+        it("adds leftover rewards from old stream to new stream", async () => {
+            const { streamingStash, admin, magic } = ctx;
+            await magic.mint(streamingStash.address, amount);
+
+            await expect(streamingStash.connect(admin).startStream(amount, STREAM_DURATION))
+                .to.emit(streamingStash, "StartStream")
+                .withArgs(amount, STREAM_DURATION);
+
+            // Move halfway through the stream and start a new stream
+            // Amount should now be 1.5x (since half left over)
+            await ethers.provider.send("evm_increaseTime", [STREAM_DURATION / 2]);
+            await expect(streamingStash.connect(admin).startStream(amount, STREAM_DURATION))
+                .to.emit(streamingStash, "StartStream")
+                .withArgs(amount.div(2).mul(3), STREAM_DURATION);
+
+            const expectedRps = amount.div(2).mul(3).mul(ethers.utils.parseEther("1")).div(STREAM_DURATION);
+            expect(await streamingStash.rewardsPerSecond()).to.eq(expectedRps);
+
+            const lastBlock = await ethers.provider.getBlock("latest");
+            expect(await streamingStash.streamStart()).to.eq(lastBlock.timestamp);
+            expect(await streamingStash.streamEnd()).to.eq(lastBlock.timestamp + STREAM_DURATION);
+            expect(await streamingStash.lastPull()).to.eq(lastBlock.timestamp);
+            expect(await streamingStash.previouslyAccrued()).to.eq(amount.div(2));
+        });
 
         it("does not allow a non-owner to stop a stream", async () => {
             const { streamingStash, admin, other } = ctx;

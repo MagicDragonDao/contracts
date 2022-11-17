@@ -40,6 +40,8 @@ contract StreamingDragonStash is BasicDragonStash {
     uint256 public streamEnd;
     /// @dev The last time rewards were pulled.
     uint256 public lastPull;
+    /// @dev Any unclaimed rewards from a previous stream.
+    uint256 public previouslyAccrued;
 
     // ========================================== CONSTRUCTOR ===========================================
 
@@ -60,16 +62,40 @@ contract StreamingDragonStash is BasicDragonStash {
         require(msg.sender == stashPuller, "Not puller");
         require(streamStart != 0, "No stream");
 
-        uint256 lastActiveTimestamp = block.timestamp <= streamEnd ? block.timestamp : streamEnd;
-        rewards = (rewardsPerSecond * (lastActiveTimestamp - lastPull)) / ONE;
+        rewards = pendingRewards();
+
+        if (previouslyAccrued > 0) previouslyAccrued = 0;
 
         if (rewards > 0) {
-            lastPull = lastActiveTimestamp;
+            lastPull = _getLastActiveTimestamp();
 
             token.safeTransfer(msg.sender, rewards);
 
             emit SendRewards(msg.sender, rewards);
         }
+    }
+
+    /**
+     * @notice Report the amount of rewards that would be sent by requestRewards.
+     *
+     * @return rewards                          The amount of rewards pending.
+     */
+    function pendingRewards() public view override returns (uint256 rewards) {
+        if (streamStart == 0) return 0;
+
+        uint256 lastActiveTimestamp = _getLastActiveTimestamp();
+        rewards = (rewardsPerSecond * (lastActiveTimestamp - lastPull)) / ONE;
+
+        if (previouslyAccrued > 0) rewards += previouslyAccrued;
+    }
+
+    /**
+     * @notice Get the last timestamp for which rewards should be accounted.
+     *
+     * @return timestamp                        The ending timestamp of current reward accrual.
+     */
+    function _getLastActiveTimestamp() internal view returns (uint256) {
+        return block.timestamp <= streamEnd ? block.timestamp : streamEnd;
     }
 
     // ======================================== ADMIN OPERATIONS ========================================
@@ -87,12 +113,14 @@ contract StreamingDragonStash is BasicDragonStash {
         // Add currently-leftover rewards to new stream
         if (block.timestamp < streamEnd) {
             uint256 remaining = streamEnd - block.timestamp;
-            uint256 leftover = remaining * rewardsPerSecond;
+            uint256 leftover = (remaining * rewardsPerSecond) / ONE;
 
             amount += leftover;
         }
 
-        require(amount <= token.balanceOf(address(this)), "Not enough rewards");
+        previouslyAccrued = pendingRewards();
+
+        require(amount + previouslyAccrued <= token.balanceOf(address(this)), "Not enough rewards");
 
         rewardsPerSecond = (amount * ONE) / duration;
         streamStart = block.timestamp;

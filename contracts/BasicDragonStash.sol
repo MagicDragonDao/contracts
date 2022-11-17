@@ -57,13 +57,22 @@ contract BasicDragonStash is IRewardStash, Ownable {
     function requestRewards() external virtual override returns (uint256 rewards) {
         require(msg.sender == stashPuller, "Not puller");
 
-        rewards = token.balanceOf(address(this));
+        rewards = pendingRewards();
 
         if (rewards > 0) {
             token.transfer(msg.sender, rewards);
 
             emit SendRewards(msg.sender, rewards);
         }
+    }
+
+    /**
+     * @notice Report the amount of rewards that would be sent by requestRewards.
+     *
+     * @return rewards                          The amount of rewards pending.
+     */
+    function pendingRewards() public view virtual override returns (uint256 rewards) {
+        return token.balanceOf(address(this));
     }
 
     // ======================================== ADMIN OPERATIONS ========================================

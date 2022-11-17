@@ -9,4 +9,6 @@ interface IRewardStash {
     // ============= Reward Operations ==============
 
     function requestRewards() external returns (uint256 rewards);
+
+    function pendingRewards() external returns (uint256 rewards);
 }
