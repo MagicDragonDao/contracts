@@ -5,17 +5,17 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-import "./interfaces/IRewardStash.sol";
+import "./interfaces/IStash.sol";
 
 /**
  * @title DragonStash
  * @author kvk0x
  *
- * A dragon stash contract implementing IRewardStash,
- * that sends its entire balance when rewards are requested,
+ * A dragon stash contract implementing IStash,
+ * that sends its entire balance when tokens are requested,
  * and is set up with a single recipient.
  */
-contract BasicDragonStash is IRewardStash, Ownable {
+contract BasicDragonStash is IStash, Ownable {
     using SafeERC20 for IERC20;
 
     // ============================================ EVENTS ==============================================
@@ -49,36 +49,36 @@ contract BasicDragonStash is IRewardStash, Ownable {
     // ======================================== STASH OPERATIONS ========================================
 
     /**
-     * @notice Send rewards to the puller upon request. The basic stash will send
+     * @notice Send tokens to the puller upon request. The basic stash will send
      *         its entire balance.
      *
-     * @return rewards                          The amount of rewards sent.
+     * @return payout                          The amount sent.
      */
-    function requestRewards() external virtual override returns (uint256 rewards) {
+    function request() external virtual override returns (uint256 payout) {
         require(msg.sender == stashPuller, "Not puller");
 
-        rewards = pendingRewards();
+        payout = pending();
 
-        if (rewards > 0) {
-            token.transfer(msg.sender, rewards);
+        if (payout > 0) {
+            token.transfer(msg.sender, payout);
 
-            emit SendRewards(msg.sender, rewards);
+            emit Send(msg.sender, payout);
         }
     }
 
     /**
-     * @notice Report the amount of rewards that would be sent by requestRewards.
+     * @notice Report the amount that would be sent by request.
      *
-     * @return rewards                          The amount of rewards pending.
+     * @return payout                          The amount pending.
      */
-    function pendingRewards() public view virtual override returns (uint256 rewards) {
+    function pending() public view virtual override returns (uint256) {
         return token.balanceOf(address(this));
     }
 
     // ======================================== ADMIN OPERATIONS ========================================
 
     /**
-     * @notice Change the address that can pull rewards.
+     * @notice Change the address that can pull tokens.
      *
      * @param _puller                           The new stash puller.
      */

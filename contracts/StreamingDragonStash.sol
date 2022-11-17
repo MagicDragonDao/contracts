@@ -11,9 +11,9 @@ import "./BasicDragonStash.sol";
  * @title DragonStash
  * @author kvk0x
  *
- * A dragon stash contract implementing IRewardStash,
+ * A dragon stash contract implementing IStash,
  * that sends a prorated portion of its balance when
- * rewards are requested, and allows the contract admin
+ * tokens are requested, and allows the contract admin
  * to set the emission rate.
  */
 contract StreamingDragonStash is BasicDragonStash {
@@ -30,17 +30,17 @@ contract StreamingDragonStash is BasicDragonStash {
 
     uint256 public constant ONE = 1e18;
 
-    // ================ Reward State =================
+    // ================ Emission State =================
 
-    /// @dev The amount of rewards currently being emitted per second.
-    uint256 public rewardsPerSecond;
-    /// @dev The timestamp the current reward stream started.
+    /// @dev The amount of tokens currently being emitted per second.
+    uint256 public tokensPerSecond;
+    /// @dev The timestamp the current token stream started.
     uint256 public streamStart;
-    /// @dev The timestamp the current reward stream will end.
+    /// @dev The timestamp the current token stream will end.
     uint256 public streamEnd;
-    /// @dev The last time rewards were pulled.
+    /// @dev The last time tokens were pulled.
     uint256 public lastPull;
-    /// @dev Any unclaimed rewards from a previous stream.
+    /// @dev Any unclaimed tokens from a previous stream.
     uint256 public previouslyAccrued;
 
     // ========================================== CONSTRUCTOR ===========================================
@@ -53,46 +53,46 @@ contract StreamingDragonStash is BasicDragonStash {
     // ======================================== STASH OPERATIONS ========================================
 
     /**
-     * @notice Send rewards to the puller upon request. The streaming stash will send the proportionate
-     *         amounts of rewards earned since the time of the last claim.
+     * @notice Send tokens to the puller upon request. The streaming stash will send the proportionate
+     *         amounts of tokens earned since the time of the last claim.
      *
-     * @return rewards                          The amount of rewards sent.
+     * @return payout                          The amount of tokens sent.
      */
-    function requestRewards() external override returns (uint256 rewards) {
+    function request() external override returns (uint256 payout) {
         require(msg.sender == stashPuller, "Not puller");
         require(streamStart != 0, "No stream");
 
-        rewards = pendingRewards();
+        payout = pending();
 
         if (previouslyAccrued > 0) previouslyAccrued = 0;
 
-        if (rewards > 0) {
+        if (payout > 0) {
             lastPull = _getLastActiveTimestamp();
 
-            token.safeTransfer(msg.sender, rewards);
+            token.safeTransfer(msg.sender, payout);
 
-            emit SendRewards(msg.sender, rewards);
+            emit Send(msg.sender, payout);
         }
     }
 
     /**
-     * @notice Report the amount of rewards that would be sent by requestRewards.
+     * @notice Report the amount of payout that would be sent by request.
      *
-     * @return rewards                          The amount of rewards pending.
+     * @return payout                          The amount of tokens pending.
      */
-    function pendingRewards() public view override returns (uint256 rewards) {
+    function pending() public view override returns (uint256 payout) {
         if (streamStart == 0) return 0;
 
         uint256 lastActiveTimestamp = _getLastActiveTimestamp();
-        rewards = (rewardsPerSecond * (lastActiveTimestamp - lastPull)) / ONE;
+        payout = (tokensPerSecond * (lastActiveTimestamp - lastPull)) / ONE;
 
-        if (previouslyAccrued > 0) rewards += previouslyAccrued;
+        if (previouslyAccrued > 0) payout += previouslyAccrued;
     }
 
     /**
-     * @notice Get the last timestamp for which rewards should be accounted.
+     * @notice Get the last timestamp for which emission should be accounted.
      *
-     * @return timestamp                        The ending timestamp of current reward accrual.
+     * @return timestamp                        The ending timestamp of current token accrual.
      */
     function _getLastActiveTimestamp() internal view returns (uint256) {
         return block.timestamp <= streamEnd ? block.timestamp : streamEnd;
@@ -101,28 +101,28 @@ contract StreamingDragonStash is BasicDragonStash {
     // ======================================== ADMIN OPERATIONS ========================================
 
     /**
-     * @notice Start a reward stream for amount tokens over duration seconds. If a stream is active,
-     *         takes the leftover rewards and re-dsitributes them. Requires contract to be funded.
+     * @notice Start a token stream for amount tokens over duration seconds. If a stream is active,
+     *         takes the leftover tokens and re-dsitributes them. Requires contract to be funded.
      *
-     * @param amount                            The amount of rewards to distribute.
-     * @param duration                          The length of time to distribute rewards.
+     * @param amount                            The amount of tokens to distribute.
+     * @param duration                          The length of time to distribute tokens.
      */
     function startStream(uint256 amount, uint256 duration) external onlyOwner {
         require(duration > 0, "No duration");
 
-        // Add currently-leftover rewards to new stream
+        // Add currently-leftover tokens to new stream
         if (block.timestamp < streamEnd) {
             uint256 remaining = streamEnd - block.timestamp;
-            uint256 leftover = (remaining * rewardsPerSecond) / ONE;
+            uint256 leftover = (remaining * tokensPerSecond) / ONE;
 
             amount += leftover;
         }
 
-        previouslyAccrued = pendingRewards();
+        previouslyAccrued = pending();
 
-        require(amount + previouslyAccrued <= token.balanceOf(address(this)), "Not enough rewards");
+        require(amount + previouslyAccrued <= token.balanceOf(address(this)), "Not enough tokens");
 
-        rewardsPerSecond = (amount * ONE) / duration;
+        tokensPerSecond = (amount * ONE) / duration;
         streamStart = block.timestamp;
         streamEnd = block.timestamp + duration;
         lastPull = block.timestamp;
@@ -131,16 +131,16 @@ contract StreamingDragonStash is BasicDragonStash {
     }
 
     /**
-     * @notice Stop the reward stream and return the leftover tokens to the owner.
+     * @notice Stop the stream and return the leftover tokens to the owner.
      *         Can be used in case of migration to a new stash or accounting issue.
      */
     function stopStream() external onlyOwner {
         require(block.timestamp <= streamEnd, "Stream over");
 
         uint256 remaining = streamEnd - block.timestamp;
-        uint256 leftover = (remaining * rewardsPerSecond) / ONE;
+        uint256 leftover = (remaining * tokensPerSecond) / ONE;
 
-        rewardsPerSecond = 0;
+        tokensPerSecond = 0;
         streamStart = 0;
         streamEnd = 0;
 

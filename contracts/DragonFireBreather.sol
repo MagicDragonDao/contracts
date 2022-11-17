@@ -10,7 +10,7 @@ import "@openzeppelin/contracts/utils/math/SafeCast.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 import "./interfaces/IMasterChefV2.sol";
-import "./interfaces/IRewardStash.sol";
+import "./interfaces/IStash.sol";
 
 // TODO:
 // - Figure out if pullRewards should happen every time
@@ -48,7 +48,7 @@ contract DragonFireBreather is Initializable, AccessControl, IMiniChefV2 {
     /// @dev Contract owner. Allowed to update access to other roles.
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
 
-    /// @dev Places where rewards can be pulled. Must implement IRewardStash inferface.
+    /// @dev Places where rewards can be pulled. Must implement IStash inferface.
     bytes32 public constant REWARD_STASH_ROLE = keccak256("REWARD_STASH_ROLE");
 
     /// @dev Reward distributor - can accrue rewards to the contract.
@@ -386,7 +386,7 @@ contract DragonFireBreather is Initializable, AccessControl, IMiniChefV2 {
     function pullRewards(address _from) public onlyRole(DISTRIBUTOR_ROLE) {
         require(hasRole(REWARD_STASH_ROLE, _from), "Not reward stash");
 
-        uint256 rewards = IRewardStash(_from).requestRewards();
+        uint256 rewards = IStash(_from).request();
 
         _updatePools(rewards);
     }

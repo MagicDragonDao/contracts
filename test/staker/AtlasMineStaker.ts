@@ -51,6 +51,7 @@ import {
 describe("Atlas Mine Staking (Pepe Pool)", () => {
     let ctx: TestContext;
     const USER_INITIAL_BALANCE = ether("100000");
+    const THREE_HOURS = 3600 * 3;
 
     const fixture = async (): Promise<TestContext> => {
         const signers = await ethers.getSigners();
@@ -83,6 +84,7 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
 
         // Devote first half of day to accruing
         await staker.setAccrualWindows(ACCRUAL_WINDOWS);
+        await staker.setMinimumStakingWait(THREE_HOURS);
 
         // Distribute coins and set up staking program
         await magic.mint(admin.address, ether("10000"));
@@ -780,7 +782,6 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 } = ctx;
 
                 // Set 3 hour staking wait so we can stake twice in the same window
-                const THREE_HOURS = 3600 * 3;
                 await staker.setMinimumStakingWait(THREE_HOURS);
 
                 const amount = ether("20000");
@@ -843,7 +844,6 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 } = ctx;
 
                 // Set 3 hour staking wait so we can stake twice in the same window
-                const THREE_HOURS = 3600 * 3;
                 await staker.setMinimumStakingWait(THREE_HOURS);
 
                 const amount = ether("20000");
@@ -1022,6 +1022,7 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 0, // 0 == AtlasMine.Lock.twoWeeks
             ]);
             await staker2.setAccrualWindows(ACCRUAL_WINDOWS);
+            await staker2.setMinimumStakingWait(THREE_HOURS);
 
             expect(await mine.boosts(staker2.address)).to.eq(0);
 
