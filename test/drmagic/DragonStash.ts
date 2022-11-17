@@ -103,6 +103,9 @@ describe("DragonStash", () => {
             const balanceAfter = await magic.balanceOf(puller.address);
 
             expect(balanceAfter.sub(balanceBefore)).to.eq(amount);
+
+            // Try to claim again, no rewards
+            await expect(basicStash.connect(puller).request()).to.not.emit(basicStash, "Send");
         });
 
         it("reverts if a non-owner attempts to set the puller", async () => {
@@ -261,18 +264,30 @@ describe("DragonStash", () => {
             // (1/2 time at a total 6/8 tokens)
             await ethers.provider.send("evm_increaseTime", [STREAM_DURATION / 2]);
 
-            await expect(streamingStash.connect(puller).request())
-                .to.emit(streamingStash, "Send")
-                .withArgs(puller.address, total.div(8).mul(5).toString());
+            let tx = await streamingStash.connect(puller).request();
+            let receipt = await tx.wait();
+
+            expect(receipt?.events?.length).to.be.gt(0);
+            let e = receipt.events?.find(e => e.event === "Send");
+
+            expect(e).to.not.be.undefined;
+            expect(e?.args?.[0]).to.eq(puller.address);
+            expectRoundedEqual(e?.args?.[1], total.div(8).mul(5));
 
             expect(await magic.balanceOf(puller.address)).to.eq(total.div(8).mul(5));
 
             // Advance to the end of the stream - should get rest of the half
             await ethers.provider.send("evm_increaseTime", [STREAM_DURATION]);
 
-            await expect(streamingStash.connect(puller).request())
-                .to.emit(streamingStash, "Send")
-                .withArgs(puller.address, total.div(8).mul(3).toString());
+            tx = await streamingStash.connect(puller).request();
+            receipt = await tx.wait();
+
+            expect(receipt?.events?.length).to.be.gt(0);
+            e = receipt.events?.find(e => e.event === "Send");
+
+            expect(e).to.not.be.undefined;
+            expect(e?.args?.[0]).to.eq(puller.address);
+            expectRoundedEqual(e?.args?.[1], total.div(8).mul(3));
 
             expect(await magic.balanceOf(puller.address)).to.eq(total);
             expect(await streamingStash.lastPull()).to.eq(await streamingStash.streamEnd());
