@@ -16,7 +16,6 @@ import "./interfaces/IStash.sol";
 // - Figure out if pullRewards should happen every time
 //
 // Tests
-// - reward stash tests
 // - masterchef/integration tests
 
 /**
@@ -115,6 +114,7 @@ contract DragonFireBreather is Initializable, AccessControl, IMiniChefV2 {
         IERC20 _stakingToken,
         IRewarder _rewarder
     ) public override onlyRole(ADMIN_ROLE) {
+        require(address(_stakingToken) != address(0), "No reward token");
         require(!activeStakingTokens[_stakingToken], "Token already used");
         activeStakingTokens[_stakingToken] = true;
 
