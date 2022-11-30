@@ -143,7 +143,7 @@ contract DragonFireBreather is Initializable, AccessControl, IMiniChefV2 {
         IRewarder _rewarder,
         bool overwrite
     ) public override onlyRole(ADMIN_ROLE) {
-        require(poolInfo[_pid].allocPoint > 0, "Pool does not exist");
+        require(_pid < poolInfo.length, "Pool does not exist");
 
         totalAllocPoint = totalAllocPoint - poolInfo[_pid].allocPoint + _allocPoint;
 
@@ -168,6 +168,8 @@ contract DragonFireBreather is Initializable, AccessControl, IMiniChefV2 {
         uint256 amount,
         address to
     ) public override {
+        require(pid < poolInfo.length, "Pool does not exist");
+
         PoolInfo memory pool = poolInfo[pid];
         UserInfo storage user = userInfo[pid][to];
 
@@ -200,8 +202,13 @@ contract DragonFireBreather is Initializable, AccessControl, IMiniChefV2 {
         uint256 amount,
         address to
     ) public override {
+        require(pid < poolInfo.length, "Pool does not exist");
+
         PoolInfo memory pool = poolInfo[pid];
         UserInfo storage user = userInfo[pid][msg.sender];
+
+        require(user.amount > 0, "No user deposit");
+        require(amount <= user.amount, "Not enough deposit");
 
         // Effects
         user.rewardDebt -= _accumulatedRewards(amount, pool.accRewardsPerShare);
@@ -225,6 +232,8 @@ contract DragonFireBreather is Initializable, AccessControl, IMiniChefV2 {
      * @param to                                Receiver of rewards.
      */
     function harvest(uint256 pid, address to) public override {
+        require(pid < poolInfo.length, "Pool does not exist");
+
         PoolInfo memory pool = poolInfo[pid];
         UserInfo storage user = userInfo[pid][msg.sender];
 
@@ -260,6 +269,8 @@ contract DragonFireBreather is Initializable, AccessControl, IMiniChefV2 {
         uint256 amount,
         address to
     ) public {
+        require(pid < poolInfo.length, "Pool does not exist");
+
         PoolInfo memory pool = poolInfo[pid];
         UserInfo storage user = userInfo[pid][msg.sender];
 
@@ -295,6 +306,8 @@ contract DragonFireBreather is Initializable, AccessControl, IMiniChefV2 {
      * @param to                                    Receiver of the staking tokens.
      */
     function emergencyWithdraw(uint256 pid, address to) public {
+        require(pid < poolInfo.length, "Pool does not exist");
+
         UserInfo storage user = userInfo[pid][msg.sender];
 
         uint256 amount = user.amount;

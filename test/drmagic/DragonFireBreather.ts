@@ -22,7 +22,8 @@ interface TestContext {
     user: SignerWithAddress;
     other: SignerWithAddress;
     pool: DragonFireBreather;
-    stash: StreamingDragonStash;
+    streamingStash: StreamingDragonStash;
+    basicStash: BasicDragonStash;
 }
 
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
@@ -34,12 +35,14 @@ describe("DragonFireBreather (MasterChef V2)", () => {
     let ctx: TestContext;
 
     const amount = ether("1000");
+    const STREAM_DURATION = 100_000; // 100000 seconds
 
     const fixture = async (): Promise<TestContext> => {
         const [admin, user, other] = await ethers.getSigners();
 
         const magic = <TestERC20>await deploy("TestERC20", admin, []);
         await magic.mint(admin.address, amount);
+        await magic.mint(user.address, amount);
 
         const token = <TestERC20>await deploy("TestERC20", admin, []);
 
@@ -47,10 +50,16 @@ describe("DragonFireBreather (MasterChef V2)", () => {
         const pool = <DragonFireBreather>await deploy("DragonFireBreather", admin, [magic.address]);
 
         // deploy stash contracts
-        const stash = <StreamingDragonStash>await deploy("StreamingDragonStash", admin, [magic.address, pool.address]);
+        const streamingStash = <StreamingDragonStash>(
+            await deploy("StreamingDragonStash", admin, [magic.address, pool.address])
+        );
+        await magic.mint(streamingStash.address, amount);
+
+        const basicStash = <BasicDragonStash>await deploy("BasicDragonStash", admin, [magic.address, pool.address]);
 
         // set permissions for pool
-        await pool.grantRole(REWARD_STASH_ROLE, stash.address);
+        await pool.grantRole(REWARD_STASH_ROLE, streamingStash.address);
+        await pool.grantRole(REWARD_STASH_ROLE, basicStash.address);
         await pool.grantRole(DISTRIBUTOR_ROLE, admin.address);
 
         return {
@@ -60,7 +69,8 @@ describe("DragonFireBreather (MasterChef V2)", () => {
             user,
             other,
             pool,
-            stash,
+            streamingStash,
+            basicStash,
         };
     };
 
@@ -73,12 +83,13 @@ describe("DragonFireBreather (MasterChef V2)", () => {
 
         it("initializes the correct roles and permissions", async () => {
             ctx = await loadFixture(fixture);
-            const { pool, stash, admin } = ctx;
+            const { pool, basicStash, streamingStash, admin } = ctx;
 
             expect(await pool.hasRole(ADMIN_ROLE, admin.address)).to.be.true;
             expect(await pool.hasRole(DISTRIBUTOR_ROLE, admin.address)).to.be.true;
             expect(await pool.hasRole(REWARD_STASH_ROLE, admin.address)).to.be.false;
-            expect(await pool.hasRole(REWARD_STASH_ROLE, stash.address)).to.be.true;
+            expect(await pool.hasRole(REWARD_STASH_ROLE, basicStash.address)).to.be.true;
+            expect(await pool.hasRole(REWARD_STASH_ROLE, streamingStash.address)).to.be.true;
 
             expect(await pool.getRoleAdmin(REWARD_STASH_ROLE)).to.eq(ADMIN_ROLE);
             expect(await pool.getRoleAdmin(DISTRIBUTOR_ROLE)).to.eq(ADMIN_ROLE);
@@ -164,7 +175,9 @@ describe("DragonFireBreather (MasterChef V2)", () => {
                 const { pool, admin } = ctx;
 
                 // Will revert with 0x32 - array out-of-bounds
-                await expect(pool.connect(admin).set(pid + 1, 50, rewarder.address, false)).to.be.reverted;
+                await expect(pool.connect(admin).set(pid + 1, 50, rewarder.address, false)).to.be.revertedWith(
+                    "Pool does not exist",
+                );
             });
 
             it("updates pool settings", async () => {
@@ -194,19 +207,188 @@ describe("DragonFireBreather (MasterChef V2)", () => {
     });
 
     describe("Staking", () => {
+        let pid: number;
+
+        beforeEach(async () => {
+            ctx = await loadFixture(fixture);
+
+            const { admin, streamingStash, user, pool, magic } = ctx;
+
+            // Set up streamingStash
+            await streamingStash.connect(admin).startStream(amount, STREAM_DURATION);
+
+            // Approve deposit
+            await magic.connect(user).approve(pool.address, amount);
+
+            // Set up pool
+            await pool.connect(admin).add(100, magic.address, ZERO_ADDRESS);
+
+            pid = 0;
+        });
+
         describe("deposit", () => {
-            it("reverts if given an invalid pid");
-            it("allows a user to deposit staking tokens");
-            it("allows a user to make multiple deposits to the same pool");
-            it("allows a user to make a third-party deposit");
+            it("reverts if given an invalid pid", async () => {
+                const { pool, user } = ctx;
+
+                await expect(pool.connect(user).deposit(pid + 1, amount, user.address)).to.be.revertedWith(
+                    "Pool does not exist",
+                );
+            });
+
+            it("allows a user to deposit staking tokens", async () => {
+                const { pool, user, magic } = ctx;
+
+                await expect(pool.connect(user).deposit(pid, amount, user.address))
+                    .to.emit(pool, "Deposit")
+                    .withArgs(user.address, pid, amount, user.address);
+
+                // Check stats
+                const userInfo = await pool.userInfo(pid, user.address);
+                expect(userInfo.amount).to.eq(amount);
+                expect(userInfo.rewardDebt).to.eq(0);
+
+                // Check balances
+                expect(await magic.balanceOf(user.address)).to.eq(0);
+                expect(await magic.balanceOf(pool.address)).to.eq(amount);
+            });
+
+            it("allows a user to make multiple deposits to the same pool", async () => {
+                const { pool, user, magic } = ctx;
+
+                await expect(pool.connect(user).deposit(pid, amount.div(4), user.address))
+                    .to.emit(pool, "Deposit")
+                    .withArgs(user.address, pid, amount.div(4), user.address);
+
+                // Check stats
+                let userInfo = await pool.userInfo(pid, user.address);
+                expect(userInfo.amount).to.eq(amount.div(4));
+                expect(userInfo.rewardDebt).to.eq(0);
+
+                // Check balances
+                expect(await magic.balanceOf(user.address)).to.eq(amount.div(4).mul(3));
+                expect(await magic.balanceOf(pool.address)).to.eq(amount.div(4));
+
+                await expect(pool.connect(user).deposit(pid, amount.div(2), user.address))
+                    .to.emit(pool, "Deposit")
+                    .withArgs(user.address, pid, amount.div(2), user.address);
+
+                // Check stats
+                userInfo = await pool.userInfo(pid, user.address);
+                expect(userInfo.amount).to.eq(amount.div(4).mul(3));
+                expect(userInfo.rewardDebt).to.eq(0);
+
+                // Check balances
+                expect(await magic.balanceOf(user.address)).to.eq(amount.div(4));
+                expect(await magic.balanceOf(pool.address)).to.eq(amount.div(4).mul(3));
+            });
+
+            it("allows a user to make multiple deposits to the same pool, over time", async () => {
+                const { pool, admin, user, magic, basicStash } = ctx;
+                await magic.mint(basicStash.address, amount);
+
+                await expect(pool.connect(user).deposit(pid, amount.div(4), user.address))
+                    .to.emit(pool, "Deposit")
+                    .withArgs(user.address, pid, amount.div(4), user.address);
+
+                // Check stats
+                let userInfo = await pool.userInfo(pid, user.address);
+                expect(userInfo.amount).to.eq(amount.div(4));
+                expect(userInfo.rewardDebt).to.eq(0);
+
+                // Check balances
+                expect(await magic.balanceOf(user.address)).to.eq(amount.div(4).mul(3));
+                expect(await magic.balanceOf(pool.address)).to.eq(amount.div(4));
+
+                // Pull some rewards
+                await pool.connect(admin).pullRewards(basicStash.address);
+                const { accRewardsPerShare } = await pool.poolInfo(pid);
+
+                // Figure out reward per token
+                await expect(pool.connect(user).deposit(pid, amount.div(2), user.address))
+                    .to.emit(pool, "Deposit")
+                    .withArgs(user.address, pid, amount.div(2), user.address);
+
+                // Check stats
+                userInfo = await pool.userInfo(pid, user.address);
+                expect(userInfo.amount).to.eq(amount.div(4).mul(3));
+                expect(userInfo.rewardDebt).to.eq(amount.div(2).mul(accRewardsPerShare).div(ether("1")));
+
+                // Check balances
+                expect(await magic.balanceOf(user.address)).to.eq(amount.div(4));
+                // Also add amount that was pulled from stash
+                expect(await magic.balanceOf(pool.address)).to.eq(amount.div(4).mul(3).add(amount));
+            });
+
+            it("allows a user to make a third-party deposit", async () => {
+                const { pool, user, other, magic } = ctx;
+
+                await expect(pool.connect(user).deposit(pid, amount, other.address))
+                    .to.emit(pool, "Deposit")
+                    .withArgs(user.address, pid, amount, other.address);
+
+                // Check stats
+                const userInfo = await pool.userInfo(pid, other.address);
+                expect(userInfo.amount).to.eq(amount);
+                expect(userInfo.rewardDebt).to.eq(0);
+
+                const depositorInfo = await pool.userInfo(pid, user.address);
+                expect(depositorInfo.amount).to.eq(0);
+
+                // Check balances
+                expect(await magic.balanceOf(user.address)).to.eq(0);
+                expect(await magic.balanceOf(pool.address)).to.eq(amount);
+            });
         });
 
         describe("withdraw", () => {
-            it("reverts if given an invalid pid");
-            it("reverts if the user has no deposit");
-            it("reverts if attempting to withdraw more than deposited");
-            it("allows a user to withdraw");
+            beforeEach(async () => {
+                // Make a deposit
+                const { pool, user } = ctx;
+                await pool.connect(user).deposit(pid, amount, user.address);
+            });
+
+            it("reverts if given an invalid pid", async () => {
+                const { pool, user } = ctx;
+
+                await expect(pool.connect(user).withdraw(pid + 1, amount, user.address)).to.be.revertedWith(
+                    "Pool does not exist",
+                );
+            });
+
+            it("reverts if the user has no deposit", async () => {
+                const { pool, other } = ctx;
+
+                await expect(pool.connect(other).withdraw(pid, amount, other.address)).to.be.revertedWith(
+                    "No user deposit",
+                );
+            });
+
+            it("reverts if attempting to withdraw more than deposited", async () => {
+                const { pool, user } = ctx;
+
+                await expect(pool.connect(user).withdraw(pid, amount.mul(2), user.address)).to.be.revertedWith(
+                    "Not enough deposit",
+                );
+            });
+
+            it("allows a user to withdraw", async () => {
+                const { pool, user, magic } = ctx;
+
+                await expect(pool.connect(user).withdraw(pid, amount, user.address))
+                    .to.emit(pool, "Withdraw")
+                    .withArgs(user.address, pid, amount, user.address);
+
+                // Check state
+                const userInfo = await pool.userInfo(pid, user.address);
+                expect(userInfo.amount).to.eq(0);
+
+                // Check balances
+                expect(await magic.balanceOf(user.address)).to.eq(amount);
+                expect(await magic.balanceOf(pool.address)).to.eq(0);
+            });
+
             it("allows a user to partially withdraw");
+            it("allows a user to partially withdraw, over time");
             it("allows a user to withdraw to a third-party address");
         });
 
@@ -215,6 +397,7 @@ describe("DragonFireBreather (MasterChef V2)", () => {
             it("reverts if the user has no deposit");
             it("distributes the correct amount of rewards");
             it("successive reward claims distribute 0");
+            it("allows partial calls to withdrawAndHarvest, over time");
             it("distributes rewards to a third-party address");
         });
 
@@ -236,7 +419,7 @@ describe("DragonFireBreather (MasterChef V2)", () => {
 
     describe("Reward Management", () => {
         it("does not allow a non-distributor to pull rewards");
-        it("pulls rewards and distributes according to pull alloc points");
+        it("pulls rewards and distributes according to alloc points");
     });
 
     describe("View Functions", () => {
@@ -263,5 +446,12 @@ describe("DragonFireBreather (MasterChef V2)", () => {
         it("allows an admin to set a migrator contract");
         it("migrates one staking token to another staking token via migrator contract");
         it("fails to migrate if token amounts are not preserved over migration");
+    });
+
+    describe("Advanced Scenarios", () => {
+        // scenario 1, multiple depositors at different times, same pools
+        // scenario 2, multiple pools, depositor overlap, multiple deposits
+        // scenario 3, multiple pools, depositor overlap, with partial withdrawals
+        // scenario 4, scenario 3, with migration
     });
 });
