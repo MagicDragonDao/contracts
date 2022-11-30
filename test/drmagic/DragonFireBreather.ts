@@ -6,10 +6,18 @@ import { expect } from "chai";
 const { loadFixture } = waffle;
 
 import { deploy, expectRoundedEqual, ether } from "../utils";
-import type { TestERC20, BasicDragonStash, StreamingDragonStash, DragonFireBreather } from "../../src/types";
+import type {
+    TestERC20,
+    BasicDragonStash,
+    StreamingDragonStash,
+    MockRewarder,
+    DragonFireBreather,
+} from "../../src/types";
+import { BigNumberish } from "ethers";
 
 interface TestContext {
     magic: TestERC20;
+    token: TestERC20;
     admin: SignerWithAddress;
     user: SignerWithAddress;
     other: SignerWithAddress;
@@ -33,6 +41,8 @@ describe("DragonFireBreather (MasterChef V2)", () => {
         const magic = <TestERC20>await deploy("TestERC20", admin, []);
         await magic.mint(admin.address, amount);
 
+        const token = <TestERC20>await deploy("TestERC20", admin, []);
+
         // deploy pool
         const pool = <DragonFireBreather>await deploy("DragonFireBreather", admin, [magic.address]);
 
@@ -45,6 +55,7 @@ describe("DragonFireBreather (MasterChef V2)", () => {
 
         return {
             magic,
+            token,
             admin,
             user,
             other,
@@ -75,16 +86,110 @@ describe("DragonFireBreather (MasterChef V2)", () => {
     });
 
     describe("Pool Management", () => {
+        beforeEach(async () => {
+            ctx = await loadFixture(fixture);
+        });
+
         describe("add", () => {
-            it("does not allow a non-admin to add a pool");
-            it("does not allow a pool without a staking token");
-            it("adds a new pool");
-            it("it does not allow the same staking token to be used across multiple tools");
+            it("does not allow a non-admin to add a pool", async () => {
+                const { pool, other, magic } = ctx;
+
+                await expect(pool.connect(other).add(100, magic.address, ZERO_ADDRESS)).to.be.revertedWith(
+                    "AccessControl",
+                );
+            });
+
+            it("does not allow a pool without a staking token", async () => {
+                const { pool, admin } = ctx;
+
+                await expect(pool.connect(admin).add(100, ZERO_ADDRESS, ZERO_ADDRESS)).to.be.revertedWith(
+                    "No reward token",
+                );
+            });
+
+            it("adds a new pool", async () => {
+                const { pool, admin, magic } = ctx;
+
+                await expect(pool.connect(admin).add(100, magic.address, ZERO_ADDRESS))
+                    .to.emit(pool, "LogPoolAddition")
+                    .withArgs(0, 100, magic.address, ZERO_ADDRESS);
+
+                expect(await pool.totalAllocPoint()).to.eq(100);
+                expect(await pool.stakingToken(0)).to.eq(magic.address);
+                expect(await pool.activeStakingTokens(magic.address)).to.be.true;
+
+                const poolInfo = await pool.poolInfo(0);
+
+                expect(poolInfo).to.not.be.undefined;
+                expect(poolInfo.accRewardsPerShare).to.eq(0);
+                expect(poolInfo.allocPoint).to.eq(100);
+            });
+
+            it("it does not allow the same staking token to be used across multiple tools", async () => {
+                const { pool, admin, magic } = ctx;
+
+                await expect(pool.connect(admin).add(100, magic.address, ZERO_ADDRESS))
+                    .to.emit(pool, "LogPoolAddition")
+                    .withArgs(0, 100, magic.address, ZERO_ADDRESS);
+
+                await expect(pool.connect(admin).add(200, magic.address, ZERO_ADDRESS)).to.be.revertedWith(
+                    "Token already used",
+                );
+            });
         });
 
         describe("set", () => {
-            it("does not allow a non-admin to change pool settings");
-            it("updates pool settings");
+            let pid: number;
+            let rewarder: MockRewarder;
+
+            beforeEach(async () => {
+                const { pool, admin, magic } = ctx;
+
+                await pool.connect(admin).add(100, magic.address, ZERO_ADDRESS);
+
+                pid = 0;
+
+                rewarder = await deploy("MockRewarder", admin, []);
+            });
+
+            it("does not allow a non-admin to change pool settings", async () => {
+                const { pool, other } = ctx;
+
+                await expect(pool.connect(other).set(pid, 50, rewarder.address, false)).to.be.revertedWith(
+                    "AccessControl",
+                );
+            });
+
+            it("reverts if the pool does not exist", async () => {
+                const { pool, admin } = ctx;
+
+                // Will revert with 0x32 - array out-of-bounds
+                await expect(pool.connect(admin).set(pid + 1, 50, rewarder.address, false)).to.be.reverted;
+            });
+
+            it("updates pool settings", async () => {
+                const { pool, admin } = ctx;
+
+                expect(await pool.totalAllocPoint()).to.eq(100);
+
+                await expect(pool.connect(admin).set(pid, 50, rewarder.address, false))
+                    .to.emit(pool, "LogSetPool")
+                    .withArgs(pid, 50, ZERO_ADDRESS, false);
+
+                expect(await pool.totalAllocPoint()).to.eq(50);
+            });
+
+            it("updates pool settings and overwrites rewarder", async () => {
+                const { pool, admin } = ctx;
+
+                expect(await pool.totalAllocPoint()).to.eq(100);
+
+                await expect(pool.connect(admin).set(pid, 50, rewarder.address, true))
+                    .to.emit(pool, "LogSetPool")
+                    .withArgs(pid, 50, rewarder.address, true);
+
+                expect(await pool.totalAllocPoint()).to.eq(50);
+            });
         });
     });
 
@@ -127,6 +232,11 @@ describe("DragonFireBreather (MasterChef V2)", () => {
             it("allows a user to withdraw and does not update rewards");
             it("allows a user to withdraw to a third-party address");
         });
+    });
+
+    describe("Reward Management", () => {
+        it("does not allow a non-distributor to pull rewards");
+        it("pulls rewards and distributes according to pull alloc points");
     });
 
     describe("View Functions", () => {

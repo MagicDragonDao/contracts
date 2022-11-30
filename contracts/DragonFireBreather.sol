@@ -143,6 +143,8 @@ contract DragonFireBreather is Initializable, AccessControl, IMiniChefV2 {
         IRewarder _rewarder,
         bool overwrite
     ) public override onlyRole(ADMIN_ROLE) {
+        require(poolInfo[_pid].allocPoint > 0, "Pool does not exist");
+
         totalAllocPoint = totalAllocPoint - poolInfo[_pid].allocPoint + _allocPoint;
 
         poolInfo[_pid].allocPoint = _allocPoint.toUint64();
