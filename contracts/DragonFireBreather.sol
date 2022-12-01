@@ -12,6 +12,8 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "./interfaces/IMasterChefV2.sol";
 import "./interfaces/IStash.sol";
 
+import "hardhat/console.sol";
+
 // TODO:
 // - Figure out if pullRewards should happen every time
 //
@@ -123,7 +125,7 @@ contract DragonFireBreather is Initializable, AccessControl, IMiniChefV2 {
         stakingToken.push(_stakingToken);
         rewarder.push(_rewarder);
 
-        poolInfo.push(PoolInfo({ allocPoint: allocPoint.toUint64(), accRewardsPerShare: 0 }));
+        poolInfo.push(PoolInfo({ allocPoint: allocPoint.toUint64(), accRewardsPerShare: 0, totalStaked: 0 }));
 
         emit LogPoolAddition(stakingToken.length - 1, allocPoint, _stakingToken, _rewarder);
     }
@@ -170,10 +172,11 @@ contract DragonFireBreather is Initializable, AccessControl, IMiniChefV2 {
     ) public override {
         require(pid < poolInfo.length, "Pool does not exist");
 
-        PoolInfo memory pool = poolInfo[pid];
+        PoolInfo storage pool = poolInfo[pid];
         UserInfo storage user = userInfo[pid][to];
 
         // Effects
+        pool.totalStaked += amount;
         user.amount += amount;
 
         int256 accumulatedRewards = _accumulatedRewards(amount, pool.accRewardsPerShare);
@@ -211,6 +214,7 @@ contract DragonFireBreather is Initializable, AccessControl, IMiniChefV2 {
         require(amount <= user.amount, "Not enough deposit");
 
         // Effects
+        pool.totalStaked -= amount;
         user.rewardDebt -= _accumulatedRewards(amount, pool.accRewardsPerShare);
         user.amount -= amount;
 
@@ -273,6 +277,9 @@ contract DragonFireBreather is Initializable, AccessControl, IMiniChefV2 {
 
         PoolInfo memory pool = poolInfo[pid];
         UserInfo storage user = userInfo[pid][msg.sender];
+
+        require(user.amount > 0, "No user deposit");
+        require(amount <= user.amount, "Not enough deposit");
 
         int256 accumulatedRewards = _accumulatedRewards(user.amount, pool.accRewardsPerShare);
         int256 pendingReward = accumulatedRewards - user.rewardDebt;
@@ -417,11 +424,12 @@ contract DragonFireBreather is Initializable, AccessControl, IMiniChefV2 {
 
         for (uint256 i = 0; i < numPools; ++i) {
             PoolInfo storage pool = poolInfo[i];
-            uint256 totalStaked = stakingToken[i].balanceOf(address(this));
+            uint256 totalStaked = pool.totalStaked;
 
             if (totalStaked == 0) continue;
 
             uint256 newRewards = (amount * pool.allocPoint) / totalAllocPoint;
+
             pool.accRewardsPerShare += uint128((newRewards * ONE) / totalStaked);
 
             emit LogUpdatePool(i, uint64(block.number), totalStaked, pool.accRewardsPerShare);

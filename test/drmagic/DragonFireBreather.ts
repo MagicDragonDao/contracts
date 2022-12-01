@@ -471,19 +471,218 @@ describe("DragonFireBreather (MasterChef V2)", () => {
         });
 
         describe("harvest", () => {
-            it("reverts if given an invalid pid");
-            it("reverts if the user has no deposit");
-            it("distributes the correct amount of rewards");
-            it("successive reward claims distribute 0");
-            it("allows partial calls to withdrawAndHarvest, over time");
-            it("distributes rewards to a third-party address");
+            beforeEach(async () => {
+                // Make a deposit
+                const { pool, user, magic, admin, basicStash } = ctx;
+                await pool.connect(user).deposit(pid, amount, user.address);
+
+                // Pull some rewards
+                await magic.mint(basicStash.address, amount);
+                await pool.connect(admin).pullRewards(basicStash.address);
+            });
+
+            it("reverts if given an invalid pid", async () => {
+                const { pool, user } = ctx;
+
+                await expect(pool.connect(user).harvest(pid + 1, user.address)).to.be.revertedWith(
+                    "Pool does not exist",
+                );
+            });
+
+            it("harvests 0 if the user has no deposit", async () => {
+                const { pool, other } = ctx;
+
+                await expect(pool.connect(other).harvest(pid, other.address))
+                    .to.emit(pool, "Harvest")
+                    .withArgs(other.address, pid, 0);
+            });
+
+            it("distributes the correct amount of rewards", async () => {
+                const { pool, user, other, magic, basicStash, admin } = ctx;
+
+                // Have other deposit same amount as user
+                await magic.mint(other.address, amount);
+                await magic.connect(other).approve(pool.address, amount);
+                await pool.connect(other).deposit(pid, amount, other.address);
+
+                // Pull rewards again
+                await magic.mint(basicStash.address, amount);
+                await pool.connect(admin).pullRewards(basicStash.address);
+
+                // User should get 75% of rewards - all from first pull, half from second
+                await expect(pool.connect(user).harvest(pid, user.address))
+                    .to.emit(pool, "Harvest")
+                    .withArgs(user.address, pid, amount.div(2).mul(3));
+
+                expect(await magic.balanceOf(user.address)).to.eq(amount.div(2).mul(3));
+                expect(await magic.balanceOf(pool.address)).to.eq(amount.div(2).mul(5));
+            });
+
+            it("successive reward claims distribute 0", async () => {
+                const { pool, user, other, magic, basicStash, admin } = ctx;
+
+                // Have other deposit same amount as user
+                await magic.mint(other.address, amount);
+                await magic.connect(other).approve(pool.address, amount);
+                await pool.connect(other).deposit(pid, amount, other.address);
+
+                // Pull rewards again
+                await magic.mint(basicStash.address, amount);
+                await pool.connect(admin).pullRewards(basicStash.address);
+
+                // User should get 75% of rewards - all from first pull, half from second
+                await expect(pool.connect(user).harvest(pid, user.address))
+                    .to.emit(pool, "Harvest")
+                    .withArgs(user.address, pid, amount.div(2).mul(3));
+
+                expect(await magic.balanceOf(user.address)).to.eq(amount.div(2).mul(3));
+                expect(await magic.balanceOf(pool.address)).to.eq(amount.div(2).mul(5));
+
+                // Try to harvest again
+                await expect(pool.connect(user).harvest(pid, user.address))
+                    .to.emit(pool, "Harvest")
+                    .withArgs(user.address, pid, 0);
+            });
+
+            it("distributes rewards to a third-party address", async () => {
+                const { pool, user, other, magic } = ctx;
+
+                await expect(pool.connect(user).harvest(pid, other.address))
+                    .to.emit(pool, "Harvest")
+                    .withArgs(user.address, pid, amount);
+
+                expect(await magic.balanceOf(user.address)).to.eq(0);
+                expect(await magic.balanceOf(other.address)).to.eq(amount);
+                expect(await magic.balanceOf(pool.address)).to.eq(amount);
+            });
         });
 
         describe("withdrawAndHarvest", () => {
-            it("reverts if given an invalid pid");
-            it("reverts if the user has no deposit");
-            it("distributes the correct amount of staking tokens rewards");
-            it("allows a user to partially withdraw with full reward distribution");
+            beforeEach(async () => {
+                // Make a deposit
+                const { pool, user, magic, admin, basicStash } = ctx;
+                await pool.connect(user).deposit(pid, amount, user.address);
+
+                // Pull some rewards
+                await magic.mint(basicStash.address, amount);
+                await pool.connect(admin).pullRewards(basicStash.address);
+            });
+
+            it("reverts if given an invalid pid", async () => {
+                const { pool, user } = ctx;
+
+                await expect(pool.connect(user).withdrawAndHarvest(pid + 1, amount, user.address)).to.be.revertedWith(
+                    "Pool does not exist",
+                );
+            });
+
+            it("reverts if the user has no deposit", async () => {
+                const { pool, other } = ctx;
+
+                await expect(pool.connect(other).withdrawAndHarvest(pid, amount, other.address)).to.be.revertedWith(
+                    "No user deposit",
+                );
+            });
+
+            it("reverts if attempting to withdraw more than deposited", async () => {
+                const { pool, user } = ctx;
+
+                await expect(
+                    pool.connect(user).withdrawAndHarvest(pid, amount.mul(2), user.address),
+                ).to.be.revertedWith("Not enough deposit");
+            });
+
+            it("distributes the correct amount of token rewards", async () => {
+                const { pool, user, magic } = ctx;
+
+                await expect(pool.connect(user).withdrawAndHarvest(pid, amount, user.address))
+                    .to.emit(pool, "Withdraw")
+                    .withArgs(user.address, pid, amount, user.address)
+                    .to.emit(pool, "Harvest")
+                    .withArgs(user.address, pid, amount);
+
+                // Check state
+                const userInfo = await pool.userInfo(pid, user.address);
+                expect(userInfo.amount).to.eq(0);
+                expect(userInfo.rewardDebt).to.eq(0);
+
+                // Check balances
+                expect(await magic.balanceOf(user.address)).to.eq(amount.mul(2));
+                expect(await magic.balanceOf(pool.address)).to.eq(0);
+            });
+
+            it("allows a user to partially withdraw with full reward distribution", async () => {
+                const { pool, user, magic } = ctx;
+
+                await expect(pool.connect(user).withdrawAndHarvest(pid, amount.div(2), user.address))
+                    .to.emit(pool, "Withdraw")
+                    .withArgs(user.address, pid, amount.div(2), user.address)
+                    .to.emit(pool, "Harvest")
+                    .withArgs(user.address, pid, amount);
+
+                // Check state
+                const { accRewardsPerShare } = await pool.poolInfo(pid);
+                let userInfo = await pool.userInfo(pid, user.address);
+                expect(userInfo.amount).to.eq(amount.div(2));
+                expect(userInfo.rewardDebt).to.eq(amount.div(2).mul(accRewardsPerShare).div(ether("1")));
+
+                // Check balances - also includes rewards now
+                expect(await magic.balanceOf(user.address)).to.eq(amount.div(2).mul(3));
+                expect(await magic.balanceOf(pool.address)).to.eq(amount.div(2));
+
+                // Withdraw again
+                await expect(pool.connect(user).withdrawAndHarvest(pid, amount.div(2), user.address))
+                    .to.emit(pool, "Withdraw")
+                    .withArgs(user.address, pid, amount.div(2), user.address)
+                    .to.emit(pool, "Harvest")
+                    .withArgs(user.address, pid, 0);
+
+                // Check state
+                userInfo = await pool.userInfo(pid, user.address);
+                expect(userInfo.amount).to.eq(0);
+                expect(userInfo.rewardDebt).to.eq(0);
+
+                // Check balances
+                expect(await magic.balanceOf(user.address)).to.eq(amount.mul(2));
+                expect(await magic.balanceOf(pool.address)).to.eq(0);
+            });
+
+            it("allows partial calls to withdrawAndHarvest, over time", async () => {
+                const { pool, user, other, magic, basicStash, admin } = ctx;
+
+                // TODO: Fix this test
+
+                // Have other deposit same amount as user
+                await magic.mint(other.address, amount);
+                await magic.connect(other).approve(pool.address, amount);
+                await pool.connect(other).deposit(pid, amount, other.address);
+
+                // Have first user withdraw 75% of their stake
+                await expect(pool.connect(user).withdrawAndHarvest(pid, amount.div(4).mul(3), user.address))
+                    .to.emit(pool, "Withdraw")
+                    .withArgs(user.address, pid, amount.div(4).mul(3), user.address)
+                    .to.emit(pool, "Harvest")
+                    .withArgs(user.address, pid, amount);
+
+                console.log("DONE WITH FIRST");
+
+                // Pull rewards again
+                await magic.mint(basicStash.address, amount);
+                await pool.connect(admin).pullRewards(basicStash.address);
+
+                // User should get 20% of remaining rewards from second batch
+                await expect(pool.connect(user).withdrawAndHarvest(pid, amount.div(4), user.address))
+                    .to.emit(pool, "Withdraw")
+                    .withArgs(user.address, pid, amount.div(4), user.address);
+                // .to.emit(pool, "Harvest")
+                // .withArgs(user.address, pid, amount.div(5));
+
+                console.log("DONE WITH SECOND");
+
+                expect(await magic.balanceOf(user.address)).to.eq(amount.div(5).mul(11));
+                expect(await magic.balanceOf(pool.address)).to.eq(amount.div(5).mul(9));
+            });
+
             it("distributes staking tokens and rewards to a third-party address");
         });
 

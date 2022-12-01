@@ -52,9 +52,11 @@ interface IMiniChefV2 {
 
     struct PoolInfo {
         uint128 accRewardsPerShare;
-        // uint64 lastRewardBlock;     Not used in MDD implementation: rewards disbursed ad-hoc
-        //                             as opposed to per-block.
+        // uint64 lastRewardBlock;      Not used in MDD implementation: rewards disbursed ad-hoc
+        //                              as opposed to per-block.
         uint64 allocPoint;
+        uint256 totalStaked; // New in MDD implementation - since rewardToken may be equivalent
+        // to staking token.
     }
 
     // ============== Pool Management ===============
