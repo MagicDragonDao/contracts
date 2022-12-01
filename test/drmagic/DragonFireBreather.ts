@@ -284,8 +284,6 @@ describe("DragonFireBreather (MasterChef V2)", () => {
 
             it("allows a user to make multiple deposits to the same pool, over time", async () => {
                 const { pool, admin, user, magic, basicStash } = ctx;
-                await magic.mint(basicStash.address, amount);
-
                 await expect(pool.connect(user).deposit(pid, amount.div(4), user.address))
                     .to.emit(pool, "Deposit")
                     .withArgs(user.address, pid, amount.div(4), user.address);
@@ -300,6 +298,7 @@ describe("DragonFireBreather (MasterChef V2)", () => {
                 expect(await magic.balanceOf(pool.address)).to.eq(amount.div(4));
 
                 // Pull some rewards
+                await magic.mint(basicStash.address, amount);
                 await pool.connect(admin).pullRewards(basicStash.address);
                 const { accRewardsPerShare } = await pool.poolInfo(pid);
 
@@ -387,9 +386,88 @@ describe("DragonFireBreather (MasterChef V2)", () => {
                 expect(await magic.balanceOf(pool.address)).to.eq(0);
             });
 
-            it("allows a user to partially withdraw");
-            it("allows a user to partially withdraw, over time");
-            it("allows a user to withdraw to a third-party address");
+            it("allows a user to partially withdraw", async () => {
+                const { pool, user, magic } = ctx;
+
+                await expect(pool.connect(user).withdraw(pid, amount.div(2), user.address))
+                    .to.emit(pool, "Withdraw")
+                    .withArgs(user.address, pid, amount.div(2), user.address);
+
+                // Check state
+                let userInfo = await pool.userInfo(pid, user.address);
+                expect(userInfo.amount).to.eq(amount.div(2));
+
+                // Check balances
+                expect(await magic.balanceOf(user.address)).to.eq(amount.div(2));
+                expect(await magic.balanceOf(pool.address)).to.eq(amount.div(2));
+
+                // Withdraw again
+                await expect(pool.connect(user).withdraw(pid, amount.div(2), user.address))
+                    .to.emit(pool, "Withdraw")
+                    .withArgs(user.address, pid, amount.div(2), user.address);
+
+                // Check state
+                userInfo = await pool.userInfo(pid, user.address);
+                expect(userInfo.amount).to.eq(0);
+
+                // Check balances
+                expect(await magic.balanceOf(user.address)).to.eq(amount);
+                expect(await magic.balanceOf(pool.address)).to.eq(0);
+            });
+
+            it("allows a user to partially withdraw, over time", async () => {
+                const { pool, user, magic, admin, basicStash } = ctx;
+
+                await expect(pool.connect(user).withdraw(pid, amount.div(2), user.address))
+                    .to.emit(pool, "Withdraw")
+                    .withArgs(user.address, pid, amount.div(2), user.address);
+
+                // Check state
+                let userInfo = await pool.userInfo(pid, user.address);
+                expect(userInfo.amount).to.eq(amount.div(2));
+                expect(userInfo.rewardDebt).to.eq(0); // No rewards pulled
+
+                // Check balances
+                expect(await magic.balanceOf(user.address)).to.eq(amount.div(2));
+                expect(await magic.balanceOf(pool.address)).to.eq(amount.div(2));
+
+                // Pull some rewards
+                await magic.mint(basicStash.address, amount);
+                await pool.connect(admin).pullRewards(basicStash.address);
+                const { accRewardsPerShare } = await pool.poolInfo(pid);
+
+                // Withdraw again
+                await expect(pool.connect(user).withdraw(pid, amount.div(2), user.address))
+                    .to.emit(pool, "Withdraw")
+                    .withArgs(user.address, pid, amount.div(2), user.address);
+
+                // Check state - reward debt should be decremented
+                userInfo = await pool.userInfo(pid, user.address);
+                expect(userInfo.amount).to.eq(0);
+                expect(userInfo.rewardDebt).to.eq(amount.div(2).mul(accRewardsPerShare).div(ether("1").mul(-1)));
+
+                // Check balances
+                // Pool still has pulled rewards left (none harvested)
+                expect(await magic.balanceOf(user.address)).to.eq(amount);
+                expect(await magic.balanceOf(pool.address)).to.eq(amount);
+            });
+
+            it("allows a user to withdraw to a third-party address", async () => {
+                const { pool, user, magic, other } = ctx;
+
+                await expect(pool.connect(user).withdraw(pid, amount, other.address))
+                    .to.emit(pool, "Withdraw")
+                    .withArgs(user.address, pid, amount, other.address);
+
+                // Check state
+                const userInfo = await pool.userInfo(pid, user.address);
+                expect(userInfo.amount).to.eq(0);
+
+                // Check balances
+                expect(await magic.balanceOf(user.address)).to.eq(0);
+                expect(await magic.balanceOf(other.address)).to.eq(amount);
+                expect(await magic.balanceOf(pool.address)).to.eq(0);
+            });
         });
 
         describe("harvest", () => {
