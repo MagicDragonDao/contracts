@@ -389,9 +389,10 @@ contract DragonFireBreather is Initializable, AccessControl, IMiniChefV2 {
     function migrate(uint256 _pid) public onlyRole(ADMIN_ROLE) {
         require(address(migrator) != address(0), "No migrator set");
 
+        PoolInfo memory pool = poolInfo[_pid];
         IERC20 stakingToken_ = stakingToken[_pid];
 
-        uint256 bal = stakingToken_.balanceOf(address(this));
+        uint256 bal = pool.totalStaked;
         stakingToken_.approve(address(migrator), bal);
 
         IERC20 newStakingToken = migrator.migrate(stakingToken_);

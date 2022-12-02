@@ -5,13 +5,16 @@ import { expect } from "chai";
 
 const { loadFixture } = waffle;
 
-import { deploy, expectRoundedEqual, ether } from "../utils";
+import { deploy, deployUpgradeable, ether } from "../utils";
 import type {
     TestERC20,
     BasicDragonStash,
     StreamingDragonStash,
     MockRewarder,
     DragonFireBreather,
+    DragonTributeUpgradeable as DragonTribute,
+    MockMigrator,
+    DrMAGIC,
 } from "../../src/types";
 import { BigNumberish } from "ethers";
 
@@ -30,6 +33,7 @@ const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 const ADMIN_ROLE = "0xa49807205ce4d355092ef5a8a18f56e8913cf4a201fbe287825b095693c21775";
 const REWARD_STASH_ROLE = "0x6d5e2be2384f7cf31b2f788488ae165959caf2b96f1a210e510ee2ad6fcb24c2";
 const DISTRIBUTOR_ROLE = "0xfbd454f36a7e1a388bd6fc3ab10d434aa4578f811acbbcf33afb1c697486313c";
+const MINTER_ROLE = "0x9f2df0fed2c77648de5860a4cc508cd0818c85b8b8a1ab4ceeef8d981c8956a6";
 
 describe("DragonFireBreather (MasterChef V2)", () => {
     let ctx: TestContext;
@@ -1109,16 +1113,98 @@ describe("DragonFireBreather (MasterChef V2)", () => {
     });
 
     describe("Migration", () => {
-        it("does not allow a non-admin to set the migrator contract");
-        it("allows an admin to set a migrator contract");
-        it("migrates one staking token to another staking token via migrator contract");
-        it("fails to migrate if token amounts are not preserved over migration");
+        let pid: number;
+        let drmagic: DrMAGIC;
+        let tribute: DragonTribute;
+        let migrator: MockMigrator;
+
+        beforeEach(async () => {
+            ctx = await loadFixture(fixture);
+
+            const { pool, admin, magic, user } = ctx;
+
+            await pool.connect(admin).add(100, magic.address, ZERO_ADDRESS);
+
+            pid = 0;
+
+            // Approve deposit
+            await magic.connect(user).approve(pool.address, amount);
+            await pool.connect(user).deposit(pid, amount, user.address);
+
+            // Set up dragon tribute and migrator
+            drmagic = <DrMAGIC>await deploy("drMAGIC", admin, []);
+
+            // deploy tribute contract
+            tribute = <DragonTribute>(
+                await deployUpgradeable("DragonTributeUpgradeable", admin, [magic.address, drmagic.address])
+            );
+
+            await drmagic.connect(admin).grantRole(MINTER_ROLE, tribute.address);
+
+            // Set up migrator
+            migrator = <MockMigrator>await deploy("MockMigrator", admin, [tribute.address]);
+        });
+
+        it("does not allow a non-admin to set the migrator contract", async () => {
+            const { pool, user } = ctx;
+
+            await expect(pool.connect(user).setMigrator(migrator.address)).to.be.revertedWith("AccessControl");
+        });
+
+        it("allows an admin to set a migrator contract", async () => {
+            const { pool, admin } = ctx;
+
+            await expect(pool.connect(admin).setMigrator(migrator.address))
+                .to.emit(pool, "SetMigrator")
+                .withArgs(admin.address, migrator.address);
+        });
+
+        it("migrates one staking token to another staking token via migrator contract", async () => {
+            const { pool, admin, magic } = ctx;
+
+            await pool.connect(admin).setMigrator(migrator.address);
+
+            await expect(pool.connect(admin).migrate(pid))
+                .to.emit(migrator, "Migration")
+                .withArgs(magic.address, drmagic.address, amount);
+
+            expect(await magic.balanceOf(pool.address)).to.eq(0);
+            expect(await drmagic.balanceOf(pool.address)).to.eq(amount);
+        });
+
+        it("fails to migrate if token amounts are not preserved over migration", async () => {
+            const { pool, admin } = ctx;
+
+            await pool.connect(admin).setMigrator(migrator.address);
+            await tribute.connect(admin).setMintRatio(ether("2"));
+
+            await expect(pool.connect(admin).migrate(pid)).to.be.revertedWith(
+                "MasterChefV2: migrated balance must match",
+            );
+        });
+
+        it("migration does not affect reward token", async () => {
+            const { pool, admin, magic, basicStash } = ctx;
+
+            await pool.connect(admin).setMigrator(migrator.address);
+
+            // Put some rewaards in the pool with same token as pid 0
+            await magic.mint(basicStash.address, amount);
+            await pool.connect(admin).pullRewards(basicStash.address);
+
+            await expect(pool.connect(admin).migrate(pid))
+                .to.emit(migrator, "Migration")
+                .withArgs(magic.address, drmagic.address, amount);
+
+            expect(await magic.balanceOf(pool.address)).to.eq(amount); // Still has rewards
+            expect(await drmagic.balanceOf(pool.address)).to.eq(amount);
+        });
     });
 
     describe("Advanced Scenarios", () => {
         // scenario 1, multiple depositors at different times, same pools, no harvests between deposits
         // scenario 2, multiple pools, depositor overlap, multiple deposits
         // scenario 3, multiple pools, depositor overlap, with partial withdrawals
-        // scenario 4, scenario 3, with migration
+        // scenario 4, scenario 3, with multiple stashes
     });
 });

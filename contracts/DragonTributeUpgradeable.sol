@@ -50,7 +50,7 @@ contract DragonTributeUpgradeable is
     // ============== Deposit Ratio State ================
 
     /// @notice The denominator for the expressed deposit ratio
-    uint256 public constant RATIO_DENOM = 1e18;
+    uint256 public constant RATIO_DENOM = 1 ether;
     /// @notice The ratio of drMAGIC minted per MAGIC deposited. 1e18 represents a 1-1 ratio.
     ///         A mintRatio of 0 pauses the contract.
     uint256 public mintRatio;
