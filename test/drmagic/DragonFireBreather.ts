@@ -814,12 +814,142 @@ describe("DragonFireBreather (MasterChef V2)", () => {
         });
 
         it("pulls rewards and distributes according to alloc points", async () => {
-            const { token, admin, other, pool, basicStash } = ctx;
+            const { admin, pool, basicStash, magic } = ctx;
 
-            // Add a second pool with 1/4 the alloc points
+            // Pull some rewards
+            const tx = await pool.connect(admin).pullRewards(basicStash.address);
+            const receipt = await tx.wait();
+
+            // Check LogUpdatePool events
+            const lupEvent = receipt?.events?.find(e => e.event == "LogUpdatePool");
+
+            // Make sure poolInfo is correct
+            expect(lupEvent).to.not.be.undefined;
+            expect(lupEvent?.args?.[0]).to.eq(0);
+            expect(lupEvent?.args?.[2]).to.eq(amount);
+            expect(lupEvent?.args?.[3]).to.eq(amount.mul(ether("1")).div(amount));
+
+            // Check balances
+            expect(await magic.balanceOf(basicStash.address)).to.eq(0);
+            expect(await magic.balanceOf(pool.address)).to.eq(amount.mul(2));
+        });
+    });
+
+    describe("View Functions", () => {
+        beforeEach(async () => {
+            ctx = await loadFixture(fixture);
+        });
+
+        it("reports the correct pool length", async () => {
+            const { token, magic, admin, pool } = ctx;
+
+            expect(await pool.poolLength()).to.eq(0);
+
+            await pool.connect(admin).add(100, magic.address, ZERO_ADDRESS);
+
+            expect(await pool.poolLength()).to.eq(1);
+
+            // Add a second pool
             await pool.connect(admin).add(25, token.address, ZERO_ADDRESS);
 
-            // Stake a bit in this pool
+            expect(await pool.poolLength()).to.eq(2);
+        });
+
+        it("reports the correct pending rewards for a user", async () => {
+            const { pool, user, other, magic, basicStash, admin } = ctx;
+
+            await pool.connect(admin).add(100, magic.address, ZERO_ADDRESS);
+            const pid = 0;
+
+            // Deposit for the user
+            await magic.connect(user).approve(pool.address, amount);
+            await pool.connect(user).deposit(pid, amount, user.address);
+
+            // Pull some rewards
+            await magic.mint(basicStash.address, amount);
+            await pool.connect(admin).pullRewards(basicStash.address);
+
+            // Check pending rewards for user
+            expect(await pool.pendingRewards(pid, user.address)).to.eq(amount);
+
+            // Have other deposit same amount as user
+            await magic.mint(other.address, amount);
+            await magic.connect(other).approve(pool.address, amount);
+            await pool.connect(other).deposit(pid, amount, other.address);
+
+            // Pull rewards again
+            await magic.mint(basicStash.address, amount);
+            await pool.connect(admin).pullRewards(basicStash.address);
+
+            // User should get 75% of rewards - all from first pull, half from second
+            expect(await pool.pendingRewards(pid, user.address)).to.eq(amount.div(2).mul(3));
+        });
+
+        it("reports user info for a pool", async () => {
+            const { pool, admin, user, magic, basicStash } = ctx;
+
+            await pool.connect(admin).add(100, magic.address, ZERO_ADDRESS);
+            const pid = 0;
+
+            // Deposit for the user
+            await magic.connect(user).approve(pool.address, amount);
+            await pool.connect(user).deposit(pid, amount.div(2), user.address);
+
+            // Check stats
+            let userInfo = await pool.getUserInfo(pid, user.address);
+            let [stakeAmount, rewardDebt] = userInfo;
+            expect(stakeAmount).to.eq(amount.div(2));
+            expect(rewardDebt).to.eq(0);
+
+            // Pull some rewards
+            await magic.mint(basicStash.address, amount);
+            await pool.connect(admin).pullRewards(basicStash.address);
+            const { accRewardsPerShare } = await pool.poolInfo(pid);
+
+            // Deposit again
+            await pool.connect(user).deposit(pid, amount.div(2), user.address);
+
+            // Pull some more rewards
+            await magic.mint(basicStash.address, amount);
+            await pool.connect(admin).pullRewards(basicStash.address);
+
+            // Check stats - make sure rewardDebt updated based on last accRewardsBeforeDeposit
+            userInfo = await pool.getUserInfo(pid, user.address);
+            [stakeAmount, rewardDebt] = userInfo;
+            expect(stakeAmount).to.eq(amount);
+            expect(rewardDebt).to.eq(amount.div(2).mul(accRewardsPerShare).div(ether("1")));
+
+            // User should get all rewards - all from first pull, half from second
+            await expect(pool.connect(user).harvest(pid, user.address))
+                .to.emit(pool, "Harvest")
+                .withArgs(user.address, pid, amount.mul(2));
+        });
+    });
+
+    describe("Multiple Pools", () => {
+        beforeEach(async () => {
+            ctx = await loadFixture(fixture);
+
+            const { admin, basicStash, user, pool, magic, token } = ctx;
+
+            // Approve deposit
+            await magic.connect(user).approve(pool.address, amount);
+
+            // Set up two pools
+            await pool.connect(admin).add(100, magic.address, ZERO_ADDRESS);
+            await pool.connect(admin).add(25, token.address, ZERO_ADDRESS);
+
+            // Fund some stash
+            await magic.mint(basicStash.address, amount);
+        });
+
+        it("distributes according to allocPoint", async () => {
+            const { token, admin, user, other, pool, basicStash } = ctx;
+
+            // Make a deposit to first pool
+            await pool.connect(user).deposit(0, amount, user.address);
+
+            // Stake a bit in second pool
             await token.mint(other.address, amount.mul(2));
             await token.connect(other).approve(pool.address, amount.mul(2));
             await pool.connect(other).deposit(1, amount.mul(2), other.address);
@@ -841,18 +971,76 @@ describe("DragonFireBreather (MasterChef V2)", () => {
             expect(lupEvents?.[1]?.args?.[2]).to.eq(amount.mul(2));
             expect(lupEvents?.[1]?.args?.[3]).to.eq(amount.div(10).mul(ether("1")).div(amount));
         });
-    });
 
-    describe("View Functions", () => {
-        it("reports the correct pool length");
-        it("reports the correct pending rewards for a user");
-        it("reports user info for a pool");
-    });
+        it("distributes correctly after updating allocPoint", async () => {
+            const { token, magic, admin, user, other, pool, basicStash } = ctx;
 
-    describe("Multiple Pools", () => {
-        it("distributes according to allocPoint");
-        it("distributes correctly after updating allocPoint");
-        it("harvesting from one pool does not affect other pool");
+            // Make a deposit to first pool
+            await pool.connect(user).deposit(0, amount, user.address);
+
+            // Stake a bit in second pool
+            await token.mint(other.address, amount.mul(2));
+            await token.connect(other).approve(pool.address, amount.mul(2));
+            await pool.connect(other).deposit(1, amount.mul(2), other.address);
+
+            // Pull some rewards
+            await pool.connect(admin).pullRewards(basicStash.address);
+            const { accRewardsPerShare: accRewardsPerShare0 } = await pool.poolInfo(0);
+            const { accRewardsPerShare: accRewardsPerShare1 } = await pool.poolInfo(1);
+
+            // Change the alloc points, give pool 1 equal share
+            await pool.connect(admin).set(1, 100, ZERO_ADDRESS, false);
+
+            // Pull some more rewards
+            await magic.mint(basicStash.address, amount);
+            const tx = await pool.connect(admin).pullRewards(basicStash.address);
+            const receipt = await tx.wait();
+
+            // Check LogUpdatePool events
+            const lupEvents = receipt?.events?.filter(e => e.event == "LogUpdatePool");
+
+            // Make sure poolInfo is correct
+            // Pool 0:
+            expect(lupEvents).to.not.be.undefined;
+            expect(lupEvents?.length).to.eq(2);
+            expect(lupEvents?.[0]?.args?.[0]).to.eq(0);
+            expect(lupEvents?.[0]?.args?.[2]).to.eq(amount);
+            expect(lupEvents?.[0]?.args?.[3]).to.eq(accRewardsPerShare0.add(amount.div(2).mul(ether("1")).div(amount)));
+
+            expect(lupEvents?.[1]?.args?.[0]).to.eq(1);
+            expect(lupEvents?.[1]?.args?.[2]).to.eq(amount.mul(2));
+            expect(lupEvents?.[1]?.args?.[3]).to.eq(
+                accRewardsPerShare1.add(amount.div(2).mul(ether("1")).div(amount.mul(2))),
+            );
+        });
+
+        it("harvesting from one pool does not affect other pool", async () => {
+            const { token, magic, admin, user, pool, basicStash } = ctx;
+
+            // Make a deposit to first pool
+            await pool.connect(user).deposit(0, amount, user.address);
+
+            // Stake a bit in second pool
+            await token.mint(user.address, amount.mul(2));
+            await token.connect(user).approve(pool.address, amount.mul(2));
+            await pool.connect(user).deposit(1, amount.mul(2), user.address);
+
+            // Pull some rewards
+            await pool.connect(admin).pullRewards(basicStash.address);
+
+            // Change the alloc points, give pool 1 equal share
+            await pool.connect(admin).set(1, 100, ZERO_ADDRESS, false);
+
+            // Pull some more rewards
+            await magic.mint(basicStash.address, amount);
+            await pool.connect(admin).pullRewards(basicStash.address);
+
+            // Harvest from one pool
+            await pool.connect(user).harvest(1, user.address);
+
+            // Check other pool still has pending rewards
+            expect(await pool.pendingRewards(0, user.address)).to.eq(amount.div(10).mul(13));
+        });
     });
 
     describe("Rewarder Contract", () => {
@@ -870,7 +1058,7 @@ describe("DragonFireBreather (MasterChef V2)", () => {
     });
 
     describe("Advanced Scenarios", () => {
-        // scenario 1, multiple depositors at different times, same pools
+        // scenario 1, multiple depositors at different times, same pools, no harvests between deposits
         // scenario 2, multiple pools, depositor overlap, multiple deposits
         // scenario 3, multiple pools, depositor overlap, with partial withdrawals
         // scenario 4, scenario 3, with migration
