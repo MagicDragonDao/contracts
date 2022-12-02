@@ -1044,10 +1044,68 @@ describe("DragonFireBreather (MasterChef V2)", () => {
     });
 
     describe("Rewarder Contract", () => {
-        it("calls the correct function on rewarder contract on deposit");
-        it("calls the correct function on rewarder contract on withdraw");
-        it("calls the correct function on rewarder contract on harvest");
-        it("calls the correct function on rewarder contract on withdrawAndHarvest");
+        let pid: number;
+        let rewarder: MockRewarder;
+
+        beforeEach(async () => {
+            ctx = await loadFixture(fixture);
+
+            const { pool, admin, magic, user } = ctx;
+
+            rewarder = await deploy("MockRewarder", admin, []);
+            await pool.connect(admin).add(100, magic.address, rewarder.address);
+
+            pid = 0;
+
+            // Approve deposit
+            await magic.connect(user).approve(pool.address, amount);
+        });
+
+        it("calls the correct function on rewarder contract on deposit", async () => {
+            const { pool, user } = ctx;
+
+            await expect(pool.connect(user).deposit(pid, amount, user.address))
+                .to.emit(rewarder, "OnReward")
+                .withArgs(pid, user.address, user.address, 0, amount);
+        });
+
+        it("calls the correct function on rewarder contract on withdraw", async () => {
+            const { pool, user } = ctx;
+
+            await pool.connect(user).deposit(pid, amount, user.address);
+
+            await expect(pool.connect(user).withdraw(pid, amount, user.address))
+                .to.emit(rewarder, "OnReward")
+                .withArgs(pid, user.address, user.address, 0, 0);
+        });
+
+        it("calls the correct function on rewarder contract on harvest", async () => {
+            const { pool, user, admin, magic, basicStash } = ctx;
+
+            await pool.connect(user).deposit(pid, amount, user.address);
+
+            // Pull some rewards
+            await magic.mint(basicStash.address, amount);
+            await pool.connect(admin).pullRewards(basicStash.address);
+
+            await expect(pool.connect(user).harvest(pid, user.address))
+                .to.emit(rewarder, "OnReward")
+                .withArgs(pid, user.address, user.address, amount, amount);
+        });
+
+        it("calls the correct function on rewarder contract on withdrawAndHarvest", async () => {
+            const { pool, user, admin, magic, basicStash } = ctx;
+
+            await pool.connect(user).deposit(pid, amount, user.address);
+
+            // Pull some rewards
+            await magic.mint(basicStash.address, amount);
+            await pool.connect(admin).pullRewards(basicStash.address);
+
+            await expect(pool.connect(user).withdrawAndHarvest(pid, amount, user.address))
+                .to.emit(rewarder, "OnReward")
+                .withArgs(pid, user.address, user.address, amount, 0);
+        });
     });
 
     describe("Migration", () => {
