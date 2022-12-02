@@ -650,8 +650,6 @@ describe("DragonFireBreather (MasterChef V2)", () => {
             it("allows partial calls to withdrawAndHarvest, over time", async () => {
                 const { pool, user, other, magic, basicStash, admin } = ctx;
 
-                // TODO: Fix this test
-
                 // Have other deposit same amount as user
                 await magic.mint(other.address, amount);
                 await magic.connect(other).approve(pool.address, amount);
@@ -664,8 +662,6 @@ describe("DragonFireBreather (MasterChef V2)", () => {
                     .to.emit(pool, "Harvest")
                     .withArgs(user.address, pid, amount);
 
-                console.log("DONE WITH FIRST");
-
                 // Pull rewards again
                 await magic.mint(basicStash.address, amount);
                 await pool.connect(admin).pullRewards(basicStash.address);
@@ -673,30 +669,178 @@ describe("DragonFireBreather (MasterChef V2)", () => {
                 // User should get 20% of remaining rewards from second batch
                 await expect(pool.connect(user).withdrawAndHarvest(pid, amount.div(4), user.address))
                     .to.emit(pool, "Withdraw")
-                    .withArgs(user.address, pid, amount.div(4), user.address);
-                // .to.emit(pool, "Harvest")
-                // .withArgs(user.address, pid, amount.div(5));
-
-                console.log("DONE WITH SECOND");
+                    .withArgs(user.address, pid, amount.div(4), user.address)
+                    .to.emit(pool, "Harvest")
+                    .withArgs(user.address, pid, amount.div(5));
 
                 expect(await magic.balanceOf(user.address)).to.eq(amount.div(5).mul(11));
                 expect(await magic.balanceOf(pool.address)).to.eq(amount.div(5).mul(9));
             });
 
-            it("distributes staking tokens and rewards to a third-party address");
+            it("distributes staking tokens and rewards to a third-party address", async () => {
+                const { pool, user, other, magic } = ctx;
+
+                await expect(pool.connect(user).withdrawAndHarvest(pid, amount, other.address))
+                    .to.emit(pool, "Withdraw")
+                    .withArgs(user.address, pid, amount, other.address)
+                    .to.emit(pool, "Harvest")
+                    .withArgs(user.address, pid, amount);
+
+                // Check state
+                const userInfo = await pool.userInfo(pid, user.address);
+                expect(userInfo.amount).to.eq(0);
+                expect(userInfo.rewardDebt).to.eq(0);
+
+                // Check balances
+                expect(await magic.balanceOf(user.address)).to.eq(0);
+                expect(await magic.balanceOf(other.address)).to.eq(amount.mul(2));
+                expect(await magic.balanceOf(pool.address)).to.eq(0);
+            });
         });
 
         describe("emergencyWithdraw", () => {
-            it("reverts if given an invalid pid");
-            it("reverts if the user has no deposit");
-            it("allows a user to withdraw and does not update rewards");
-            it("allows a user to withdraw to a third-party address");
+            beforeEach(async () => {
+                // Make a deposit
+                const { pool, user, magic, admin, basicStash } = ctx;
+                await pool.connect(user).deposit(pid, amount, user.address);
+
+                // Pull some rewards
+                await magic.mint(basicStash.address, amount);
+                await pool.connect(admin).pullRewards(basicStash.address);
+            });
+
+            it("reverts if given an invalid pid", async () => {
+                const { pool, user } = ctx;
+
+                await expect(pool.connect(user).emergencyWithdraw(pid + 1, user.address)).to.be.revertedWith(
+                    "Pool does not exist",
+                );
+            });
+
+            it("reverts if the user has no deposit", async () => {
+                const { pool, other } = ctx;
+
+                await expect(pool.connect(other).emergencyWithdraw(pid, other.address)).to.be.revertedWith(
+                    "No user deposit",
+                );
+            });
+
+            it("allows a user to withdraw and does not update rewards", async () => {
+                const { pool, user, magic } = ctx;
+
+                await expect(pool.connect(user).emergencyWithdraw(pid, user.address))
+                    .to.emit(pool, "EmergencyWithdraw")
+                    .withArgs(user.address, pid, amount, user.address);
+
+                // Check state
+                const userInfo = await pool.userInfo(pid, user.address);
+                expect(userInfo.amount).to.eq(0);
+                expect(userInfo.rewardDebt).to.eq(0);
+
+                // Check balances
+                expect(await magic.balanceOf(user.address)).to.eq(amount); // Only deposit, no rewards
+                expect(await magic.balanceOf(pool.address)).to.eq(amount); // Leftover rewards
+            });
+
+            it("allows a user to withdraw to a third-party address", async () => {
+                const { pool, user, other, magic } = ctx;
+
+                await expect(pool.connect(user).emergencyWithdraw(pid, other.address))
+                    .to.emit(pool, "EmergencyWithdraw")
+                    .withArgs(user.address, pid, amount, other.address);
+
+                // Check state
+                const userInfo = await pool.userInfo(pid, user.address);
+                expect(userInfo.amount).to.eq(0);
+                expect(userInfo.rewardDebt).to.eq(0);
+
+                // Check balances
+                expect(await magic.balanceOf(user.address)).to.eq(0);
+                expect(await magic.balanceOf(other.address)).to.eq(amount); // Only deposit, no rewards
+                expect(await magic.balanceOf(pool.address)).to.eq(amount); // Leftover rewards
+            });
+
+            it("does not allow a user to harvest after an emergency withdraw", async () => {
+                const { pool, user, magic } = ctx;
+
+                await expect(pool.connect(user).emergencyWithdraw(pid, user.address))
+                    .to.emit(pool, "EmergencyWithdraw")
+                    .withArgs(user.address, pid, amount, user.address);
+
+                // Check state
+                const userInfo = await pool.userInfo(pid, user.address);
+                expect(userInfo.amount).to.eq(0);
+                expect(userInfo.rewardDebt).to.eq(0);
+
+                // Check balances
+                expect(await magic.balanceOf(user.address)).to.eq(amount); // Only deposit, no rewards
+                expect(await magic.balanceOf(pool.address)).to.eq(amount); // Leftover rewards
+
+                // Try to harvest
+                await expect(pool.connect(user).harvest(pid, user.address))
+                    .to.emit(pool, "Harvest")
+                    .withArgs(user.address, pid, 0);
+
+                // Check balances - no change
+                expect(await magic.balanceOf(user.address)).to.eq(amount);
+                expect(await magic.balanceOf(pool.address)).to.eq(amount);
+            });
         });
     });
 
     describe("Reward Management", () => {
-        it("does not allow a non-distributor to pull rewards");
-        it("pulls rewards and distributes according to alloc points");
+        beforeEach(async () => {
+            ctx = await loadFixture(fixture);
+
+            const { admin, basicStash, user, pool, magic } = ctx;
+
+            // Approve deposit
+            await magic.connect(user).approve(pool.address, amount);
+
+            // Set up pool
+            await pool.connect(admin).add(100, magic.address, ZERO_ADDRESS);
+
+            // Fund some stash
+            await magic.mint(basicStash.address, amount);
+
+            // Make a deposit
+            await pool.connect(user).deposit(0, amount, user.address);
+        });
+
+        it("does not allow a non-distributor to pull rewards", async () => {
+            const { pool, user, basicStash } = ctx;
+
+            await expect(pool.connect(user).pullRewards(basicStash.address)).to.be.revertedWith("AccessControl");
+        });
+
+        it("pulls rewards and distributes according to alloc points", async () => {
+            const { token, admin, other, pool, basicStash } = ctx;
+
+            // Add a second pool with 1/4 the alloc points
+            await pool.connect(admin).add(25, token.address, ZERO_ADDRESS);
+
+            // Stake a bit in this pool
+            await token.mint(other.address, amount.mul(2));
+            await token.connect(other).approve(pool.address, amount.mul(2));
+            await pool.connect(other).deposit(1, amount.mul(2), other.address);
+
+            // Pull some rewards
+            const tx = await pool.connect(admin).pullRewards(basicStash.address);
+            const receipt = await tx.wait();
+
+            // Check LogUpdatePool events
+            const lupEvents = receipt?.events?.filter(e => e.event == "LogUpdatePool");
+
+            // Make sure poolInfo is correct
+            expect(lupEvents).to.not.be.undefined;
+            expect(lupEvents?.length).to.eq(2);
+            expect(lupEvents?.[0]?.args?.[0]).to.eq(0);
+            expect(lupEvents?.[0]?.args?.[2]).to.eq(amount);
+            expect(lupEvents?.[0]?.args?.[3]).to.eq(amount.div(5).mul(4).mul(ether("1")).div(amount));
+            expect(lupEvents?.[1]?.args?.[0]).to.eq(1);
+            expect(lupEvents?.[1]?.args?.[2]).to.eq(amount.mul(2));
+            expect(lupEvents?.[1]?.args?.[3]).to.eq(amount.div(10).mul(ether("1")).div(amount));
+        });
     });
 
     describe("View Functions", () => {

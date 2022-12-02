@@ -207,7 +207,7 @@ contract DragonFireBreather is Initializable, AccessControl, IMiniChefV2 {
     ) public override {
         require(pid < poolInfo.length, "Pool does not exist");
 
-        PoolInfo memory pool = poolInfo[pid];
+        PoolInfo storage pool = poolInfo[pid];
         UserInfo storage user = userInfo[pid][msg.sender];
 
         require(user.amount > 0, "No user deposit");
@@ -275,7 +275,7 @@ contract DragonFireBreather is Initializable, AccessControl, IMiniChefV2 {
     ) public {
         require(pid < poolInfo.length, "Pool does not exist");
 
-        PoolInfo memory pool = poolInfo[pid];
+        PoolInfo storage pool = poolInfo[pid];
         UserInfo storage user = userInfo[pid][msg.sender];
 
         require(user.amount > 0, "No user deposit");
@@ -285,6 +285,7 @@ contract DragonFireBreather is Initializable, AccessControl, IMiniChefV2 {
         int256 pendingReward = accumulatedRewards - user.rewardDebt;
 
         // Effects
+        pool.totalStaked -= amount;
         user.amount -= amount;
         user.rewardDebt = _accumulatedRewards(user.amount, pool.accRewardsPerShare);
 
@@ -316,6 +317,8 @@ contract DragonFireBreather is Initializable, AccessControl, IMiniChefV2 {
         require(pid < poolInfo.length, "Pool does not exist");
 
         UserInfo storage user = userInfo[pid][msg.sender];
+
+        require(user.amount > 0, "No user deposit");
 
         uint256 amount = user.amount;
         user.amount = 0;
@@ -429,7 +432,6 @@ contract DragonFireBreather is Initializable, AccessControl, IMiniChefV2 {
             if (totalStaked == 0) continue;
 
             uint256 newRewards = (amount * pool.allocPoint) / totalAllocPoint;
-
             pool.accRewardsPerShare += uint128((newRewards * ONE) / totalStaked);
 
             emit LogUpdatePool(i, uint64(block.number), totalStaked, pool.accRewardsPerShare);
