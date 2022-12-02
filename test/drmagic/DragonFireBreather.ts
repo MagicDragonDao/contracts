@@ -817,6 +817,12 @@ describe("DragonFireBreather (MasterChef V2)", () => {
             await expect(pool.connect(user).pullRewards(basicStash.address)).to.be.revertedWith("AccessControl");
         });
 
+        it("reverts if the specified stash does not have the reward stash role", async () => {
+            const { pool, admin, other } = ctx;
+
+            await expect(pool.connect(admin).pullRewards(other.address)).to.be.revertedWith("Not reward stash");
+        });
+
         it("pulls rewards and distributes according to alloc points", async () => {
             const { admin, pool, basicStash, magic } = ctx;
 
@@ -1018,6 +1024,33 @@ describe("DragonFireBreather (MasterChef V2)", () => {
             );
         });
 
+        it("skips distribution if a pool has nothing staked", async () => {
+            const { admin, user, pool, basicStash } = ctx;
+
+            // Make a deposit to first pool
+            await pool.connect(user).deposit(0, amount, user.address);
+
+            // Pull some rewards
+            const tx = await pool.connect(admin).pullRewards(basicStash.address);
+            const receipt = await tx.wait();
+
+            // Check LogUpdatePool events
+            const lupEvents = receipt?.events?.filter(e => e.event == "LogUpdatePool");
+
+            // Make sure poolInfo is correct, but only for one pool
+            expect(lupEvents).to.not.be.undefined;
+            expect(lupEvents?.length).to.eq(1);
+            expect(lupEvents?.[0]?.args?.[0]).to.eq(0);
+            expect(lupEvents?.[0]?.args?.[2]).to.eq(amount);
+            expect(lupEvents?.[0]?.args?.[3]).to.eq(amount.div(5).mul(4).mul(ether("1")).div(amount));
+
+            // Check second pool state - no rewards even though alloc point is nonzero
+            const poolInfo = await pool.poolInfo(1);
+            expect(poolInfo.totalStaked).to.eq(0);
+            expect(poolInfo.accRewardsPerShare).to.eq(0);
+            expect(poolInfo.allocPoint).to.eq(25);
+        });
+
         it("harvesting from one pool does not affect other pool", async () => {
             const { token, magic, admin, user, pool, basicStash } = ctx;
 
@@ -1110,6 +1143,16 @@ describe("DragonFireBreather (MasterChef V2)", () => {
                 .to.emit(rewarder, "OnReward")
                 .withArgs(pid, user.address, user.address, amount, 0);
         });
+
+        it("calls the correct function on rewarder contract on emergencyWithdraw", async () => {
+            const { pool, user } = ctx;
+
+            await pool.connect(user).deposit(pid, amount, user.address);
+
+            await expect(pool.connect(user).emergencyWithdraw(pid, user.address))
+                .to.emit(rewarder, "OnReward")
+                .withArgs(pid, user.address, user.address, 0, 0);
+        });
     });
 
     describe("Migration", () => {
@@ -1157,6 +1200,12 @@ describe("DragonFireBreather (MasterChef V2)", () => {
             await expect(pool.connect(admin).setMigrator(migrator.address))
                 .to.emit(pool, "SetMigrator")
                 .withArgs(admin.address, migrator.address);
+        });
+
+        it("reverts if a migrator contract is not set", async () => {
+            const { pool, admin } = ctx;
+
+            await expect(pool.connect(admin).migrate(pid)).to.be.revertedWith("No migrator set");
         });
 
         it("migrates one staking token to another staking token via migrator contract", async () => {

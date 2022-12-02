@@ -14,6 +14,12 @@ import "./interfaces/IStash.sol";
  * A dragon stash contract implementing IStash,
  * that sends its entire balance when tokens are requested,
  * and is set up with a single recipient.
+ *
+ * NOTE: Using a BasicDragonStash in production creates issues with sandwiching.
+ *       Distributing large amounts of rewards in a single tx creates an opportunity
+ *       for an attacker to make a large, outsized deposit directly before reward pull,
+ *       and harvesting rewards directly after reward pull. This makes it easy for someone
+ *       with enough funding to siphon rewards from long-term stakers.
  */
 contract BasicDragonStash is IStash, Ownable {
     using SafeERC20 for IERC20;

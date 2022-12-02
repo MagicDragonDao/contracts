@@ -5,5 +5,5 @@ module.exports = {
     providerOptions: {
         mnemonic: process.env.MNEMONIC,
     },
-    skipFiles: ["test"],
+    skipFiles: ["test", "interfaces"],
 };

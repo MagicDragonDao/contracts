@@ -16,9 +16,9 @@ import "hardhat/console.sol";
 
 // TODO:
 // - Figure out if pullRewards should happen every time
+//      - yes because of sandwiching
 //
-// Tests
-// - masterchef/integration tests
+// - Do advanced scenarios
 
 /**
  * @title DragonFireBreather
