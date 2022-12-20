@@ -3,7 +3,7 @@ import { ethers, waffle } from "hardhat";
 import { solidity } from "ethereum-waffle";
 import { BigNumberish, ContractTransaction } from "ethers";
 
-import { setNextBlockTimestamp, expectRoundedEqual, ether } from "../utils";
+import { setNextBlockTimestamp, expectRoundedEqual, ether, shuffle } from "../utils";
 
 import type { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
 import type { AtlasMineStakerUpgradeable as AtlasMineStaker } from "../../src/types/AtlasMineStakerUpgradeable";
@@ -1417,22 +1417,4 @@ export const runScenario = async (
     await rollToDepositWindow();
 
     return claims;
-};
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const shuffle = function shuffle<T>(array: T[]): T[] {
-    let currentIndex = array.length,
-        randomIndex;
-
-    // While there remain elements to shuffle...
-    while (currentIndex != 0) {
-        // Pick a remaining element...
-        randomIndex = Math.floor(Math.random() * currentIndex);
-        currentIndex--;
-
-        // And swap it with the current element.
-        [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
-    }
-
-    return array;
 };

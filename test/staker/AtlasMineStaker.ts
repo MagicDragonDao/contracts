@@ -6,7 +6,7 @@ import { expect } from "chai";
 
 const { loadFixture } = waffle;
 
-import { deploy, deployUpgradeable, increaseTime, expectRoundedEqual, ether } from "../utils";
+import { deploy, deployUpgradeable, increaseTime, expectRoundedEqual, ether, shuffle } from "../utils";
 import type { AtlasMineStakerUpgradeable as AtlasMineStaker } from "../../src/types/AtlasMineStakerUpgradeable";
 import type { MasterOfCoin } from "../../src/types/MasterOfCoin";
 import type { MockLegionMetadataStore } from "../../src/types/MockLegionMetadataStore";
@@ -41,11 +41,9 @@ import {
     rollToPartialWindow,
     TOTAL_REWARDS,
     ACCRUAL_WINDOWS,
-    shuffle,
     ONE_DAY_SEC,
     PROGRAM_DAYS,
     rollToNearestAccrual,
-    rollToNextAccrual,
 } from "./helpers";
 
 describe("Atlas Mine Staking (Pepe Pool)", () => {

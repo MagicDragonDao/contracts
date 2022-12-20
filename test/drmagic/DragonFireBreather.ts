@@ -5,7 +5,7 @@ import { expect } from "chai";
 
 const { loadFixture } = waffle;
 
-import { deploy, deployUpgradeable, ether } from "../utils";
+import { deploy, deployUpgradeable, ether, shuffle, expectRoundedEqual } from "../utils";
 import type {
     TestERC20,
     BasicDragonStash,
@@ -16,18 +16,15 @@ import type {
     MockMigrator,
     DrMAGIC,
 } from "../../src/types";
-import { BigNumberish } from "ethers";
 
-interface TestContext {
-    magic: TestERC20;
-    token: TestERC20;
-    admin: SignerWithAddress;
-    user: SignerWithAddress;
-    other: SignerWithAddress;
-    pool: DragonFireBreather;
-    streamingStash: StreamingDragonStash;
-    basicStash: BasicDragonStash;
-}
+import {
+    TestContext,
+    setupAdvancedScenario1,
+    runScenario,
+    harvestWithRoundedRewardCheck,
+    tryWithdrawAll,
+    setupAdvancedScenario2,
+} from "./helpers";
 
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 const ADMIN_ROLE = "0xa49807205ce4d355092ef5a8a18f56e8913cf4a201fbe287825b095693c21775";
@@ -42,7 +39,9 @@ describe("DragonFireBreather (MasterChef V2)", () => {
     const STREAM_DURATION = 100_000; // 100000 seconds
 
     const fixture = async (): Promise<TestContext> => {
+        const signers = await ethers.getSigners();
         const [admin, user, other] = await ethers.getSigners();
+        const users = signers.slice(1, 5);
 
         const magic = <TestERC20>await deploy("TestERC20", admin, []);
         await magic.mint(admin.address, amount);
@@ -72,6 +71,7 @@ describe("DragonFireBreather (MasterChef V2)", () => {
             admin,
             user,
             other,
+            users,
             pool,
             streamingStash,
             basicStash,
@@ -1250,10 +1250,97 @@ describe("DragonFireBreather (MasterChef V2)", () => {
         });
     });
 
-    describe("Advanced Scenarios", () => {
-        // scenario 1, multiple depositors at different times, same pools, no harvests between deposits
-        // scenario 2, multiple pools, depositor overlap, multiple deposits
-        // scenario 3, multiple pools, depositor overlap, with partial withdrawals
-        // scenario 4, scenario 3, with multiple stashes
+    describe.only("Advanced Scenarios", () => {
+        const USER_INITIAL_BALANCE = ether("100000");
+
+        beforeEach(async () => {
+            ctx = await loadFixture(fixture);
+
+            const { pool, token, users } = ctx;
+
+            // Add the default pool
+            await pool.add(100, token.address, ZERO_ADDRESS);
+
+            // Make sure each user approves the pool to spend their tokens
+            for (const user of users) {
+                await token.mint(user.address, USER_INITIAL_BALANCE);
+                await token.connect(user).approve(pool.address, USER_INITIAL_BALANCE);
+            }
+        });
+
+        it("scenario 1", async () => {
+            const { pool, magic } = ctx;
+            const { actions, rewards } = setupAdvancedScenario1(ctx);
+
+            await runScenario(ctx, actions);
+
+            // Now check all expected rewards and user balance
+            // Shuffle to ensure that order doesn't matter
+            const shuffledRewards = shuffle(rewards);
+
+            // const shuffledRewards = rewards;
+            for (const reward of shuffledRewards) {
+                const { signer, expectedReward } = reward;
+                const preclaimBalance = await magic.balanceOf(signer.address);
+
+                await harvestWithRoundedRewardCheck(pool, 0, signer, expectedReward);
+                const postclaimBalance = await magic.balanceOf(signer.address);
+
+                expectRoundedEqual(postclaimBalance.sub(preclaimBalance), expectedReward);
+
+                // Withdraw funds to make sure we can
+                await tryWithdrawAll(pool, signer);
+
+                // Mine a block to wind clock
+                await ethers.provider.send("evm_increaseTime", [10]);
+            }
+
+            for (const reward of shuffledRewards) {
+                // Make sure another claim gives 0
+                await harvestWithRoundedRewardCheck(pool, 0, reward.signer, 0);
+            }
+        });
+
+        it("scenario 2", async () => {
+            const { pool, magic } = ctx;
+            const { actions, rewards } = setupAdvancedScenario2(ctx);
+
+            const claims = await runScenario(ctx, actions);
+
+            // Now check all expected rewards and user balance
+            // Shuffle to ensure that order doesn't matter
+            const shuffledRewards = shuffle(rewards);
+
+            // const shuffledRewards = rewards;
+            for (const reward of shuffledRewards) {
+                const { signer, expectedReward } = reward;
+                const preclaimBalance = await magic.balanceOf(signer.address);
+
+                // Adjust if midstream claims/withdraws have been made
+                const adjustedExpectedReward = ethers.BigNumber.from(expectedReward).sub(claims[signer.address] || 0);
+
+                // Increased tolerance here, but not in final adjusted reward
+                await harvestWithRoundedRewardCheck(pool, 0, signer, adjustedExpectedReward, 8);
+
+                const postclaimBalance = await magic.balanceOf(signer.address);
+
+                expectRoundedEqual(postclaimBalance.sub(preclaimBalance), adjustedExpectedReward);
+
+                // Withdraw funds to make sure we can
+                await tryWithdrawAll(pool, signer);
+
+                // Mine a block to wind clock
+                await ethers.provider.send("evm_increaseTime", [10]);
+            }
+
+            for (const reward of shuffledRewards) {
+                // Make sure another claim gives 0
+                await harvestWithRoundedRewardCheck(pool, 0, reward.signer, 0);
+            }
+        });
+
+        // scenario 3, multiple pools, depositor overlap, multiple deposits
+        // scenario 4, multiple pools, depositor overlap, with partial withdrawals
+        // scenario 5, scenario 4, with multiple stashes
     });
 });

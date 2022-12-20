@@ -250,7 +250,9 @@ contract DragonFireBreather is Initializable, AccessControl, IMiniChefV2 {
 
         // Interactions
         if (reward > 0) {
+            // console.log("GONNA TRANSFER", reward, rewardToken.balanceOf(address(this)));
             rewardToken.safeTransfer(to, reward);
+            // console.log("GONNA TRANSFER DONE");
         }
 
         IRewarder _rewarder = rewarder[pid];
