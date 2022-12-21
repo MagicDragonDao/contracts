@@ -190,7 +190,7 @@ export const setupAdvancedScenario1 = (ctx: TestContext): ScenarioInfo => {
 
 export const setupAdvancedScenario2 = (ctx: TestContext): ScenarioInfo => {
     // Advanced Scenario 2:
-    // differnet stake times, depositor overlap, with claiming
+    // different stake times, depositor overlap, with claiming
     //
     //            Staker 1 %        Staker 2 %      Staker 3 %     Staker 4 %
     // At T = -1000: 100                0               0               0
@@ -281,6 +281,153 @@ export const setupAdvancedScenario2 = (ctx: TestContext): ScenarioInfo => {
                     signer: user2,
                     amount: baseAmount.mul(3),
                     action: "deposit",
+                },
+            ],
+        },
+    ];
+
+    const rewards: RewardInfo[] = [
+        {
+            signer: user1,
+            expectedReward: totalRewardsBase.mul(750),
+        },
+        {
+            signer: user2,
+            expectedReward: totalRewardsBase.mul(2375),
+        },
+        {
+            signer: user3,
+            expectedReward: totalRewardsBase.mul(1250),
+        },
+        {
+            signer: user4,
+            expectedReward: totalRewardsBase.mul(5625),
+        },
+    ];
+
+    return { actions, rewards };
+};
+
+export const setupAdvancedScenario3 = (ctx: TestContext): ScenarioInfo => {
+    // Advanced Scenario 3:
+    // multiple pools, depositor overlap, multiple deposits
+    //
+    // Pool 1 (75% reward share)
+    //            Staker 1 %        Staker 2 %      Staker 3 %     Staker 4 %
+    // At T = 0:      0                60              40               0
+    // At T = 0.25:   0             21.43           14.29           64.29
+    // At T = 0.5:    0             21.43           14.29           64.29
+    // At T = 0.75:   0             35.29           11.76           52.94
+    // Totals:        0           34.5375          20.085           45.38
+    //
+    // Pool 2 (25% reward share)
+    //            Staker 1 %        Staker 2 %      Staker 3 %     Staker 4 %
+    // At T = 0:        0               100               0               0
+    // At T = 0.25:    50                 0              50               0
+    // At T = 0.5:     20                60              20               0
+    // At T = 0.75: 14.29             42.86           14.29           28.57
+    // Totals:    21.0725            50.715         21.0725          7.1425
+    //
+    // Combined Totals:
+    //            Staker 1 %        Staker 2 %      Staker 3 %     Staker 4 %
+    // At T = 0:         0               70              30               0
+    // At T = 0.25:   12.5          16.0725         23.2175         48.2175
+    // At T = 0.5:       5          31.0725         15.7175         48.2175
+    // At T = 0.75: 3.5725          37.1825         12.3925         46.8475
+    // Totals:      5.2681          38.5819         20.3319         35.8206
+
+    const {
+        users: [user1, user2, user3, user4],
+    } = ctx;
+
+    const baseAmount = ether("100");
+    const totalRewardsBase = TOTAL_REWARDS.div(10000);
+
+    const actions: Action[] = [
+        {
+            checkpoint: 0,
+            actions: [
+                {
+                    signer: user2,
+                    amount: baseAmount.mul(3),
+                    action: "deposit",
+                },
+                {
+                    signer: user3,
+                    amount: baseAmount.mul(2),
+                    action: "deposit",
+                },
+                {
+                    signer: user2,
+                    amount: baseAmount.mul(3),
+                    action: "deposit",
+                    poolId: 1,
+                },
+            ],
+        },
+        {
+            checkpoint: 0.25,
+            actions: [
+                {
+                    signer: user4,
+                    amount: baseAmount.mul(9),
+                    action: "deposit",
+                },
+                {
+                    signer: user2,
+                    amount: 0,
+                    action: "withdrawAndHarvest",
+                    poolId: 1,
+                },
+                {
+                    signer: user1,
+                    amount: baseAmount,
+                    action: "deposit",
+                    poolId: 1,
+                },
+                {
+                    signer: user3,
+                    amount: baseAmount,
+                    action: "deposit",
+                    poolId: 1,
+                },
+            ],
+        },
+        {
+            checkpoint: 0.5,
+            actions: [
+                {
+                    signer: user2,
+                    amount: baseAmount.mul(3),
+                    action: "deposit",
+                    poolId: 1,
+                },
+                {
+                    signer: user3,
+                    amount: 0,
+                    action: "harvest",
+                },
+                {
+                    signer: user3,
+                    amount: 0,
+                    action: "harvest",
+                    poolId: 1,
+                },
+            ],
+        },
+        {
+            checkpoint: 0.75,
+            actions: [
+                {
+                    signer: user2,
+                    amount: baseAmount.mul(3),
+                    action: "deposit",
+                },
+                {
+                    signer: user4,
+                    amount: baseAmount.mul(2),
+                    action: "deposit",
+                    poolId: 1,
                 },
             ],
         },
