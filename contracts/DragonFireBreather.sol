@@ -12,8 +12,6 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "./interfaces/IMasterChefV2.sol";
 import "./interfaces/IStash.sol";
 
-import "hardhat/console.sol";
-
 // TODO:
 // - Figure out if pullRewards should happen every time
 //      - yes because of sandwiching
@@ -250,9 +248,7 @@ contract DragonFireBreather is Initializable, AccessControl, IMiniChefV2 {
 
         // Interactions
         if (reward > 0) {
-            // console.log("GONNA TRANSFER", reward, rewardToken.balanceOf(address(this)));
             rewardToken.safeTransfer(to, reward);
-            // console.log("GONNA TRANSFER DONE");
         }
 
         IRewarder _rewarder = rewarder[pid];
@@ -435,6 +431,7 @@ contract DragonFireBreather is Initializable, AccessControl, IMiniChefV2 {
             if (totalStaked == 0) continue;
 
             uint256 newRewards = (amount * pool.allocPoint) / totalAllocPoint;
+
             pool.accRewardsPerShare += uint128((newRewards * ONE) / totalStaked);
 
             emit LogUpdatePool(i, uint64(block.number), totalStaked, pool.accRewardsPerShare);

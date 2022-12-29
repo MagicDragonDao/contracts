@@ -1363,15 +1363,12 @@ describe("DragonFireBreather (MasterChef V2)", () => {
             // Shuffle to ensure that order doesn't matter
             const shuffledRewards = shuffle(rewards);
 
-            const claims = await runScenario(ctx, actions);
+            await runScenario(ctx, actions);
 
             // const shuffledRewards = rewards;
             for (const reward of shuffledRewards) {
                 const { signer, expectedReward } = reward;
                 const preclaimBalance = preclaimBalances[signer.address];
-
-                // Adjust if midstream claims/withdraws have been made
-                // const adjustedExpectedReward = ethers.BigNumber.from(expectedReward).sub(claims[signer.address] || 0);
 
                 // Increased tolerance here, but not in final adjusted reward
                 // Claim for both pool Ids
@@ -1406,7 +1403,6 @@ describe("DragonFireBreather (MasterChef V2)", () => {
             }
         });
 
-        // scenario 3, multiple pools, depositor overlap, multiple deposits
         // scenario 4, multiple pools, depositor overlap, with partial withdrawals
         // scenario 5, scenario 4, with multiple stashes
     });

@@ -436,19 +436,19 @@ export const setupAdvancedScenario3 = (ctx: TestContext): ScenarioInfo => {
     const rewards: RewardInfo[] = [
         {
             signer: user1,
-            expectedReward: totalRewardsBase.mul(750),
+            expectedReward: totalRewardsBase.mul(527),
         },
         {
             signer: user2,
-            expectedReward: totalRewardsBase.mul(2375),
+            expectedReward: totalRewardsBase.mul(3858),
         },
         {
             signer: user3,
-            expectedReward: totalRewardsBase.mul(1250),
+            expectedReward: totalRewardsBase.mul(2033),
         },
         {
             signer: user4,
-            expectedReward: totalRewardsBase.mul(5625),
+            expectedReward: totalRewardsBase.mul(3582),
         },
     ];
 
