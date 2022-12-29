@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { ethers, waffle } from "hardhat";
+import { ethers, waffle, network } from "hardhat";
 import { BigNumberish, ContractTransaction } from "ethers";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
@@ -116,6 +116,10 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
             end,
         };
     };
+
+    before(async () => {
+        await network.provider.send("hardhat_reset");
+    });
 
     beforeEach(async () => {
         ctx = await loadFixture(fixture);
