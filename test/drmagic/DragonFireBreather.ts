@@ -20,13 +20,14 @@ import type {
 
 import {
     TestContext,
-    setupAdvancedScenario1,
     runScenario,
     harvestWithRoundedRewardCheck,
     tryWithdrawAll,
+    setupAdvancedScenario1,
     setupAdvancedScenario2,
     setupAdvancedScenario3,
     setupAdvancedScenario4,
+    setupAdvancedScenario5,
 } from "./helpers";
 
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
@@ -1253,7 +1254,7 @@ describe("DragonFireBreather (MasterChef V2)", () => {
         });
     });
 
-    describe.only("Advanced Scenarios", () => {
+    describe("Advanced Scenarios", () => {
         const USER_INITIAL_BALANCE = ether("100000");
 
         beforeEach(async () => {
@@ -1464,6 +1465,65 @@ describe("DragonFireBreather (MasterChef V2)", () => {
             }
         });
 
-        // scenario 5, scenario 4, with multiple stashes
+        it("scenario 5", async () => {
+            const { pool, magic, admin, users } = ctx;
+            const { actions, rewards } = setupAdvancedScenario5(ctx);
+
+            const preclaimBalances: { [user: string]: BigNumberish } = {};
+            for (const { signer } of rewards) {
+                preclaimBalances[signer.address] = await magic.balanceOf(signer.address);
+            }
+
+            // Set up a second pool, with 1/3 of the rewards as the first pool
+            const token2 = <TestERC20>await deploy("TestERC20", admin, []);
+
+            for (const user of users) {
+                await token2.mint(user.address, USER_INITIAL_BALANCE);
+                await token2.connect(user).approve(pool.address, USER_INITIAL_BALANCE);
+            }
+
+            await pool.add(100, token2.address, ZERO_ADDRESS);
+
+            // Shuffle to ensure that order doesn't matter
+            const shuffledRewards = shuffle(rewards);
+
+            await runScenario(ctx, actions);
+
+            for (const reward of shuffledRewards) {
+                const { signer, expectedReward } = reward;
+                const preclaimBalance = preclaimBalances[signer.address];
+
+                // Increased tolerance here, but not in final adjusted reward
+                // Claim for both pool Ids
+                for (const poolId of [0, 1]) {
+                    const harvestTx = await pool.connect(signer).harvest(poolId, signer.address);
+                    const receipt = await harvestTx.wait();
+
+                    const harvestEvents = receipt.events?.filter(e => e.event === "Harvest");
+                    expect(harvestEvents).to.have.length(1);
+
+                    if (harvestEvents) {
+                        expect(harvestEvents?.[0]?.args?.[0]).to.eq(signer.address);
+                    }
+                }
+
+                const postclaimBalance = await magic.balanceOf(signer.address);
+
+                expectRoundedEqual(postclaimBalance.sub(preclaimBalance), expectedReward);
+
+                // Withdraw funds to make sure we can
+                await tryWithdrawAll(pool, signer);
+
+                // Mine a block to wind clock
+                await ethers.provider.send("evm_increaseTime", [10]);
+            }
+
+            for (const reward of shuffledRewards) {
+                for (const poolId of [0, 1]) {
+                    // Make sure another claim gives 0
+                    await harvestWithRoundedRewardCheck(pool, poolId, reward.signer, 0);
+                }
+            }
+        });
     });
 });

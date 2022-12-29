@@ -355,7 +355,7 @@ describe("DragonStash", () => {
             expect(startEvent?.args?.[1]).to.eq(STREAM_DURATION);
 
             const expectedEmissionRate = amount.div(2).mul(3).mul(ether("1")).div(STREAM_DURATION);
-            expect(await streamingStash.tokensPerSecond()).to.eq(expectedEmissionRate);
+            expectRoundedEqual(await streamingStash.tokensPerSecond(), expectedEmissionRate);
 
             const lastBlock = await ethers.provider.getBlock("latest");
             expect(await streamingStash.streamStart()).to.eq(lastBlock.timestamp);

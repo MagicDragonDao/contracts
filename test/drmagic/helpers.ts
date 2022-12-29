@@ -33,6 +33,7 @@ export interface TestContext {
 
 export interface Action {
     checkpoint: number; // Should be between -1 and 1, 0 is reward start time, 1 is end
+    pullFrom?: { stash: BasicDragonStash; amount: BigNumberish };
     actions: ActionInfo[];
 }
 
@@ -628,6 +629,207 @@ export const setupAdvancedScenario4 = (ctx: TestContext): ScenarioInfo => {
     return { actions, rewards };
 };
 
+export const setupAdvancedScenario5 = (ctx: TestContext): ScenarioInfo => {
+    // Advanced Scenario 4:
+    // same as scenario 4, with multiple stashes
+    // 50% of stash released at T = 0.5, 50% released at T = 0.75
+    // Rewards based on previous checkpoint
+    //
+    // Pool 1 (75% reward share)
+    //            Staker 1 %        Staker 2 %      Staker 3 %     Staker 4 %
+    // At T = 0:       50                30              20               0
+    // At T = 0.25: 26.31             15.79           10.53           47.37
+    // At T = 0.5:  13.33                20           13.33           53.33
+    // At T = 0.75: 11.11             33.33           11.11           44.44
+    // Totals:    25.1875             24.78         13.7425          36.285
+    //
+    // Pool 2 (25% reward share)
+    //            Staker 1 %        Staker 2 %      Staker 3 %     Staker 4 %
+    // At T = 0:        0               100               0               0
+    // At T = 0.25:    25                50              25               0
+    // At T = 0.5:  14.29             71.43           14.29               0
+    // At T = 0.75: 16.66             33.33           16.66           33.33
+    // Totals:    13.9875             63.69         13.9875          8.3325
+    //
+    // Combined Totals For Streaming Rewards:
+    //            Staker 1 %        Staker 2 %      Staker 3 %     Staker 4 %
+    // At T = 0:       37.5             47.5              15               0
+    // At T = 0.25:   25.98          24.3425         14.1475         35.5275
+    // At T = 0.5:    13.57          32.8575           13.57         39.9975
+    // At T = 0.75: 12.4975            33.33         12.4975         41.6625
+    // Totals:      22.3875          34.5075         13.8038         29.2969
+    //
+    // Totals for Basic Stash Rewards (Pool 1):
+    //            Staker 1 %        Staker 2 %      Staker 3 %     Staker 4 %
+    // Totals:      19.82             17.895           11.93          50.35
+    //
+    // Totals for Basic Stash Rewards (Pool 2):
+    //            Staker 1 %        Staker 2 %      Staker 3 %     Staker 4 %
+    // Totals:      19.64             60.72            19.64              0
+    //
+    // Totals for Basic Stash Rewards (Combined):
+    //            Staker 1 %        Staker 2 %      Staker 3 %     Staker 4 %
+    // Totals:      19.8               28.6          13.8575         37.7625
+    //
+    // Total Rewards:
+    //            Staker 1 %        Staker 2 %      Staker 3 %     Staker 4 %
+    // Totals:      21.0938           31.5538        13.8307           33.53
+
+    const {
+        users: [user1, user2, user3, user4],
+    } = ctx;
+
+    const baseAmount = ether("100");
+
+    // Multiply by 2 to account for 2 stashes
+    const totalRewardsBase = TOTAL_REWARDS.div(10000).mul(2);
+
+    const actions: Action[] = [
+        {
+            checkpoint: 0,
+            actions: [
+                {
+                    signer: user2,
+                    amount: baseAmount.mul(3),
+                    action: "deposit",
+                },
+                {
+                    signer: user3,
+                    amount: baseAmount.mul(2),
+                    action: "deposit",
+                },
+                {
+                    signer: user1,
+                    amount: baseAmount.mul(5),
+                    action: "deposit",
+                },
+                {
+                    signer: user2,
+                    amount: baseAmount.mul(3),
+                    action: "deposit",
+                    poolId: 1,
+                },
+            ],
+        },
+        {
+            checkpoint: 0.25,
+            actions: [
+                {
+                    signer: user4,
+                    amount: baseAmount.mul(9),
+                    action: "deposit",
+                },
+                {
+                    signer: user2,
+                    amount: baseAmount,
+                    action: "withdrawPartial",
+                    poolId: 1,
+                },
+                {
+                    signer: user1,
+                    amount: baseAmount,
+                    action: "deposit",
+                    poolId: 1,
+                },
+                {
+                    signer: user3,
+                    amount: baseAmount,
+                    action: "deposit",
+                    poolId: 1,
+                },
+            ],
+        },
+        {
+            checkpoint: 0.5,
+            pullFrom: {
+                stash: ctx.basicStash,
+                amount: TOTAL_REWARDS.div(2),
+            },
+            actions: [
+                {
+                    signer: user2,
+                    amount: baseAmount.mul(3),
+                    action: "deposit",
+                    poolId: 1,
+                },
+                {
+                    signer: user3,
+                    amount: 0,
+                    action: "harvest",
+                },
+                {
+                    signer: user3,
+                    amount: 0,
+                    action: "harvest",
+                    poolId: 1,
+                },
+                {
+                    signer: user1,
+                    amount: baseAmount.mul(3),
+                    action: "withdrawPartialAndHarvest",
+                },
+                {
+                    signer: user4,
+                    amount: baseAmount,
+                    action: "withdrawPartial",
+                },
+            ],
+        },
+        {
+            checkpoint: 0.75,
+            pullFrom: {
+                stash: ctx.basicStash,
+                amount: TOTAL_REWARDS.div(2),
+            },
+            actions: [
+                {
+                    signer: user2,
+                    amount: baseAmount.mul(3),
+                    action: "deposit",
+                },
+                {
+                    signer: user4,
+                    amount: baseAmount.mul(2),
+                    action: "deposit",
+                    poolId: 1,
+                },
+                {
+                    signer: user4,
+                    amount: 0,
+                    action: "harvest",
+                },
+                {
+                    signer: user2,
+                    amount: baseAmount.mul(3),
+                    action: "withdrawPartialAndHarvest",
+                    poolId: 1,
+                },
+            ],
+        },
+    ];
+
+    const rewards: RewardInfo[] = [
+        {
+            signer: user1,
+            expectedReward: totalRewardsBase.mul(2109),
+        },
+        {
+            signer: user2,
+            expectedReward: totalRewardsBase.mul(3155),
+        },
+        {
+            signer: user3,
+            expectedReward: totalRewardsBase.mul(1383),
+        },
+        {
+            signer: user4,
+            expectedReward: totalRewardsBase.mul(3353),
+        },
+    ];
+
+    return { actions, rewards };
+};
+
 export const runScenario = async (
     ctx: TestContext,
     actions: Action[],
@@ -646,7 +848,7 @@ export const runScenario = async (
 
     // Run through scenario from beginning of program until end
     for (const batch of actions) {
-        const { checkpoint, actions: batchActions } = batch;
+        const { checkpoint, actions: batchActions, pullFrom } = batch;
         let timestamp: number;
 
         // If checkpoint >= 0, and not yet started, start rewards
@@ -668,6 +870,13 @@ export const runScenario = async (
 
             // Make sure any accrual happens for previous time
             await pool.pullRewards(streamingStash.address);
+
+            if (pullFrom) {
+                const { stash, amount } = pullFrom;
+
+                await magic.mint(stash.address, amount);
+                await pool.pullRewards(stash.address);
+            }
         }
 
         let tx: ContractTransaction;
