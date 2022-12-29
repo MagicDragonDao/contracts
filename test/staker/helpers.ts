@@ -3,7 +3,7 @@ import { ethers, waffle } from "hardhat";
 import { solidity } from "ethereum-waffle";
 import { BigNumberish, ContractTransaction } from "ethers";
 
-import { setNextBlockTimestamp } from "../utils";
+import { setNextBlockTimestamp, expectRoundedEqual, ether, shuffle } from "../utils";
 
 import type { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
 import type { AtlasMineStakerUpgradeable as AtlasMineStaker } from "../../src/types/AtlasMineStakerUpgradeable";
@@ -16,7 +16,6 @@ import type { TestERC721 } from "../../src/types/TestERC721";
 
 chai.use(solidity);
 
-export const ether = ethers.utils.parseEther;
 export const TOTAL_REWARDS_PER_DAY = ether("864");
 export const ACCRUAL_WINDOWS = [0, 12];
 export const ONE_DAY_SEC = 86400;
@@ -324,34 +323,6 @@ export const rollToNearestAccrual = async (time: number, windows = ACCRUAL_WINDO
     }
 
     return rollTo(adjustedTime);
-};
-
-/////////////////////////////////////////////////////////////////////////////////
-///                                MATCHERS                                   ///
-/////////////////////////////////////////////////////////////////////////////////
-
-export const expectRoundedEqual = (num: BigNumberish, target: BigNumberish, pctWithin = 5): void => {
-    num = ethers.BigNumber.from(num);
-    target = ethers.BigNumber.from(target);
-
-    // Tolerable precision is 0.1%. Precision is lost in the magic mine in both
-    // calculating NFT reward boosts, timing per second, and needing to go through
-    // accrual windows
-    const precision = 100;
-    const denom = ether("1").div(precision);
-
-    if (target.eq(0)) {
-        expect(num).to.be.lte(ether("1"));
-    } else if (num.eq(0)) {
-        expect(target).to.be.lte(ether("1"));
-    } else {
-        // Expect it to be less than 2% diff
-        const lowerBound = target.div(denom).mul(denom.div(100).mul(100 - pctWithin));
-        const upperBound = target.div(denom).mul(denom.div(100).mul(100 + pctWithin));
-
-        expect(num).to.be.gte(lowerBound);
-        expect(num).to.be.lte(upperBound);
-    }
 };
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -1446,22 +1417,4 @@ export const runScenario = async (
     await rollToDepositWindow();
 
     return claims;
-};
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const shuffle = function shuffle<T>(array: T[]): T[] {
-    let currentIndex = array.length,
-        randomIndex;
-
-    // While there remain elements to shuffle...
-    while (currentIndex != 0) {
-        // Pick a remaining element...
-        randomIndex = Math.floor(Math.random() * currentIndex);
-        currentIndex--;
-
-        // And swap it with the current element.
-        [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
-    }
-
-    return array;
 };

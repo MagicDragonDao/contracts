@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { ethers, waffle } from "hardhat";
+import { ethers, waffle, network } from "hardhat";
 import { BigNumberish, ContractTransaction } from "ethers";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { expect, should } from "chai";
+import { expect } from "chai";
 
 const { loadFixture } = waffle;
 
-import { deploy, deployUpgradeable, increaseTime } from "../utils";
+import { deploy, deployUpgradeable, increaseTime, expectRoundedEqual, ether, shuffle } from "../utils";
 import type { AtlasMineStakerUpgradeable as AtlasMineStaker } from "../../src/types/AtlasMineStakerUpgradeable";
 import type { MasterOfCoin } from "../../src/types/MasterOfCoin";
 import type { MockLegionMetadataStore } from "../../src/types/MockLegionMetadataStore";
@@ -27,7 +27,6 @@ import {
     rollLock,
     rollTo,
     rollToDepositWindow,
-    expectRoundedEqual,
     setup5050Scenario,
     setup7525Scenario,
     setupAdvancedScenario1,
@@ -42,18 +41,15 @@ import {
     rollToPartialWindow,
     TOTAL_REWARDS,
     ACCRUAL_WINDOWS,
-    shuffle,
     ONE_DAY_SEC,
     PROGRAM_DAYS,
     rollToNearestAccrual,
-    rollToNextAccrual,
 } from "./helpers";
-
-const ether = ethers.utils.parseEther;
 
 describe("Atlas Mine Staking (Pepe Pool)", () => {
     let ctx: TestContext;
     const USER_INITIAL_BALANCE = ether("100000");
+    const THREE_HOURS = 3600 * 3;
 
     const fixture = async (): Promise<TestContext> => {
         const signers = await ethers.getSigners();
@@ -64,13 +60,15 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
         const treasures = <TestERC1155>await deploy("TestERC1155", admin, []);
         const legions = <TestERC721>await deploy("TestERC721", admin, []);
 
-        const masterOfCoin = <MasterOfCoin>await deploy("MasterOfCoin", admin, []);
+        const masterOfCoin = <MasterOfCoin>await deploy("MasterOfCoinV1", admin, []);
         await masterOfCoin.init(magic.address);
 
         const metadataStore = <MockLegionMetadataStore>await deploy("MockLegionMetadataStore", admin, []);
 
-        const mine = <AtlasMine>await deploy("AtlasMine", admin, []);
-        await mine.init(magic.address, masterOfCoin.address);
+        const mine = <AtlasMine>(
+            await deployUpgradeable("AtlasMine", admin, [magic.address, masterOfCoin.address], "init")
+        );
+
         await mine.setTreasure(treasures.address);
         await mine.setLegion(legions.address);
         await mine.setLegionMetadataStore(metadataStore.address);
@@ -84,6 +82,7 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
 
         // Devote first half of day to accruing
         await staker.setAccrualWindows(ACCRUAL_WINDOWS);
+        await staker.setMinimumStakingWait(THREE_HOURS);
 
         // Distribute coins and set up staking program
         await magic.mint(admin.address, ether("10000"));
@@ -117,6 +116,10 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
             end,
         };
     };
+
+    before(async () => {
+        await network.provider.send("hardhat_reset");
+    });
 
     beforeEach(async () => {
         ctx = await loadFixture(fixture);
@@ -781,7 +784,6 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 } = ctx;
 
                 // Set 3 hour staking wait so we can stake twice in the same window
-                const THREE_HOURS = 3600 * 3;
                 await staker.setMinimumStakingWait(THREE_HOURS);
 
                 const amount = ether("20000");
@@ -844,7 +846,6 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 } = ctx;
 
                 // Set 3 hour staking wait so we can stake twice in the same window
-                const THREE_HOURS = 3600 * 3;
                 await staker.setMinimumStakingWait(THREE_HOURS);
 
                 const amount = ether("20000");
@@ -1023,6 +1024,7 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
                 0, // 0 == AtlasMine.Lock.twoWeeks
             ]);
             await staker2.setAccrualWindows(ACCRUAL_WINDOWS);
+            await staker2.setMinimumStakingWait(THREE_HOURS);
 
             expect(await mine.boosts(staker2.address)).to.eq(0);
 
@@ -2288,12 +2290,6 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
 
             const claims = await runScenario(ctx, actions);
 
-            // for (const r of rewards) {
-            //     console.log("Signer", r.signer.address, r.expectedReward);
-            // }
-
-            // console.log();
-
             // Now check all expected rewards and user balance
             const shuffledRewards = shuffle(rewards);
             for (const reward of shuffledRewards) {
@@ -2302,8 +2298,6 @@ describe("Atlas Mine Staking (Pepe Pool)", () => {
 
                 // Adjust if midstream claims/withdraws have been made
                 const adjustedExpectedReward = ethers.BigNumber.from(expectedReward).sub(claims[signer.address] || 0);
-
-                // console.log("Checking", signer.address, expectedReward, adjustedExpectedReward);
 
                 // Increased tolerance here, but not in final adjusted reward
                 await claimWithRoundedRewardCheck(staker, signer, adjustedExpectedReward, 8);
