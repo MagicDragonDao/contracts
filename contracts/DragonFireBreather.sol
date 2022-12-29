@@ -13,10 +13,7 @@ import "./interfaces/IMasterChefV2.sol";
 import "./interfaces/IStash.sol";
 
 // TODO:
-// - Figure out if pullRewards should happen every time
-//      - yes because of sandwiching
-//
-// - Do advanced scenarios
+// Think about MEV aspects of pullRewards timing
 
 /**
  * @title DragonFireBreather
