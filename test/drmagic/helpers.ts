@@ -455,6 +455,179 @@ export const setupAdvancedScenario3 = (ctx: TestContext): ScenarioInfo => {
     return { actions, rewards };
 };
 
+export const setupAdvancedScenario4 = (ctx: TestContext): ScenarioInfo => {
+    // Advanced Scenario 4:
+    // multiple pools, depositor overlap, with partial withdrawals
+    //
+    // Pool 1 (75% reward share)
+    //            Staker 1 %        Staker 2 %      Staker 3 %     Staker 4 %
+    // At T = 0:       50                30              20               0
+    // At T = 0.25: 26.31             15.79           10.53           47.37
+    // At T = 0.5:  13.33                20           13.33           53.33
+    // At T = 0.75: 11.11             33.33           11.11           44.44
+    // Totals:    25.1875             24.78         13.7425          36.285
+    //
+    // Pool 2 (25% reward share)
+    //            Staker 1 %        Staker 2 %      Staker 3 %     Staker 4 %
+    // At T = 0:        0               100               0               0
+    // At T = 0.25:    25                50              25               0
+    // At T = 0.5:  14.29             71.43           14.29               0
+    // At T = 0.75: 16.66             33.33           16.66           33.33
+    // Totals:    13.9875             63.69         13.9875          8.3325
+    //
+    // Combined Totals:
+    //            Staker 1 %        Staker 2 %      Staker 3 %     Staker 4 %
+    // At T = 0:       37.5             47.5              15               0
+    // At T = 0.25:   25.98          24.3425         14.1475         35.5275
+    // At T = 0.5:    13.57          32.8575           13.57         39.9975
+    // At T = 0.75: 12.4975            33.33         12.4975         41.6625
+    // Totals:      22.3875          34.5075         13.8038         29.2969
+
+    const {
+        users: [user1, user2, user3, user4],
+    } = ctx;
+
+    const baseAmount = ether("100");
+    const totalRewardsBase = TOTAL_REWARDS.div(10000);
+
+    const actions: Action[] = [
+        {
+            checkpoint: 0,
+            actions: [
+                {
+                    signer: user2,
+                    amount: baseAmount.mul(3),
+                    action: "deposit",
+                },
+                {
+                    signer: user3,
+                    amount: baseAmount.mul(2),
+                    action: "deposit",
+                },
+                {
+                    signer: user1,
+                    amount: baseAmount.mul(5),
+                    action: "deposit",
+                },
+                {
+                    signer: user2,
+                    amount: baseAmount.mul(3),
+                    action: "deposit",
+                    poolId: 1,
+                },
+            ],
+        },
+        {
+            checkpoint: 0.25,
+            actions: [
+                {
+                    signer: user4,
+                    amount: baseAmount.mul(9),
+                    action: "deposit",
+                },
+                {
+                    signer: user2,
+                    amount: baseAmount,
+                    action: "withdrawPartial",
+                    poolId: 1,
+                },
+                {
+                    signer: user1,
+                    amount: baseAmount,
+                    action: "deposit",
+                    poolId: 1,
+                },
+                {
+                    signer: user3,
+                    amount: baseAmount,
+                    action: "deposit",
+                    poolId: 1,
+                },
+            ],
+        },
+        {
+            checkpoint: 0.5,
+            actions: [
+                {
+                    signer: user2,
+                    amount: baseAmount.mul(3),
+                    action: "deposit",
+                    poolId: 1,
+                },
+                {
+                    signer: user3,
+                    amount: 0,
+                    action: "harvest",
+                },
+                {
+                    signer: user3,
+                    amount: 0,
+                    action: "harvest",
+                    poolId: 1,
+                },
+                {
+                    signer: user1,
+                    amount: baseAmount.mul(3),
+                    action: "withdrawPartialAndHarvest",
+                },
+                {
+                    signer: user4,
+                    amount: baseAmount,
+                    action: "withdrawPartial",
+                },
+            ],
+        },
+        {
+            checkpoint: 0.75,
+            actions: [
+                {
+                    signer: user2,
+                    amount: baseAmount.mul(3),
+                    action: "deposit",
+                },
+                {
+                    signer: user4,
+                    amount: baseAmount.mul(2),
+                    action: "deposit",
+                    poolId: 1,
+                },
+                {
+                    signer: user4,
+                    amount: 0,
+                    action: "harvest",
+                },
+                {
+                    signer: user2,
+                    amount: baseAmount.mul(3),
+                    action: "withdrawPartialAndHarvest",
+                    poolId: 1,
+                },
+            ],
+        },
+    ];
+
+    const rewards: RewardInfo[] = [
+        {
+            signer: user1,
+            expectedReward: totalRewardsBase.mul(2239),
+        },
+        {
+            signer: user2,
+            expectedReward: totalRewardsBase.mul(3451),
+        },
+        {
+            signer: user3,
+            expectedReward: totalRewardsBase.mul(1381),
+        },
+        {
+            signer: user4,
+            expectedReward: totalRewardsBase.mul(2930),
+        },
+    ];
+
+    return { actions, rewards };
+};
+
 export const runScenario = async (
     ctx: TestContext,
     actions: Action[],
